@@ -1,0 +1,7 @@
+{
+  "name": "Perfect Gift AI",
+  "description": "AI-powered personalized gift discovery platform. Find thoughtful gifts tailored to relationships, occasions, personalities, and budgets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

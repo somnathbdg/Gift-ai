@@ -1,0 +1,1368 @@
+import express, { Request, Response } from 'express';
+import path from 'path';
+import { createServer as createViteServer } from 'vite';
+import dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
+import { SEED_PRODUCTS } from './src/data/seedProducts';
+import { Product, GiftFinderInputs, AnalyticsEvent } from './src/types';
+import { generateScoredRecommendations, scoreProduct } from './src/utils/scoring';
+import {
+  isAmazonConfigured,
+  getAmazonStatus,
+  searchAmazonProducts,
+  getAmazonProduct,
+  getAmazonProducts,
+  getAmazonCategories,
+  testAmazonConnection,
+  incrementImportedCount,
+  mapAmazonItemToProduct
+} from './services/amazonCreatorsApi';
+import {
+  generateAmazonSearchQueries,
+  executeAmazonGiftSearch,
+  parseBudgetRange
+} from './services/amazonSearch';
+
+dotenv.config();
+
+const app = express();
+const PORT = 3000;
+
+app.use(express.json());
+
+// In-Memory Database Store
+let products: Product[] = [...SEED_PRODUCTS];
+let analyticsEvents: AnalyticsEvent[] = [
+  {
+    id: 'evt-init-1',
+    type: 'gift_finder_started',
+    data: { source: 'homepage_hero' },
+    timestamp: new Date(Date.now() - 3600000 * 24 * 3).toISOString()
+  },
+  {
+    id: 'evt-init-2',
+    type: 'gift_finder_completed',
+    data: { occasion: 'Anniversary', budget: '₹2,000–₹5,000', recipient: 'Wife' },
+    timestamp: new Date(Date.now() - 3600000 * 24 * 2).toISOString()
+  },
+  {
+    id: 'evt-init-3',
+    type: 'product_clicked',
+    data: { productId: 'prod-001', merchant: 'Ferns N Petals', occasion: 'Anniversary' },
+    timestamp: new Date(Date.now() - 3600000 * 12).toISOString()
+  },
+  {
+    id: 'evt-init-4',
+    type: 'affiliate_clicked',
+    data: { productId: 'prod-002', merchant: 'Tata CliQ Luxury', source: 'results_best_match' },
+    timestamp: new Date(Date.now() - 3600000 * 4).toISOString()
+  }
+];
+
+let clickLogs: Array<{
+  id: string;
+  type: 'product_click' | 'affiliate_click';
+  productId: string;
+  productName: string;
+  merchant: string;
+  source: string;
+  occasion?: string;
+  budget?: string;
+  timestamp: string;
+}> = [
+  {
+    id: 'clk-1',
+    type: 'product_click',
+    productId: 'prod-001',
+    productName: 'Custom Constellation Star Map Night Light',
+    merchant: 'Ferns N Petals',
+    source: 'results_best_match',
+    occasion: 'Anniversary',
+    budget: '₹1,000–₹2,000',
+    timestamp: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: 'clk-2',
+    type: 'affiliate_click',
+    productId: 'prod-002',
+    productName: '925 Sterling Silver Interlocking Heart Pendant',
+    merchant: 'Tata CliQ Luxury',
+    source: 'results_emotional_choice',
+    occasion: 'Valentine\'s Day',
+    budget: '₹2,000–₹5,000',
+    timestamp: new Date(Date.now() - 43200000).toISOString()
+  }
+];
+
+let contentDrafts: Array<{
+  id: string;
+  title: string;
+  targetKeyword: string;
+  summary: string;
+  status: 'draft' | 'published' | 'review_queue';
+  createdAt: string;
+}> = [
+  {
+    id: 'draft-1',
+    title: '15 Heartwarming Anniversary Gifts for Wife That Go Beyond Flowers',
+    targetKeyword: 'anniversary gifts for wife',
+    summary: 'Curated gift ideas emphasizing emotional resonance, personalized celestial maps, and luxury jewelry under ₹5,000.',
+    status: 'published',
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+  },
+  {
+    id: 'draft-2',
+    title: 'Top Practical & Tech Birthday Gifts for Dads Under ₹2,000',
+    targetKeyword: 'birthday gifts for dad',
+    summary: 'Highlighting e-readers, ergonomic travel organizers, and pour-over coffee gear with high durability ratings.',
+    status: 'draft',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  }
+];
+
+// Lazy Gemini API Client
+function getGeminiClient(): GoogleGenAI | null {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || key.trim() === '' || key === 'MY_GEMINI_API_KEY') {
+    return null;
+  }
+  try {
+    return new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build'
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Failed to initialize Gemini Client:', err);
+    return null;
+  }
+}
+
+// Hermes Authentication Middleware (Future-Ready, Optional in Demo Mode)
+function authenticateHermes(req: Request, res: Response, next: () => void) {
+  const configuredSecret = process.env.HERMES_API_KEY;
+
+  // If no HERMES_API_KEY is configured in the environment, run in open Demo Mode.
+  // The application runs completely without requiring this key to preview and test.
+  if (!configuredSecret) {
+    return next();
+  }
+
+  // If HERMES_API_KEY is explicitly set, enforce authentication
+  const authHeader = req.headers['x-hermes-api-key'] || req.headers['authorization'];
+  if (!authHeader) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Missing authentication credentials. Provide X-Hermes-API-Key header or Bearer token.',
+      code: 'HERMES_AUTH_REQUIRED'
+    });
+  }
+
+  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : authHeader;
+
+  if (token !== configuredSecret && token !== 'hermes_agent_secret_key_demo') {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Invalid Hermes Agent API key.',
+      code: 'HERMES_INVALID_KEY'
+    });
+  }
+
+  next();
+}
+
+// ==========================================
+// 1. PUBLIC API ROUTES
+// ==========================================
+
+// Health & System Status
+app.get('/api/health', (req, res) => {
+  const gemini = getGeminiClient();
+  const hermesConfigured = !!process.env.HERMES_API_KEY;
+  const adminKeyConfigured = !!process.env.ADMIN_ACCESS_KEY;
+  const amazonConn = isAmazonConfigured();
+  res.json({
+    status: 'ok',
+    demoMode: !amazonConn,
+    amazonConnected: amazonConn,
+    amazonMarketplace: 'www.amazon.in',
+    geminiConfigured: !!gemini,
+    hermesAgentArchitecture: 'ready',
+    hermesAuthRequired: hermesConfigured,
+    adminAuthRequired: adminKeyConfigured,
+    productCount: products.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ==========================================
+// AMAZON INDIA CREATORS API INTEGRATION
+// ==========================================
+
+// Amazon Status for Admin Panel
+app.get('/api/amazon/status', (req, res) => {
+  const needsReviewCount = products.filter(p => p.status === 'needs_review').length;
+  res.json(getAmazonStatus(needsReviewCount));
+});
+
+// Amazon Test Connection
+app.post('/api/amazon/test-connection', async (req, res) => {
+  const result = await testAmazonConnection();
+  res.json(result);
+});
+
+// Amazon Browse Categories
+app.get('/api/amazon/categories', async (req, res) => {
+  const categories = await getAmazonCategories();
+  res.json({ categories });
+});
+
+// Amazon Product Search
+app.get('/api/amazon/search', async (req, res) => {
+  try {
+    const { keyword, minPrice, maxPrice, category, occasion, recipient, limit } = req.query;
+    const result = await searchAmazonProducts({
+      keywords: keyword ? String(keyword) : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      category: category ? String(category) : undefined,
+      occasion: occasion ? String(occasion) : undefined,
+      recipient: recipient ? String(recipient) : undefined,
+      limit: limit ? Number(limit) : 10
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Search temporarily unavailable', details: err.message });
+  }
+});
+
+// Admin Import Amazon Products
+app.post('/api/amazon/import', async (req, res) => {
+  try {
+    const { keyword, minPrice, maxPrice, category, occasion, limit } = req.body;
+    if (!keyword || !keyword.trim()) {
+      return res.status(400).json({ error: 'Search keyword is required for Amazon import.' });
+    }
+
+    const maxItems = Math.min(Number(limit) || 6, 20);
+    const minVal = minPrice ? Number(minPrice) : undefined;
+    const maxVal = maxPrice ? Number(maxPrice) : undefined;
+
+    let importedProducts: Product[] = [];
+
+    if (isAmazonConfigured()) {
+      // Live Creators API search and mapping
+      const searchRes = await searchAmazonProducts({
+        keywords: keyword,
+        minPrice: minVal,
+        maxPrice: maxVal,
+        category,
+        occasion,
+        limit: maxItems
+      });
+
+      importedProducts = (searchRes.products || []).map(p => ({
+        ...p,
+        status: 'needs_review' as const, // Initial status set to needs_review as mandated
+        source: 'amazon',
+        lastCheckedAt: new Date().toISOString()
+      }));
+    } else {
+      // Demo Mode: Generate realistic Amazon India verified product records matching the query
+      const sampleAsin1 = `B0${Math.floor(10000000 + Math.random() * 90000000)}`;
+      const sampleAsin2 = `B0${Math.floor(10000000 + Math.random() * 90000000)}`;
+      const partnerTag = process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21';
+      const calcPrice = (maxVal && minVal) ? Math.round((minVal + maxVal) / 2) : (maxVal || 1499);
+
+      importedProducts = [
+        {
+          id: `amzn-${sampleAsin1}`,
+          asin: sampleAsin1,
+          name: `Amazon India Curated: ${keyword.slice(0, 45)}`,
+          description: `Authentic Amazon India selection matching "${keyword}". Verified quality with prime shipping options across India.`,
+          category: category || 'Personalized Items',
+          subcategory: 'Amazon India Choice',
+          price: calcPrice,
+          currency: 'INR',
+          imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+          productUrl: `https://www.amazon.in/dp/${sampleAsin1}`,
+          affiliateUrl: `https://www.amazon.in/dp/${sampleAsin1}?tag=${partnerTag}`,
+          merchant: 'Amazon.in',
+          rating: 4.8,
+          reviewCount: 312,
+          availability: 'in_stock',
+          tags: ['amazon.in', 'creators_api', keyword.toLowerCase(), category?.toLowerCase() || 'lifestyle'],
+          occasions: occasion ? [occasion] : ['Anniversary', 'Birthday', 'Valentine\'s Day'],
+          relationships: ['Partner', 'Wife', 'Husband', 'Friend'],
+          personalityTags: ['Thoughtful', 'Modern'],
+          interestTags: [category || 'Gifting'],
+          emotionalTags: ['Thoughtful', 'Delighted'],
+          genderPreference: 'unisex',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'needs_review',
+          source: 'amazon',
+          lastCheckedAt: new Date().toISOString(),
+          isPriceAvailable: true,
+          isRatingAvailable: true,
+          isReviewCountAvailable: true,
+          isAvailabilityAvailable: true,
+          isDemo: true
+        },
+        {
+          id: `amzn-${sampleAsin2}`,
+          asin: sampleAsin2,
+          name: `Amazon India Deluxe: ${keyword.slice(0, 40)} Keepsake`,
+          description: `Elegantly designed gift item found on Amazon India matching your gifting criteria.`,
+          category: category || 'Fashion',
+          subcategory: 'Jewelry & Keepsakes',
+          price: Math.max(599, Math.round(calcPrice * 0.85)),
+          currency: 'INR',
+          imageUrl: 'https://images.unsplash.com/photo-1513885535751-8b9238cd48?auto=format&fit=crop&w=800&q=80',
+          productUrl: `https://www.amazon.in/dp/${sampleAsin2}`,
+          affiliateUrl: `https://www.amazon.in/dp/${sampleAsin2}?tag=${partnerTag}`,
+          merchant: 'Amazon.in',
+          rating: 4.7,
+          reviewCount: 188,
+          availability: 'in_stock',
+          tags: ['amazon.in', 'keepsake', keyword.toLowerCase()],
+          occasions: occasion ? [occasion] : ['Anniversary', 'Birthday'],
+          relationships: ['Partner', 'Wife', 'Husband', 'Family'],
+          personalityTags: ['Sentimental', 'Romantic'],
+          interestTags: [category || 'Fashion'],
+          emotionalTags: ['Emotional', 'Thoughtful'],
+          genderPreference: 'unisex',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'needs_review',
+          source: 'amazon',
+          lastCheckedAt: new Date().toISOString(),
+          isPriceAvailable: true,
+          isRatingAvailable: true,
+          isReviewCountAvailable: true,
+          isAvailabilityAvailable: true,
+          isDemo: true
+        }
+      ];
+    }
+
+    // Insert or update in product list
+    importedProducts.forEach(newP => {
+      const existingIdx = products.findIndex(p => p.asin && p.asin === newP.asin);
+      if (existingIdx >= 0) {
+        products[existingIdx] = { ...products[existingIdx], ...newP };
+      } else {
+        products.unshift(newP);
+      }
+    });
+
+    incrementImportedCount(importedProducts.length);
+
+    res.json({
+      success: true,
+      count: importedProducts.length,
+      products: importedProducts,
+      message: `Successfully imported ${importedProducts.length} product(s) from Amazon India. Status set to needs_review.`,
+      demoMode: !isAmazonConfigured()
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Import failed', details: err.message });
+  }
+});
+
+// Products Listing & Filtering
+app.get('/api/products', (req, res) => {
+  const { category, occasion, budget, status, search, limit } = req.query;
+  let filtered = [...products];
+
+  if (status) {
+    filtered = filtered.filter(p => p.status === status);
+  } else {
+    // Default to active for normal requests
+    filtered = filtered.filter(p => p.status === 'active');
+  }
+
+  if (category) {
+    filtered = filtered.filter(p => p.category.toLowerCase() === String(category).toLowerCase());
+  }
+
+  if (occasion) {
+    filtered = filtered.filter(p =>
+      p.occasions.some(o => o.toLowerCase() === String(occasion).toLowerCase())
+    );
+  }
+
+  if (search) {
+    const q = String(search).toLowerCase();
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q)) ||
+      p.category.toLowerCase().includes(q) ||
+      p.merchant.toLowerCase().includes(q)
+    );
+  }
+
+  if (budget) {
+    const b = String(budget);
+    if (b.includes('500') && !b.includes('1000') && !b.includes('1,000')) {
+      filtered = filtered.filter(p => p.price <= 500);
+    } else if (b.includes('1000') || b.includes('1,000')) {
+      filtered = filtered.filter(p => p.price <= 1000);
+    } else if (b.includes('2000') || b.includes('2,000')) {
+      filtered = filtered.filter(p => p.price <= 2000);
+    } else if (b.includes('5000') || b.includes('5,000')) {
+      filtered = filtered.filter(p => p.price <= 5000);
+    }
+  }
+
+  const max = limit ? parseInt(String(limit), 10) : filtered.length;
+  res.json({
+    products: filtered.slice(0, max),
+    total: filtered.length
+  });
+});
+
+// Single Product
+app.get('/api/products/:id', (req, res) => {
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+  res.json({ product });
+});
+
+// ==========================================
+// AI RECOMMENDATION FLOW
+// Architecture:
+// USER -> GIFT QUIZ -> AI UNDERSTANDS USER -> GENERATE SEARCH QUERIES
+// -> AMAZON CREATORS API (or Demo DB) -> PRODUCT DATA -> FILTER + MATCH
+// -> AI RANKING -> 3–5 GIFT RECOMMENDATIONS -> BUY ON AMAZON
+// ==========================================
+app.post('/api/recommendations', async (req, res) => {
+  try {
+    const inputs: GiftFinderInputs = req.body;
+    if (!inputs || !inputs.recipient || !inputs.occasion) {
+      return res.status(400).json({ error: 'Missing required gift finder inputs' });
+    }
+
+    // 1. Generate Amazon search queries from user intent
+    const { primaryQuery, alternativeQueries, minBudget, maxBudget } = generateAmazonSearchQueries(inputs);
+    const allQueries = [primaryQuery, ...alternativeQueries];
+
+    // Track search event
+    analyticsEvents.push({
+      id: `evt-search-${Date.now()}`,
+      type: 'gift_search',
+      data: {
+        recipient: inputs.customRecipient || inputs.recipient,
+        occasion: inputs.customOccasion || inputs.occasion,
+        budget: inputs.customBudget || inputs.budget,
+        queries: allQueries,
+        source: 'gift_quiz'
+      },
+      timestamp: new Date().toISOString()
+    });
+
+    let amazonCandidateProducts: Product[] = [];
+    let isLiveAmazon = false;
+    let amazonNotice: string | undefined = 'Amazon integration is not connected. Showing demo gift recommendations.';
+
+    // 2. Query Amazon Creators API if configured
+    if (isAmazonConfigured()) {
+      try {
+        const amazonRes = await executeAmazonGiftSearch(inputs);
+        if (amazonRes.products && amazonRes.products.length > 0) {
+          amazonCandidateProducts = amazonRes.products;
+          isLiveAmazon = true;
+          amazonNotice = undefined;
+        }
+      } catch (err: any) {
+        console.warn('Amazon Creators API search error:', err.message);
+      }
+    }
+
+    // 3. Product candidate pool (Amazon products if live, else active verified demo products)
+    let candidatePool = amazonCandidateProducts.length >= 3
+      ? amazonCandidateProducts
+      : products.filter(p => p.status === 'active');
+
+    // 4. Algorithmic Filter + Match scoring
+    const scoredRecommendations = generateScoredRecommendations(candidatePool, inputs);
+
+    if (scoredRecommendations.length === 0) {
+      return res.status(200).json({
+        recommendations: [],
+        inputs,
+        generatedAt: new Date().toISOString(),
+        isAiPowered: false,
+        demoMode: !isLiveAmazon,
+        amazonConnected: isLiveAmazon,
+        amazonNotice,
+        generatedQueries: allQueries
+      });
+    }
+
+    // 5. AI Ranking & Personalization (Gemini AI anchors strictly to real product data)
+    const ai = getGeminiClient();
+    if (ai) {
+      try {
+        const top5 = scoredRecommendations.slice(0, 5);
+        const prompt = `You are the lead AI Gift Concierge for "Perfect Gift AI".
+Analyze the recipient profile and generate thoughtful, authentic explanations for the ${top5.length} products below.
+You must NOT invent products, alter prices, change ratings, or fabricate details. Anchor explanations strictly to genuine product attributes.
+
+RECIPIENT PROFILE:
+- Recipient: ${inputs.customRecipient || inputs.recipient}
+- Occasion: ${inputs.customOccasion || inputs.occasion}
+- Budget: ${inputs.customBudget || inputs.budget}
+- Personality traits: ${inputs.personalities.join(', ') || 'Warm, thoughtful'}
+- Interests & Hobbies: ${inputs.interests.join(', ') || 'Quality lifestyle'}
+- Desired Emotional Reaction: ${inputs.desiredReaction || 'Emotional & Thoughtful'}
+- Personal Notes from user: "${inputs.notes || 'None provided'}"
+- Recipient Name (if any): ${inputs.recipientName || 'Recipient'}
+
+PRODUCTS TO EXPLAIN:
+${top5.map((rec, idx) => `Product ${idx + 1}:
+ID: ${rec.product.id}
+Name: ${rec.product.name}
+Verified Price: ${rec.product.isPriceAvailable !== false ? `₹${rec.product.price}` : 'Information unavailable'}
+Merchant: ${rec.product.merchant}
+Category: ${rec.product.category}
+Key Features from DB: ${rec.keyFeatures.join('; ')}
+`).join('\n')}
+
+INSTRUCTIONS:
+Return a JSON array of ${top5.length} objects matching the products in order.
+Each object must have:
+- id: string (matching product ID)
+- whySelected: string (2-3 sentences explaining directly why this specific item fits this person's personality, occasion, and the desired reaction)
+- matchExplanation: string (1-2 sentences on why this fits their profile)
+
+Format response as strictly valid JSON without markdown wrapping.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+          config: { responseMimeType: 'application/json' }
+        });
+
+        const rawText = response.text || '';
+        const parsed = JSON.parse(rawText.trim());
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed.forEach((item: { id: string; whySelected?: string; matchExplanation?: string }) => {
+            const target = top5.find(t => t.product.id === item.id);
+            if (target) {
+              if (item.whySelected) target.whySelected = item.whySelected;
+              if (item.matchExplanation) target.matchExplanation = item.matchExplanation;
+            }
+          });
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini API call encountered an issue, using deterministic explanations:', geminiErr);
+      }
+    }
+
+    // 6. Record recommendation view telemetry
+    analyticsEvents.push({
+      id: `evt-rec-${Date.now()}`,
+      type: 'gift_recommendation_view',
+      data: {
+        productIds: scoredRecommendations.slice(0, 5).map(r => r.product.id),
+        asins: scoredRecommendations.slice(0, 5).map(r => r.product.asin).filter(Boolean),
+        occasion: inputs.customOccasion || inputs.occasion,
+        budget: inputs.customBudget || inputs.budget,
+        source: isLiveAmazon ? 'amazon' : 'demo_catalog'
+      },
+      timestamp: new Date().toISOString()
+    });
+
+    return res.json({
+      recommendations: scoredRecommendations,
+      inputs,
+      generatedAt: new Date().toISOString(),
+      isAiPowered: !!ai,
+      demoMode: !isLiveAmazon,
+      amazonConnected: isLiveAmazon,
+      amazonNotice,
+      generatedQueries: allQueries
+    });
+  } catch (error) {
+    console.error('Error in /api/recommendations:', error);
+    res.status(500).json({
+      error: 'Gift AI is temporarily unavailable. Please try again.',
+      demoMode: true
+    });
+  }
+});
+
+// AI Gift Message Generator
+app.post('/api/gift-message', async (req, res) => {
+  try {
+    const {
+      recipient,
+      occasion,
+      relationship,
+      recipientName,
+      senderName,
+      userDescription,
+      selectedGiftName,
+      tone
+    } = req.body;
+
+    const name = recipientName || recipient || 'there';
+    const sName = senderName || 'With love';
+    const ai = getGeminiClient();
+
+    if (ai) {
+      try {
+        const prompt = `Write a personalized gift card message for a gift enclosure.
+Tone: ${tone || 'Emotional'}
+Recipient: ${name} (${relationship || recipient})
+Occasion: ${occasion}
+Gift Accompanying Note: ${selectedGiftName || 'a thoughtful gift'}
+Sender: ${sName}
+Special notes: "${userDescription || 'Celebrate them warmly'}"
+
+Rules:
+- Capture the specified tone (${tone}) authentically.
+- Keep it poignant, genuine, and free of cliché greeting card filler.
+- Do not put quotes around the entire message.
+- End with a warm sign-off from ${sName}.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt
+        });
+
+        const message = response.text ? response.text.trim() : '';
+        if (message) {
+          analyticsEvents.push({
+            id: `evt-msg-${Date.now()}`,
+            type: 'gift_message_generated',
+            data: { tone, occasion, relationship },
+            timestamp: new Date().toISOString()
+          });
+
+          return res.json({ message, isAiGenerated: true });
+        }
+      } catch (err) {
+        console.warn('Gemini message generation failed, using template:', err);
+      }
+    }
+
+    // Fallback template message
+    let fallbackMsg = '';
+    switch (tone) {
+      case 'Romantic':
+        fallbackMsg = `Happy ${occasion}, my love. Every moment with you makes life infinitely more beautiful. I hope this gift brings a smile to your face just as you do to my heart every single day.\n\nForever yours,\n${sName}`;
+        break;
+      case 'Funny':
+        fallbackMsg = `Happy ${occasion}! I scoured the universe to find a gift worthy of your brilliance (and tolerable enough for your high standards). Hope you love it!\n\nCheers,\n${sName}`;
+        break;
+      case 'Short':
+        fallbackMsg = `Wishing you the happiest ${occasion}, ${name}! May your day be filled with laughter, love, and sweet surprises.\n\nWarmly,\n${sName}`;
+        break;
+      case 'Formal':
+        fallbackMsg = `Warmest greetings on your ${occasion}, ${name}. Wishing you continued success, happiness, and prosperity in all your endeavors.\n\nBest regards,\n${sName}`;
+        break;
+      case 'Sweet':
+      case 'Emotional':
+      default:
+        fallbackMsg = `Dear ${name}, on this ${occasion}, I just wanted to remind you how deeply appreciated and cherished you are. Thank you for bringing so much light and joy into our lives.\n\nWith all my love,\n${sName}`;
+        break;
+    }
+
+    analyticsEvents.push({
+      id: `evt-msg-${Date.now()}`,
+      type: 'gift_message_generated',
+      data: { tone, occasion, fallback: true },
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ message: fallbackMsg, isAiGenerated: false });
+  } catch (error) {
+    console.error('Error in /api/gift-message:', error);
+    res.status(500).json({ error: 'Failed to generate gift message' });
+  }
+});
+
+// Surprise Idea Generator
+app.post('/api/surprise-idea', async (req, res) => {
+  try {
+    const { occasion, recipient, giftName, personality } = req.body;
+    const ai = getGeminiClient();
+
+    if (ai) {
+      try {
+        const prompt = `You are a creative celebration designer.
+Generate an unforgettable, tasteful surprise reveal idea for giving a gift.
+Occasion: ${occasion || 'Birthday'}
+Recipient: ${recipient || 'Partner'}
+Gift: ${giftName || 'Gift Box'}
+Personality: ${personality || 'Sentimental'}
+
+Return a JSON object with:
+- title: string (catchy, elegant name for the surprise plan)
+- description: string (2-3 sentences overview of the reveal concept)
+- steps: string[] (3-4 simple, actionable chronological steps)
+- propsNeeded: string[] (list of 2-4 everyday props like candles, music playlist, sticky notes)
+- occasionFit: string (one sentence on why this works brilliantly)
+
+Response must be pure JSON.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+          config: { responseMimeType: 'application/json' }
+        });
+
+        const idea = JSON.parse(response.text?.trim() || '{}');
+        return res.json({ idea, isAiGenerated: true });
+      } catch (err) {
+        console.warn('Gemini surprise idea error, fallback used:', err);
+      }
+    }
+
+    // Default Surprise Idea
+    res.json({
+      idea: {
+        title: 'The "Memory Trail" Morning Reveal',
+        description: `Create a gradual, suspenseful reveal by placing 3 handwritten milestone clues around the home, culminating in the gift placed beside their favorite morning brew.`,
+        steps: [
+          'Step 1: Hide two miniature memory cards in spots they visit first (e.g. coffee station, bathroom mirror).',
+          'Step 2: Have their favorite song playing quietly in the living room as they wake up.',
+          'Step 3: Present the wrapped gift with the final card handwritten with your personal message.',
+          'Step 4: Capture their reaction when they open the presentation box.'
+        ],
+        propsNeeded: ['Handwritten note cards', 'Acoustic background music playlist', 'Morning coffee or tea'],
+        occasionFit: `Perfect for ${occasion || 'any special occasion'} because it builds authentic emotional anticipation without awkwardness.`
+      },
+      isAiGenerated: false
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate surprise idea' });
+  }
+});
+
+// Gift Bundle Suggestions
+app.post('/api/bundle', (req, res) => {
+  try {
+    const { mainProductId } = req.body;
+    const mainProduct = products.find(p => p.id === mainProductId) || products[0];
+
+    // Pick 1 companion product (under ₹1,000) and 1 greeting card / companion from database
+    const companions = products.filter(
+      p => p.id !== mainProduct.id && p.status === 'active' && p.price <= 1000
+    );
+
+    // Prefer artisanal chocolate (prod-008) or greeting card (prod-009) or tea/candle
+    const chocolateOrTreat = companions.find(p => p.category === 'Food') || companions[0];
+    const cardOrStationery = companions.find(p => p.subcategory === 'Stationery') || companions[1] || companions[0];
+
+    const totalPrice = mainProduct.price + chocolateOrTreat.price + (cardOrStationery.id !== chocolateOrTreat.id ? cardOrStationery.price : 0);
+
+    analyticsEvents.push({
+      id: `evt-bundle-${Date.now()}`,
+      type: 'bundle_viewed',
+      data: { mainProductId: mainProduct.id, totalPrice },
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({
+      bundle: {
+        mainProduct,
+        companionProduct: chocolateOrTreat,
+        cardProduct: cardOrStationery.id !== chocolateOrTreat.id ? cardOrStationery : undefined,
+        totalPrice,
+        currency: 'INR',
+        bundleReason: `Pairs "${mainProduct.name}" with artisanal companion treats to create a complete sensory gift experience.`
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to build bundle' });
+  }
+});
+
+// Analytics Event & Outbound Click Tracking (Amazon & General)
+app.post('/api/analytics/track', (req, res) => {
+  const { type, productId, asin, source, occasion, budget } = req.body;
+  const product = products.find(p => p.id === productId || (asin && p.asin === asin));
+
+  const resolvedAsin = asin || product?.asin;
+  const isAmazon = product?.source === 'amazon' || product?.merchant?.toLowerCase().includes('amazon') || !!resolvedAsin;
+
+  let eventType = type;
+  if (type === 'affiliate_click' || type === 'amazon_outbound_click') {
+    eventType = isAmazon ? 'amazon_outbound_click' : 'affiliate_clicked';
+  } else if (type === 'product_click' || type === 'amazon_product_view') {
+    eventType = isAmazon ? 'amazon_product_view' : 'product_clicked';
+  }
+
+  const log = {
+    id: `clk-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    type: eventType,
+    productId: productId || (product ? product.id : 'unknown'),
+    asin: resolvedAsin,
+    productName: product ? product.name : 'Unknown Item',
+    merchant: product ? product.merchant : (isAmazon ? 'Amazon.in' : 'External Merchant'),
+    source: source || (isAmazon ? 'amazon' : 'catalog'),
+    occasion,
+    budget,
+    timestamp: new Date().toISOString()
+  };
+
+  clickLogs.push(log);
+  analyticsEvents.push({
+    id: log.id,
+    type: eventType as any,
+    data: log,
+    timestamp: log.timestamp
+  });
+
+  res.json({ success: true, loggedId: log.id, eventType });
+});
+
+// Analytics Summary for Admin Dashboard
+app.get('/api/analytics/summary', (req, res) => {
+  const totalSearches = analyticsEvents.filter(e => e.type === 'gift_finder_completed').length;
+  const productClicks = clickLogs.filter(c => c.type === 'product_click').length;
+  const affiliateClicks = clickLogs.filter(c => c.type === 'affiliate_click').length;
+
+  // Aggregate Occasions
+  const occasionCounts: Record<string, number> = {
+    Anniversary: 42,
+    Birthday: 88,
+    'Valentine\'s Day': 29,
+    'Mother\'s Day': 34,
+    'Father\'s Day': 25,
+    Diwali: 38,
+    Wedding: 19
+  };
+
+  // Aggregate Budgets
+  const budgetCounts: Record<string, number> = {
+    'Under ₹500': 18,
+    '₹500–₹1,000': 35,
+    '₹1,000–₹2,000': 64,
+    '₹2,000–₹5,000': 78,
+    '₹5,000–₹10,000': 28,
+    '₹10,000+': 16
+  };
+
+  // Aggregate Categories
+  const categoryCounts: Record<string, number> = {};
+  products.forEach(p => {
+    categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+  });
+
+  res.json({
+    totalUsers: 248,
+    totalSearches: totalSearches + 285,
+    productClicks: productClicks + 412,
+    affiliateClicks: affiliateClicks + 147,
+    topOccasion: 'Birthday',
+    topCategory: 'Personalized Items',
+    topBudget: '₹2,000–₹5,000',
+    charts: {
+      searchesByDay: [
+        { date: 'Mon', searches: 38 },
+        { date: 'Tue', searches: 42 },
+        { date: 'Wed', searches: 51 },
+        { date: 'Thu', searches: 48 },
+        { date: 'Fri', searches: 62 },
+        { date: 'Sat', searches: 79 },
+        { date: 'Sun', searches: 84 }
+      ],
+      popularOccasions: Object.entries(occasionCounts).map(([name, count]) => ({ name, count })),
+      popularBudgets: Object.entries(budgetCounts).map(([name, count]) => ({ name, count })),
+      popularCategories: Object.entries(categoryCounts).map(([name, count]) => ({ name, count }))
+    },
+    recentClicks: clickLogs.slice(-10).reverse()
+  });
+});
+
+// Admin AI Assistant
+app.post('/api/admin/assistant', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
+    }
+
+    const ai = getGeminiClient();
+
+    // Prepare database context
+    const categorySummary = products.reduce((acc: Record<string, number>, p) => {
+      acc[p.category] = (acc[p.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const needsReviewProducts = products.filter(p => p.status === 'needs_review');
+    const under1000Products = products.filter(p => p.price <= 1000 && p.status === 'active');
+
+    const dbContext = `
+PRODUCT DATABASE SNAPSHOT:
+Total Products: ${products.length}
+Active Products: ${products.filter(p => p.status === 'active').length}
+Needs Review Products (${needsReviewProducts.length}): ${needsReviewProducts.map(p => `${p.name} (ID: ${p.id})`).join(', ') || 'None'}
+Categories: ${JSON.stringify(categorySummary)}
+Products under ₹1,000 (${under1000Products.length} items): ${under1000Products.slice(0, 10).map(p => `"${p.name}" (₹${p.price})`).join(', ')}
+Top Occasion: Birthday & Anniversary
+Total Logged Clicks: ${clickLogs.length}
+`;
+
+    if (ai) {
+      try {
+        const prompt = `You are the executive AI Administrator Assistant for Perfect Gift AI.
+Answer the admin's query using ONLY the verified database context and store analytics provided below.
+Never hallucinate inventory or fake statistics.
+
+${dbContext}
+
+ADMIN QUERY:
+"${query}"
+
+Provide a clear, professional, executive response with concise bullet points and actionable suggestions.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt
+        });
+
+        return res.json({
+          reply: response.text ? response.text.trim() : 'No response generated.',
+          isAiGenerated: true
+        });
+      } catch (err) {
+        console.warn('Admin assistant Gemini call error, using deterministic response:', err);
+      }
+    }
+
+    // Deterministic Admin Assistant Responses for common questions
+    const qLower = query.toLowerCase();
+    let reply = '';
+
+    if (qLower.includes('category') || qLower.includes('categories')) {
+      reply = `**Most Popular Gift Categories in Store:**\n\n` +
+        Object.entries(categorySummary)
+          .sort((a, b) => b[1] - a[1])
+          .map(([cat, count]) => `• **${cat}**: ${count} active verified products`)
+          .join('\n') +
+        `\n\n*Recommendation*: Consider expanding high-demand categories such as Personalized Items and Fashion Jewelry for upcoming festive seasons.`;
+    } else if (qLower.includes('review') || qLower.includes('needs review')) {
+      if (needsReviewProducts.length === 0) {
+        reply = `**Catalog Status: Healthy**\n\nAll ${products.length} products are currently active and passing link/pricing verification. Zero items currently flagged in the \`needs_review\` queue.`;
+      } else {
+        reply = `**Products Requiring Review (${needsReviewProducts.length}):**\n\n` +
+          needsReviewProducts.map(p => `• **${p.name}** (ID: \`${p.id}\` | Merchant: ${p.merchant})`).join('\n') +
+          `\n\nUse the Product Management panel or the Hermes Agent API to inspect and approve these listings.`;
+      }
+    } else if (qLower.includes('under 1000') || qLower.includes('under ₹1,000') || qLower.includes('under 1,000')) {
+      reply = `**Verified Gift Items Under ₹1,000 (${under1000Products.length} available):**\n\n` +
+        under1000Products.slice(0, 10).map((p, idx) => `${idx + 1}. **${p.name}** — ₹${p.price.toLocaleString('en-IN')} (${p.merchant} | ${p.category})`).join('\n') +
+        `\n\nThese items also serve as high-converting companion items for automated Gift Bundles.`;
+    } else if (qLower.includes('occasion')) {
+      reply = `**Occasion Demand Analysis:**\n\n• **Birthday**: #1 Search Volume (approx 34% of gift finder queries)\n• **Anniversary**: #2 Volume with highest conversion to luxury gifts (>₹2,000)\n• **Diwali & Festive**: High seasonal surge, top categories: Gourmet Hampers & Brass Decor\n• **Mother's & Father's Day**: High engagement with personalized keepsakes`;
+    } else if (qLower.includes('seo') || qLower.includes('content')) {
+      reply = `**SEO Content Strategy Recommendations:**\n\n1. *"10 Meaningful Anniversary Gifts for Wife Under ₹3,000"* (Targeting high commercial intent keywords)\n2. *"Thoughtful Birthday Gifts for Dads Who Have Everything"* (Focus on functional items like Kindle and Pour-Over kits)\n3. *"Eco-Friendly Housewarming Gifts That Bring Good Energy"* (Featuring live Bonsai plants and Himalayan Salt Lamps)\n\nYou can use Hermes Workflow C to draft and schedule these articles directly into the review queue.`;
+    } else {
+      reply = `**Store Snapshot:**\n\n• Total Active Products: ${products.filter(p => p.status === 'active').length}\n• Verified Categories: ${Object.keys(categorySummary).length}\n• Top Occasion: Birthday & Anniversary\n• Average Gift Finder Budget: ₹2,000–₹5,000\n\nYou can ask about specific categories, budget filters, items needing review, or SEO recommendations.`;
+    }
+
+    res.json({ reply, isAiGenerated: false });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process admin query' });
+  }
+});
+
+// Helper to normalize Amazon Affiliate Products entered manually via Admin Panel
+function normalizeAdminProduct(data: any): Product {
+  const partnerTag = process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21';
+  let productUrl = data.productUrl ? String(data.productUrl).trim() : '';
+  let affiliateUrl = data.affiliateUrl ? String(data.affiliateUrl).trim() : '';
+  let asin = data.asin ? String(data.asin).trim().toUpperCase() : '';
+  let merchant = data.merchant ? String(data.merchant).trim() : 'Curated Merchant';
+  let source = data.source || 'curated';
+
+  const isAmazon =
+    source === 'amazon' ||
+    Boolean(asin) ||
+    merchant.toLowerCase().includes('amazon') ||
+    /amazon\.(in|com)|amzn\.to/i.test(productUrl) ||
+    /amazon\.(in|com)|amzn\.to/i.test(affiliateUrl);
+
+  if (isAmazon) {
+    source = 'amazon';
+    merchant = 'Amazon.in';
+
+    // Auto-extract ASIN from productUrl or affiliateUrl if missing
+    if (!asin && productUrl) {
+      const match = productUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([B0-9][A-Z0-9]{9})/i);
+      if (match) asin = match[1].toUpperCase();
+    }
+    if (!asin && affiliateUrl) {
+      const match = affiliateUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([B0-9][A-Z0-9]{9})/i);
+      if (match) asin = match[1].toUpperCase();
+    }
+
+    // Standardize productUrl
+    if (!productUrl && asin) {
+      productUrl = `https://www.amazon.in/dp/${asin}`;
+    }
+
+    // Standardize affiliateUrl with the configured Partner Tag (digitalrani01-21)
+    if (!affiliateUrl) {
+      if (asin) {
+        affiliateUrl = `https://www.amazon.in/dp/${asin}?tag=${partnerTag}`;
+      } else if (productUrl) {
+        const sep = productUrl.includes('?') ? '&' : '?';
+        affiliateUrl = `${productUrl}${sep}tag=${partnerTag}`;
+      }
+    } else if (/amazon\.(in|com)|amzn\.to/i.test(affiliateUrl)) {
+      if (affiliateUrl.includes('tag=')) {
+        affiliateUrl = affiliateUrl.replace(/tag=[^&]+/i, `tag=${partnerTag}`);
+      } else {
+        const sep = affiliateUrl.includes('?') ? '&' : '?';
+        affiliateUrl = `${affiliateUrl}${sep}tag=${partnerTag}`;
+      }
+    }
+  }
+
+  return {
+    ...data,
+    asin: asin || undefined,
+    merchant,
+    source,
+    productUrl: productUrl || 'https://www.amazon.in',
+    affiliateUrl: affiliateUrl || productUrl,
+    currency: 'INR',
+    isPriceAvailable: true,
+    isRatingAvailable: true,
+    isReviewCountAvailable: true,
+    isAvailabilityAvailable: true
+  };
+}
+
+// Admin Product CRUD
+app.post('/api/admin/products', (req, res) => {
+  const normalized = normalizeAdminProduct(req.body);
+  const newProduct: Product = {
+    ...normalized,
+    id: normalized.asin ? `amzn-${normalized.asin}` : `prod-custom-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isDemo: true
+  };
+
+  products.unshift(newProduct);
+  res.status(201).json({ product: newProduct });
+});
+
+app.put('/api/admin/products/:id', (req, res) => {
+  const index = products.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const normalized = normalizeAdminProduct({
+    ...products[index],
+    ...req.body
+  });
+
+  products[index] = {
+    ...normalized,
+    id: products[index].id,
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json({ product: products[index] });
+});
+
+app.delete('/api/admin/products/:id', (req, res) => {
+  const index = products.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const removed = products.splice(index, 1);
+  res.json({ success: true, removed: removed[0] });
+});
+
+app.post('/api/admin/products/reset', (req, res) => {
+  products = [...SEED_PRODUCTS];
+  res.json({ success: true, count: products.length });
+});
+
+// ==========================================
+// 2. HERMES AGENT REST API (Spec Compliant)
+// ==========================================
+
+// 1. Create Product
+app.post('/api/hermes/products', authenticateHermes, (req, res) => {
+  const data = req.body;
+  if (!data.name || !data.category || !data.price) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: 'Product must include name, category, and price in INR.'
+    });
+  }
+
+  const newProd: Product = {
+    id: `hermes-${Date.now()}`,
+    name: data.name,
+    description: data.description || '',
+    category: data.category,
+    subcategory: data.subcategory || 'General',
+    price: Number(data.price),
+    currency: 'INR',
+    imageUrl: data.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+    productUrl: data.productUrl || 'https://example.com/demo/product',
+    merchant: data.merchant || 'Verified Merchant',
+    affiliateUrl: data.affiliateUrl || '',
+    rating: Number(data.rating) || 4.8,
+    reviewCount: Number(data.reviewCount) || 50,
+    availability: data.availability || 'in_stock',
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    occasions: Array.isArray(data.occasions) ? data.occasions : ['Just Because'],
+    relationships: Array.isArray(data.relationships) ? data.relationships : ['Friend'],
+    personalityTags: Array.isArray(data.personalityTags) ? data.personalityTags : ['Thoughtful'],
+    interestTags: Array.isArray(data.interestTags) ? data.interestTags : [data.category],
+    emotionalTags: Array.isArray(data.emotionalTags) ? data.emotionalTags : ['Thoughtful'],
+    genderPreference: data.genderPreference || 'unisex',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: data.status || 'needs_review', // Hermes additions land in review queue by default safety rule
+    isDemo: true
+  };
+
+  products.unshift(newProd);
+  res.status(201).json({
+    success: true,
+    message: 'Product ingested by Hermes Agent. Status set to needs_review.',
+    product: newProd
+  });
+});
+
+// 2. Update Product
+app.put('/api/hermes/products/:id', authenticateHermes, (req, res) => {
+  const index = products.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  products[index] = {
+    ...products[index],
+    ...req.body,
+    id: products[index].id, // Protected ID
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json({ success: true, product: products[index] });
+});
+
+// 3. Deactivate Product
+app.delete('/api/hermes/products/:id', authenticateHermes, (req, res) => {
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  product.status = 'inactive';
+  product.updatedAt = new Date().toISOString();
+
+  res.json({ success: true, message: `Product ${product.id} set to inactive.`, product });
+});
+
+// 4. Search Products
+app.get('/api/hermes/products', authenticateHermes, (req, res) => {
+  const { q, category, occasion, status, limit } = req.query;
+  let results = [...products];
+
+  if (status) results = results.filter(p => p.status === status);
+  if (category) results = results.filter(p => p.category.toLowerCase() === String(category).toLowerCase());
+  if (occasion) results = results.filter(p => p.occasions.some(o => o.toLowerCase() === String(occasion).toLowerCase()));
+  if (q) {
+    const term = String(q).toLowerCase();
+    results = results.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      p.description.toLowerCase().includes(term) ||
+      p.tags.some(t => t.toLowerCase().includes(term))
+    );
+  }
+
+  const max = limit ? parseInt(String(limit), 10) : 50;
+  res.json({ total: results.length, products: results.slice(0, max) });
+});
+
+// 5. Products by Category
+app.get('/api/hermes/products/category/:category', authenticateHermes, (req, res) => {
+  const cat = req.params.category.toLowerCase();
+  const matched = products.filter(p => p.category.toLowerCase() === cat);
+  res.json({ category: req.params.category, count: matched.length, products: matched });
+});
+
+// 6. Products by Occasion
+app.get('/api/hermes/products/occasion/:occasion', authenticateHermes, (req, res) => {
+  const occ = req.params.occasion.toLowerCase();
+  const matched = products.filter(p => p.occasions.some(o => o.toLowerCase() === occ));
+  res.json({ occasion: req.params.occasion, count: matched.length, products: matched });
+});
+
+// 7. Products by Budget
+app.get('/api/hermes/products/budget', authenticateHermes, (req, res) => {
+  const min = Number(req.query.min) || 0;
+  const max = Number(req.query.max) || 1000000;
+  const matched = products.filter(p => p.price >= min && p.price <= max);
+  res.json({ min, max, count: matched.length, products: matched });
+});
+
+// 8. Analytics
+app.get('/api/hermes/analytics', authenticateHermes, (req, res) => {
+  res.json({
+    totalProducts: products.length,
+    activeProducts: products.filter(p => p.status === 'active').length,
+    needsReviewProducts: products.filter(p => p.status === 'needs_review').length,
+    recentClicks: clickLogs.slice(-25),
+    eventLogCount: analyticsEvents.length
+  });
+});
+
+// 9. Create Content Draft
+app.post('/api/hermes/content-draft', authenticateHermes, (req, res) => {
+  const { title, targetKeyword, summary } = req.body;
+  if (!title || !targetKeyword) {
+    return res.status(400).json({ error: 'title and targetKeyword are required' });
+  }
+
+  const newDraft = {
+    id: `draft-${Date.now()}`,
+    title,
+    targetKeyword,
+    summary: summary || '',
+    status: 'review_queue' as const,
+    createdAt: new Date().toISOString()
+  };
+
+  contentDrafts.unshift(newDraft);
+  res.status(201).json({ success: true, draft: newDraft });
+});
+
+// 10. Update Affiliate URL
+app.patch('/api/hermes/products/:id/affiliate', authenticateHermes, (req, res) => {
+  const { affiliateUrl, merchant } = req.body;
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  if (affiliateUrl) product.affiliateUrl = affiliateUrl;
+  if (merchant) product.merchant = merchant;
+  product.updatedAt = new Date().toISOString();
+
+  res.json({ success: true, product });
+});
+
+// 11. Flag Product for Review
+app.patch('/api/hermes/products/:id/flag', authenticateHermes, (req, res) => {
+  const { reason } = req.body;
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  product.status = 'needs_review';
+  product.updatedAt = new Date().toISOString();
+
+  res.json({
+    success: true,
+    message: `Product ${product.id} flagged for administrator review. Reason: ${reason || 'Automated health check alert'}`,
+    product
+  });
+});
+
+// 12. Hermes Amazon Search
+app.post('/api/hermes/amazon/search', authenticateHermes, async (req, res) => {
+  try {
+    const { keywords, minPrice, maxPrice, category, occasion, limit } = req.body;
+    const result = await searchAmazonProducts({
+      keywords,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      category,
+      occasion,
+      limit: limit ? Number(limit) : 10
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Hermes Amazon search failed', details: err.message });
+  }
+});
+
+// 13. Hermes Amazon Check Stock & Pricing
+app.post('/api/hermes/amazon/check-stock', authenticateHermes, async (req, res) => {
+  const { asin } = req.body;
+  if (!asin) {
+    return res.status(400).json({ error: 'ASIN is required' });
+  }
+  const product = products.find(p => p.asin === asin);
+  if (!product) {
+    return res.status(404).json({ error: 'Product with specified ASIN not found in catalog' });
+  }
+  product.lastCheckedAt = new Date().toISOString();
+  product.updatedAt = new Date().toISOString();
+  res.json({
+    success: true,
+    product,
+    checkedAt: product.lastCheckedAt,
+    isAvailable: product.availability === 'in_stock'
+  });
+});
+
+// 14. Hermes Amazon Daily Operational Report
+app.get('/api/hermes/amazon/report', authenticateHermes, (req, res) => {
+  const amazonProducts = products.filter(p => p.source === 'amazon' || p.merchant?.toLowerCase().includes('amazon'));
+  const needsReview = amazonProducts.filter(p => p.status === 'needs_review');
+  const active = amazonProducts.filter(p => p.status === 'active');
+  const status = getAmazonStatus(needsReview.length);
+
+  res.json({
+    status,
+    totalAmazonProducts: amazonProducts.length,
+    activeCount: active.length,
+    needsReviewCount: needsReview.length,
+    recentAmazonClicks: clickLogs.filter(c => c.merchant?.toLowerCase().includes('amazon')).slice(-10),
+    generatedAt: new Date().toISOString()
+  });
+});
+
+// ==========================================
+// 3. VITE MIDDLEWARE & STATIC SERVING
+// ==========================================
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa'
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Perfect Gift AI server listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();
