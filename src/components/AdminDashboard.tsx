@@ -48,7 +48,9 @@ import {
   adminResetProducts,
   fetchAmazonStatus,
   testAmazonConnectionApi,
-  importAmazonProductsApi
+  importAmazonProductsApi,
+  testMatchingEngineApi,
+  aiSuggestTagsApi
 } from '../services/api';
 
 interface AdminDashboardProps {
@@ -63,8 +65,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onExitAdmin
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'categories' | 'searches' | 'affiliate' | 'amazon' | 'assistant' | 'settings'
+    'dashboard' | 'products' | 'matching_tester' | 'categories' | 'searches' | 'affiliate' | 'amazon' | 'assistant' | 'settings'
   >('dashboard');
+
+  // Intelligent Matching Engine Tester State
+  const [matchingTestInputs, setMatchingTestInputs] = useState({
+    recipient: 'Wife',
+    occasion: 'Anniversary',
+    budget: '₹1,000–₹2,000',
+    personalities: ['Romantic', 'Sentimental'],
+    interests: ['Photography'],
+    desiredReaction: 'Emotional / Tearful',
+    notes: 'She loves meaningful personalized gifts.'
+  });
+  const [isTestingMatching, setIsTestingMatching] = useState(false);
+  const [matchingTestResult, setMatchingTestResult] = useState<any>(null);
+  const [isAiTaggingRunning, setIsAiTaggingRunning] = useState(false);
 
   const [analytics, setAnalytics] = useState<any>(null);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
@@ -462,6 +478,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('matching_tester')}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+              activeTab === 'matching_tester'
+                ? 'bg-rose-100/80 text-rose-900 font-bold border border-rose-200'
+                : 'text-stone-700 hover:bg-stone-100'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-rose-700" />
+            <span>Test Gift Matching</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('assistant')}
             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
               activeTab === 'assistant'
@@ -678,6 +706,334 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   Open Copilot →
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* TAB: TEST GIFT MATCHING (ADMIN TESTER - Section 21) */}
+          {activeTab === 'matching_tester' && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4 mb-6">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-rose-700" />
+                      <span>Admin Matching Engine Diagnostic</span>
+                    </div>
+                    <h2 className="font-serif text-2xl font-bold text-stone-900">
+                      Test Gift Matching Engine
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Enter customer profile criteria to run deterministic 100-pt scoring, test Gemini AI explanations, and inspect matching & rejection breakdowns.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-stone-500">Preset Scenarios:</span>
+                    <button
+                      type="button"
+                      onClick={() => setMatchingTestInputs({
+                        recipient: 'Wife',
+                        occasion: 'Anniversary',
+                        budget: '₹1,000–₹2,000',
+                        personalities: ['Romantic', 'Sentimental'],
+                        interests: ['Photography'],
+                        desiredReaction: 'Emotional / Tearful',
+                        notes: 'She loves meaningful personalized gifts.'
+                      })}
+                      className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold"
+                    >
+                      Wife / Anniv
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMatchingTestInputs({
+                        recipient: 'Husband',
+                        occasion: 'Birthday',
+                        budget: '₹2,000–₹5,000',
+                        personalities: ['Tech Lover', 'Practical'],
+                        interests: ['Technology', 'Gaming'],
+                        desiredReaction: 'Cool / Useful',
+                        notes: 'Loves desk gadgets and audio gear.'
+                      })}
+                      className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold"
+                    >
+                      Husband / Tech
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMatchingTestInputs({
+                        recipient: 'Mom',
+                        occasion: "Mother's Day",
+                        budget: '₹2,000–₹5,000',
+                        personalities: ['Sentimental', 'Homebody'],
+                        interests: ['Beauty', 'Health'],
+                        desiredReaction: 'Emotional / Tearful',
+                        notes: 'Deserves a pampering wellness treat.'
+                      })}
+                      className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold"
+                    >
+                      Mom / Mother's Day
+                    </button>
+                  </div>
+                </div>
+
+                {/* Form Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Recipient:
+                    </label>
+                    <input
+                      type="text"
+                      value={matchingTestInputs.recipient}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, recipient: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                      placeholder="e.g. Wife, Husband, Mom, Dad, Friend"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Occasion:
+                    </label>
+                    <input
+                      type="text"
+                      value={matchingTestInputs.occasion}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, occasion: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                      placeholder="e.g. Anniversary, Birthday, Diwali"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Budget:
+                    </label>
+                    <select
+                      value={matchingTestInputs.budget}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, budget: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                    >
+                      <option value="Under ₹500">Under ₹500</option>
+                      <option value="₹500–₹1,000">₹500–₹1,000</option>
+                      <option value="₹1,000–₹2,000">₹1,000–₹2,000</option>
+                      <option value="₹2,000–₹5,000">₹2,000–₹5,000</option>
+                      <option value="₹5,000–₹10,000">₹5,000–₹10,000</option>
+                      <option value="₹10,000+">₹10,000+</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Personalities (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      value={matchingTestInputs.personalities.join(', ')}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, personalities: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                      placeholder="e.g. Romantic, Tech Lover, Practical"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Interests (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      value={matchingTestInputs.interests.join(', ')}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, interests: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                      placeholder="e.g. Photography, Books, Gaming, Fitness"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                      Desired Reaction:
+                    </label>
+                    <select
+                      value={matchingTestInputs.desiredReaction}
+                      onChange={e => setMatchingTestInputs({ ...matchingTestInputs, desiredReaction: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                    >
+                      <option value="Emotional / Tearful">Emotional / Tearful</option>
+                      <option value="Surprised">Surprised</option>
+                      <option value="Funny / Laugh">Funny / Laugh</option>
+                      <option value="Impressed / Wow">Impressed / Wow</option>
+                      <option value="Thoughtful / Sweet">Thoughtful / Sweet</option>
+                      <option value="Cool / Useful">Cool / Useful</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Free-text Notes / Description:
+                  </label>
+                  <input
+                    type="text"
+                    value={matchingTestInputs.notes}
+                    onChange={e => setMatchingTestInputs({ ...matchingTestInputs, notes: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 bg-white"
+                    placeholder="e.g. She loves meaningful personalized gifts."
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isTestingMatching}
+                  onClick={async () => {
+                    setIsTestingMatching(true);
+                    setMatchingTestResult(null);
+                    try {
+                      const res = await testMatchingEngineApi(matchingTestInputs as any);
+                      setMatchingTestResult(res);
+                    } catch (err: any) {
+                      alert('Matching test failed: ' + err.message);
+                    } finally {
+                      setIsTestingMatching(false);
+                    }
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{isTestingMatching ? 'Calculating 100-Point Match Score...' : 'Run Matching Test'}</span>
+                </button>
+              </div>
+
+              {/* TEST RESULTS DISPLAY */}
+              {matchingTestResult && (
+                <div className="space-y-6">
+                  {/* Generated Search Queries */}
+                  {matchingTestResult.queries && (
+                    <div className="p-4 rounded-xl bg-stone-100 border border-stone-200 text-xs">
+                      <span className="font-bold text-stone-800">Generated Search Queries for Amazon / Catalog:</span>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {matchingTestResult.queries.map((q: string, idx: number) => (
+                          <span key={idx} className="px-2.5 py-1 rounded-md bg-white border border-stone-300 font-mono text-[11px] text-stone-800">
+                            "{q}"
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4 Final Recommendations Summary */}
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs">
+                    <h3 className="font-serif text-lg font-bold text-stone-900 mb-4">
+                      Final Concierge Recommendations (Customer View)
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {matchingTestResult.results?.recommendations?.slice(0, 4).map((rec: any, idx: number) => (
+                        <div key={rec.product.id} className="p-4 rounded-xl border border-stone-200 flex flex-col justify-between bg-stone-50/50">
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-stone-900 text-white">
+                                {rec.recommendationType.replace('_', ' ')}
+                              </span>
+                              <span className="text-xs font-bold text-rose-700">{rec.score}/100</span>
+                            </div>
+                            <img src={rec.product.imageUrl} alt={rec.product.name} className="w-full h-28 object-cover rounded-lg mb-2" />
+                            <h4 className="font-bold text-xs text-stone-900 line-clamp-2">{rec.product.name}</h4>
+                            <p className="text-[11px] text-stone-500 font-semibold mt-1">₹{rec.product.price} • {rec.product.merchant}</p>
+                            <p className="text-[11px] text-stone-700 mt-2 p-2 bg-white rounded-lg border border-stone-100">
+                              <span className="font-bold text-rose-800">Why picked: </span>
+                              {rec.whySelected}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Full Candidate Ranking & Internal 100-pt Score Breakdown */}
+                  <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs">
+                    <h3 className="font-serif text-lg font-bold text-stone-900 mb-1">
+                      Deterministic Score Breakdown (All Candidates)
+                    </h3>
+                    <p className="text-xs text-stone-500 mb-4">
+                      Budget (25) + Occasion (20) + Personality (20) + Interest (15) + Relationship (10) + Emotion (10) = 100 max
+                    </p>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs text-stone-700">
+                        <thead className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider text-[10px]">
+                          <tr>
+                            <th className="p-3">Rank & Product</th>
+                            <th className="p-3">Price</th>
+                            <th className="p-3 text-center">Budget (25)</th>
+                            <th className="p-3 text-center">Occasion (20)</th>
+                            <th className="p-3 text-center">Pers. (20)</th>
+                            <th className="p-3 text-center">Int. (15)</th>
+                            <th className="p-3 text-center">Rel. (10)</th>
+                            <th className="p-3 text-center">Emo. (10)</th>
+                            <th className="p-3 text-right">Total Score</th>
+                            <th className="p-3">Match Highlights / Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100">
+                          {matchingTestResult.allScoredCandidates?.map((c: any, cIdx: number) => (
+                            <tr key={c.product.id} className={cIdx < 4 ? 'bg-rose-50/30' : ''}>
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-stone-400">#{cIdx + 1}</span>
+                                  <div>
+                                    <p className="font-semibold text-stone-900 line-clamp-1">{c.product.name}</p>
+                                    <span className="text-[10px] text-stone-500">{c.product.category}</span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3 font-semibold">₹{c.product.price}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.budgetMatch}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.occasionMatch}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.personalityMatch}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.interestMatch}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.relationshipMatch}</td>
+                              <td className="p-3 text-center font-mono">{c.breakdown?.emotionalReactionMatch}</td>
+                              <td className="p-3 text-right">
+                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                  c.score >= 78 ? 'bg-emerald-100 text-emerald-800' : c.score >= 60 ? 'bg-blue-100 text-blue-800' : 'bg-stone-100 text-stone-800'
+                                }`}>
+                                  {c.score}/100
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-[11px] text-stone-600">
+                                  {c.matchHighlights?.[0] || c.breakdown?.details?.budgetExplanation || 'General suitability'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Rejected Products List */}
+                  {matchingTestResult.rejectedProducts?.length > 0 && (
+                    <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs">
+                      <h3 className="font-serif text-lg font-bold text-rose-950 mb-1">
+                        Rejected Products (Quality & Validation Filter)
+                      </h3>
+                      <p className="text-xs text-stone-500 mb-4">
+                        Items rejected before matching due to inactive status, missing price, incomplete URLs, or invalid metadata.
+                      </p>
+                      <div className="divide-y divide-stone-100 text-xs">
+                        {matchingTestResult.rejectedProducts.map((rej: any, rIdx: number) => (
+                          <div key={rIdx} className="py-2.5 flex items-center justify-between">
+                            <span className="font-semibold text-stone-800">{rej.product.name}</span>
+                            <span className="px-2.5 py-1 rounded bg-rose-50 text-rose-700 font-mono text-[11px]">
+                              {rej.reason}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -1806,11 +2162,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Description & AI Product Tagging (Section 4) */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Product Description:
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-stone-700">
+                    Product Description:
+                  </label>
+                  <button
+                    type="button"
+                    disabled={isAiTaggingRunning || (!editingProduct.name && !editingProduct.description)}
+                    onClick={async () => {
+                      setIsAiTaggingRunning(true);
+                      try {
+                        const tags = await aiSuggestTagsApi(editingProduct);
+                        setEditingProduct({
+                          ...editingProduct,
+                          category: tags.category || editingProduct.category,
+                          subcategory: tags.subcategory || editingProduct.subcategory,
+                          recipientTags: tags.recipientTags,
+                          relationships: tags.recipientTags,
+                          relationshipTags: tags.relationshipTags,
+                          occasionTags: tags.occasionTags,
+                          occasions: tags.occasionTags,
+                          personalityTags: tags.personalityTags,
+                          interestTags: tags.interestTags,
+                          emotionTags: tags.emotionTags,
+                          emotionalTags: tags.emotionTags,
+                          budgetMin: tags.budgetMin,
+                          budgetMax: tags.budgetMax
+                        });
+                      } catch (err: any) {
+                        alert('AI Tagging failed: ' + err.message);
+                      } finally {
+                        setIsAiTaggingRunning(false);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-900 text-xs font-bold transition-colors disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-rose-700" />
+                    <span>{isAiTaggingRunning ? 'AI Extracting Tags...' : '✨ AI Suggest Matching Tags'}</span>
+                  </button>
+                </div>
                 <textarea
                   rows={3}
                   placeholder="Detailed description highlighting gifting reasons, materials, and presentation..."
@@ -1818,6 +2210,126 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"
                 />
+              </div>
+
+              {/* Tagging Engine Attributes (Normalized & Admin Editable - Section 3 & 4) */}
+              <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-rose-700" />
+                    <span>Intelligent Gift Matching Tags</span>
+                  </span>
+                  <span className="text-[10px] text-stone-500">Edit or refine AI-suggested tags before publishing</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Recipient Tags (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Wife, Girlfriend, Partner, Mom"
+                      value={(editingProduct.recipientTags || editingProduct.relationships || []).join(', ')}
+                      onChange={e => {
+                        const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        setEditingProduct({ ...editingProduct, recipientTags: arr, relationships: arr });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Occasion Tags (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Anniversary, Birthday, Valentine's Day"
+                      value={(editingProduct.occasionTags || editingProduct.occasions || []).join(', ')}
+                      onChange={e => {
+                        const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        setEditingProduct({ ...editingProduct, occasionTags: arr, occasions: arr });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Personality Tags (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Romantic, Sentimental, Creative"
+                      value={(editingProduct.personalityTags || []).join(', ')}
+                      onChange={e => {
+                        const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        setEditingProduct({ ...editingProduct, personalityTags: arr });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Interest Tags (comma-separated):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Photography, Books, Travel"
+                      value={(editingProduct.interestTags || []).join(', ')}
+                      onChange={e => {
+                        const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        setEditingProduct({ ...editingProduct, interestTags: arr });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Emotion / Desired Reaction Tags:
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Emotional, Surprised, Thoughtful"
+                      value={(editingProduct.emotionTags || editingProduct.emotionalTags || []).join(', ')}
+                      onChange={e => {
+                        const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        setEditingProduct({ ...editingProduct, emotionTags: arr, emotionalTags: arr });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        Budget Min (₹):
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="500"
+                        value={editingProduct.budgetMin || ''}
+                        onChange={e => setEditingProduct({ ...editingProduct, budgetMin: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        Budget Max (₹):
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="2000"
+                        value={editingProduct.budgetMax || ''}
+                        onChange={e => setEditingProduct({ ...editingProduct, budgetMax: Number(e.target.value) })}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white text-stone-900"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-stone-200 flex items-center justify-between">

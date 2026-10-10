@@ -6,6 +6,9 @@ import { GoogleGenAI } from '@google/genai';
 import { SEED_PRODUCTS } from './src/data/seedProducts';
 import { Product, GiftFinderInputs, AnalyticsEvent } from './src/types';
 import { generateScoredRecommendations, scoreProduct } from './src/utils/scoring';
+import { generateIntelligentRecommendations } from './services/recommendationService';
+import { suggestProductTagsWithAi } from './services/productTaggingService';
+import { matchAndScoreCatalog } from './services/giftMatchingService';
 import {
   isAmazonConfigured,
   getAmazonStatus,
@@ -492,107 +495,34 @@ app.post('/api/recommendations', async (req, res) => {
       ? amazonCandidateProducts
       : products.filter(p => p.status === 'active');
 
-    // 4. Algorithmic Filter + Match scoring
-    const scoredRecommendations = generateScoredRecommendations(candidatePool, inputs);
-
-    if (scoredRecommendations.length === 0) {
-      return res.status(200).json({
-        recommendations: [],
-        inputs,
-        generatedAt: new Date().toISOString(),
-        isAiPowered: false,
-        demoMode: !isLiveAmazon,
-        amazonConnected: isLiveAmazon,
+    // 4. Intelligent Gift Matching Engine (Deterministic Filtering & Scoring + AI Re-ranking)
+    const recommendationResponse = await generateIntelligentRecommendations(
+      candidatePool,
+      inputs,
+      {
+        isLiveAmazon,
         amazonNotice,
         generatedQueries: allQueries
-      });
-    }
-
-    // 5. AI Ranking & Personalization (Gemini AI anchors strictly to real product data)
-    const ai = getGeminiClient();
-    if (ai) {
-      try {
-        const top5 = scoredRecommendations.slice(0, 5);
-        const prompt = `You are the lead AI Gift Concierge for "Perfect Gift AI".
-Analyze the recipient profile and generate thoughtful, authentic explanations for the ${top5.length} products below.
-You must NOT invent products, alter prices, change ratings, or fabricate details. Anchor explanations strictly to genuine product attributes.
-
-RECIPIENT PROFILE:
-- Recipient: ${inputs.customRecipient || inputs.recipient}
-- Occasion: ${inputs.customOccasion || inputs.occasion}
-- Budget: ${inputs.customBudget || inputs.budget}
-- Personality traits: ${inputs.personalities.join(', ') || 'Warm, thoughtful'}
-- Interests & Hobbies: ${inputs.interests.join(', ') || 'Quality lifestyle'}
-- Desired Emotional Reaction: ${inputs.desiredReaction || 'Emotional & Thoughtful'}
-- Personal Notes from user: "${inputs.notes || 'None provided'}"
-- Recipient Name (if any): ${inputs.recipientName || 'Recipient'}
-
-PRODUCTS TO EXPLAIN:
-${top5.map((rec, idx) => `Product ${idx + 1}:
-ID: ${rec.product.id}
-Name: ${rec.product.name}
-Verified Price: ${rec.product.isPriceAvailable !== false ? `₹${rec.product.price}` : 'Information unavailable'}
-Merchant: ${rec.product.merchant}
-Category: ${rec.product.category}
-Key Features from DB: ${rec.keyFeatures.join('; ')}
-`).join('\n')}
-
-INSTRUCTIONS:
-Return a JSON array of ${top5.length} objects matching the products in order.
-Each object must have:
-- id: string (matching product ID)
-- whySelected: string (2-3 sentences explaining directly why this specific item fits this person's personality, occasion, and the desired reaction)
-- matchExplanation: string (1-2 sentences on why this fits their profile)
-
-Format response as strictly valid JSON without markdown wrapping.`;
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: prompt,
-          config: { responseMimeType: 'application/json' }
-        });
-
-        const rawText = response.text || '';
-        const parsed = JSON.parse(rawText.trim());
-
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          parsed.forEach((item: { id: string; whySelected?: string; matchExplanation?: string }) => {
-            const target = top5.find(t => t.product.id === item.id);
-            if (target) {
-              if (item.whySelected) target.whySelected = item.whySelected;
-              if (item.matchExplanation) target.matchExplanation = item.matchExplanation;
-            }
-          });
-        }
-      } catch (geminiErr) {
-        console.warn('Gemini API call encountered an issue, using deterministic explanations:', geminiErr);
       }
-    }
+    );
 
-    // 6. Record recommendation view telemetry
+    // 5. Record recommendation telemetry with anonymized matching data
     analyticsEvents.push({
       id: `evt-rec-${Date.now()}`,
       type: 'gift_recommendation_view',
       data: {
-        productIds: scoredRecommendations.slice(0, 5).map(r => r.product.id),
-        asins: scoredRecommendations.slice(0, 5).map(r => r.product.asin).filter(Boolean),
+        productIds: recommendationResponse.recommendations.slice(0, 5).map(r => r.product.id),
+        asins: recommendationResponse.recommendations.slice(0, 5).map(r => r.product.asin).filter(Boolean),
         occasion: inputs.customOccasion || inputs.occasion,
         budget: inputs.customBudget || inputs.budget,
+        recipient: inputs.customRecipient || inputs.recipient,
+        topCategory: recommendationResponse.recommendations[0]?.product.category,
         source: isLiveAmazon ? 'amazon' : 'demo_catalog'
       },
       timestamp: new Date().toISOString()
     });
 
-    return res.json({
-      recommendations: scoredRecommendations,
-      inputs,
-      generatedAt: new Date().toISOString(),
-      isAiPowered: !!ai,
-      demoMode: !isLiveAmazon,
-      amazonConnected: isLiveAmazon,
-      amazonNotice,
-      generatedQueries: allQueries
-    });
+    return res.json(recommendationResponse);
   } catch (error) {
     console.error('Error in /api/recommendations:', error);
     res.status(500).json({
@@ -690,6 +620,46 @@ Rules:
   } catch (error) {
     console.error('Error in /api/gift-message:', error);
     res.status(500).json({ error: 'Failed to generate gift message' });
+  }
+});
+
+// Admin Matching Engine Diagnostic & Tester
+app.post('/api/matching/test', async (req, res) => {
+  try {
+    const inputs: GiftFinderInputs = req.body;
+    if (!inputs || !inputs.recipient || !inputs.occasion) {
+      return res.status(400).json({ error: 'Missing required profile fields (recipient, occasion)' });
+    }
+
+    const { scoredCandidates, rejectedProducts } = matchAndScoreCatalog(products, inputs);
+    const { primaryQuery, alternativeQueries } = generateAmazonSearchQueries(inputs);
+    const results = await generateIntelligentRecommendations(products, inputs);
+
+    res.json({
+      results,
+      allScoredCandidates: scoredCandidates,
+      rejectedProducts,
+      queries: [primaryQuery, ...alternativeQueries]
+    });
+  } catch (error: any) {
+    console.error('Error in /api/matching/test:', error);
+    res.status(500).json({ error: error.message || 'Matching test failed' });
+  }
+});
+
+// Admin AI Product Tagging Service
+app.post('/api/products/ai-tag', async (req, res) => {
+  try {
+    const productDraft: Partial<Product> = req.body;
+    if (!productDraft || (!productDraft.name && !productDraft.description)) {
+      return res.status(400).json({ error: 'Product name or description is required for AI tagging' });
+    }
+
+    const tagResults = await suggestProductTagsWithAi(productDraft);
+    res.json(tagResults);
+  } catch (error: any) {
+    console.error('Error in /api/products/ai-tag:', error);
+    res.status(500).json({ error: error.message || 'AI tagging failed' });
   }
 });
 

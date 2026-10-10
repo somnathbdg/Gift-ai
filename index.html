@@ -3,6 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var nativeFetch = window.fetch ? window.fetch.bind(window) : undefined;
+          var _currentFetch = nativeFetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _currentFetch;
+            },
+            set: function(val) {
+              _currentFetch = val;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {}
+      })();
+    </script>
     <title>Perfect Gift AI — Tell us about them. We'll find the gift.</title>
     <meta name="description" content="AI-powered personalized gift discovery platform. Find thoughtful gifts tailored to relationships, occasions, personalities, and budgets." />
     <meta property="og:title" content="Perfect Gift AI — Tell us about them. We'll find the gift." />

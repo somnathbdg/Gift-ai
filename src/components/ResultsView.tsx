@@ -39,8 +39,78 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [showAllIdeas, setShowAllIdeas] = useState(false);
   const [activeScoreTooltip, setActiveScoreTooltip] = useState<string | null>(null);
 
-  const mainRecommendations = results.recommendations.slice(0, 3);
-  const additionalRecommendations = results.recommendations.slice(3);
+  // Extract structured cards or build from list
+  const structured = results.structuredRecommendations;
+  const bestMatch = structured?.bestMatch || results.recommendations.find(r => r.recommendationType === 'best_match') || results.recommendations[0];
+  const emotionalChoice = structured?.emotionalChoice || results.recommendations.find(r => r.recommendationType === 'emotional_choice') || results.recommendations[1];
+  const budgetChoice = structured?.budgetChoice || results.recommendations.find(r => r.recommendationType === 'budget_choice') || results.recommendations[2];
+  const premiumAlternative = structured?.premiumAlternative || results.recommendations.find(r => r.recommendationType === 'premium_alternative');
+
+  // Main 4 cards array
+  const mainCards: Array<{
+    role: 'best_match' | 'emotional_choice' | 'budget_choice' | 'premium_alternative';
+    badgeEmoji: string;
+    badgeTitle: string;
+    sublabel: string;
+    borderClass: string;
+    badgeBg: string;
+    data: ScoredRecommendation;
+  }> = [];
+
+  if (bestMatch) {
+    mainCards.push({
+      role: 'best_match',
+      badgeEmoji: '🥇',
+      badgeTitle: 'BEST MATCH',
+      sublabel: 'Highest overall alignment with their personality, milestone, and interests',
+      borderClass: 'border-rose-400 ring-2 ring-rose-500/20 shadow-md',
+      badgeBg: 'bg-rose-700 text-white',
+      data: bestMatch
+    });
+  }
+
+  if (emotionalChoice && emotionalChoice.product.id !== bestMatch?.product.id) {
+    mainCards.push({
+      role: 'emotional_choice',
+      badgeEmoji: '❤️',
+      badgeTitle: 'MOST THOUGHTFUL',
+      sublabel: 'Deep emotional resonance and sentimental value crafted to touch their heart',
+      borderClass: 'border-pink-300 shadow-sm',
+      badgeBg: 'bg-pink-700 text-white',
+      data: emotionalChoice
+    });
+  }
+
+  if (budgetChoice && budgetChoice.product.id !== bestMatch?.product.id && budgetChoice.product.id !== emotionalChoice?.product.id) {
+    mainCards.push({
+      role: 'budget_choice',
+      badgeEmoji: '💰',
+      badgeTitle: 'BEST WITHIN YOUR BUDGET',
+      sublabel: 'Exceptional craftsmanship and verified value strictly inside your budget',
+      borderClass: 'border-emerald-300 shadow-sm',
+      badgeBg: 'bg-emerald-800 text-white',
+      data: budgetChoice
+    });
+  }
+
+  if (premiumAlternative && premiumAlternative.product.id !== bestMatch?.product.id && premiumAlternative.product.id !== emotionalChoice?.product.id && premiumAlternative.product.id !== budgetChoice?.product.id) {
+    mainCards.push({
+      role: 'premium_alternative',
+      badgeEmoji: '✨',
+      badgeTitle: 'PREMIUM ALTERNATIVE',
+      sublabel: 'Elevated milestone luxury for an unforgettable luxury statement',
+      borderClass: 'border-amber-300 shadow-sm',
+      badgeBg: 'bg-amber-900 text-white',
+      data: premiumAlternative
+    });
+  }
+
+  // Deduplicate and get additional ideas
+  const displayedCardIds = new Set(mainCards.map(c => c.data.product.id));
+  const additionalRecommendations = (structured?.otherRecommendations && structured.otherRecommendations.length > 0
+    ? structured.otherRecommendations
+    : results.recommendations.filter(r => !displayedCardIds.has(r.product.id))
+  ).filter(r => !displayedCardIds.has(r.product.id));
 
   const handleProductClick = (product: Product, source: string) => {
     const isAmazon = product.source === 'amazon' || product.merchant?.toLowerCase().includes('amazon') || !!product.asin;
@@ -108,8 +178,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-stone-900 tracking-tight">
-          We Found Some Gifts They'll Love 🎁
+          🎁 Your Personalized Gift Ideas
         </h1>
+        <p className="mt-3 text-stone-600 text-base sm:text-lg font-sans">
+          Based on what you told us, we found these gifts.
+        </p>
 
         {/* Input Summary Chips */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-6">
@@ -156,10 +229,52 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         )}
       </div>
 
-      {/* Main 3 Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-        {mainRecommendations.map((rec, idx) => {
-          const tier = getTierHeading(rec.recommendationType);
+      {/* No-Match Fallback Handling (Section 17) */}
+      {results.noMatchFallback && (
+        <div className="max-w-2xl mx-auto mb-16 p-8 rounded-3xl bg-amber-50/70 border border-amber-200 text-center space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold">
+            🔍
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-amber-950">
+            We couldn't find an exact match.
+          </h2>
+          <p className="text-sm text-amber-900 max-w-lg mx-auto">
+            {results.fallbackReason || "We couldn't find an item fitting every precise filter inside your stated budget."}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={onStartNewSearch}
+              className="px-5 py-2.5 rounded-xl bg-stone-900 text-white text-xs font-bold hover:bg-stone-800 transition-colors"
+            >
+              Try Increasing Your Budget
+            </button>
+            <button
+              onClick={onStartNewSearch}
+              className="px-5 py-2.5 rounded-xl bg-white border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100/60 transition-colors"
+            >
+              Try Another Category
+            </button>
+          </div>
+          {results.closestMatches && results.closestMatches.length > 0 && (
+            <p className="text-xs text-amber-700 font-medium pt-3">
+              Below are the closest alternative candidates matching the occasion and recipient interests:
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Main Recommendations Grid: Section 15 Cards (Best Match, Most Thoughtful, Budget Choice, Premium Alternative) */}
+      <div className={`grid grid-cols-1 ${mainCards.length >= 4 ? 'lg:grid-cols-4 md:grid-cols-2' : mainCards.length === 3 ? 'lg:grid-cols-3' : 'md:grid-cols-2'} gap-6 sm:gap-8 mb-16`}>
+        {(mainCards.length > 0 ? mainCards : (results.closestMatches || []).map((m, mIdx) => ({
+          role: 'best_match' as const,
+          badgeEmoji: '💡',
+          badgeTitle: 'CLOSEST MATCH',
+          sublabel: 'Alternative suggestion closest to recipient preferences',
+          borderClass: 'border-amber-200',
+          badgeBg: 'bg-amber-800 text-white',
+          data: m
+        }))).map((card, idx) => {
+          const rec = card.data;
           const isSaved = savedProductIds.includes(rec.product.id);
           const isTooltipOpen = activeScoreTooltip === rec.product.id;
           const isAmazon = rec.product.source === 'amazon' || rec.product.merchant?.toLowerCase().includes('amazon') || !!rec.product.asin;
@@ -167,24 +282,21 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           return (
             <div
               key={rec.product.id}
-              className={`bg-white rounded-3xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative shadow-xs hover:shadow-lg ${
-                idx === 0
-                  ? 'border-rose-300 ring-2 ring-rose-700/10'
-                  : 'border-stone-200'
-              }`}
+              className={`bg-white rounded-3xl border transition-all duration-200 flex flex-col justify-between overflow-hidden relative ${card.borderClass} hover:shadow-xl`}
             >
               {/* Card Header Tag */}
-              <div className="p-6 pb-4 border-b border-stone-100">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase ${tier.chipColor}`}>
-                    {tier.label}
+              <div className="p-5 pb-3 border-b border-stone-100">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase inline-flex items-center gap-1.5 ${card.badgeBg}`}>
+                    <span>{card.badgeEmoji}</span>
+                    <span>{card.badgeTitle}</span>
                   </span>
 
-                  {/* Score pill with breakdown tooltip */}
+                  {/* Match Level Pill */}
                   <div className="relative">
                     <button
                       onClick={() => setActiveScoreTooltip(isTooltipOpen ? null : rec.product.id)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${getBadgeStyle(
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${getBadgeStyle(
                         rec.matchLabel
                       )}`}
                     >
@@ -192,36 +304,36 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <Info className="w-3 h-3 opacity-70" />
                     </button>
 
-                    {/* Breakdown Tooltip */}
-                    {isTooltipOpen && (
+                    {/* Score Breakdown Tooltip for Admin / Power User */}
+                    {isTooltipOpen && rec.scoreBreakdown && (
                       <div className="absolute right-0 top-8 z-30 w-64 p-3.5 bg-stone-900 text-white rounded-2xl shadow-xl text-xs space-y-2 border border-stone-700 animate-in fade-in duration-150">
                         <div className="font-semibold text-stone-200 border-b border-stone-800 pb-1 flex justify-between">
-                          <span>Internal Matching Profile</span>
+                          <span>Relevance Score</span>
                           <span className="text-rose-400 font-bold">{rec.score}/100</span>
                         </div>
-                        <div className="space-y-1 text-stone-300">
+                        <div className="space-y-1 text-stone-300 text-[11px]">
                           <div className="flex justify-between">
-                            <span>Budget Match (max 25):</span>
+                            <span>Budget (max 25):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.budgetMatch} pts</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Occasion Match (max 20):</span>
+                            <span>Occasion (max 20):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.occasionMatch} pts</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Personality Match (max 20):</span>
+                            <span>Personality (max 20):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.personalityMatch} pts</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Interests Match (max 15):</span>
+                            <span>Interests (max 15):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.interestMatch} pts</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Relationship Match (max 10):</span>
+                            <span>Relationship (max 10):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.relationshipMatch} pts</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Reaction Match (max 10):</span>
+                            <span>Reaction (max 10):</span>
                             <span className="font-semibold">{rec.scoreBreakdown.emotionalReactionMatch} pts</span>
                           </div>
                         </div>
@@ -229,7 +341,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     )}
                   </div>
                 </div>
-                <p className="text-[12px] text-stone-500 font-sans">{tier.tagline}</p>
+                <p className="text-[11px] text-stone-500 font-sans line-clamp-1">{card.sublabel}</p>
               </div>
 
               {/* Product Visual & Badges */}

@@ -26,7 +26,7 @@ function getGeminiClient(): GoogleGenAI | null {
  * Builds deterministic fact-grounded explanations when AI is unavailable.
  */
 function buildDeterministicExplanation(
-  rec: ScoredRecommendation,
+  rec: { product: Product },
   inputs: GiftFinderInputs,
   role: 'best_match' | 'emotional_choice' | 'budget_choice' | 'premium_alternative' | 'additional_idea'
 ): { whySelected: string; matchExplanation: string } {
