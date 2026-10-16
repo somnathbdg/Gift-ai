@@ -231,6 +231,23 @@ export async function adminDeleteProduct(id: string): Promise<boolean> {
   return res.ok;
 }
 
+export async function adminApproveProduct(id: string): Promise<Product> {
+  const res = await fetch(`/api/admin/products/${id}/approve`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to approve product');
+  const data = await res.json();
+  return data.product;
+}
+
+export async function adminApproveAllProducts(): Promise<{ count: number; totalActive: number }> {
+  const res = await fetch('/api/admin/products/approve-all', {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to approve all products');
+  return await res.json();
+}
+
 export async function adminResetProducts(): Promise<boolean> {
   const res = await fetch('/api/admin/products/reset', {
     method: 'POST'

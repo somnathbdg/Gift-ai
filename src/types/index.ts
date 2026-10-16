@@ -38,6 +38,17 @@ export interface Product {
   isRatingAvailable?: boolean;
   isReviewCountAvailable?: boolean;
   isAvailabilityAvailable?: boolean;
+  // Preserved Amazon Catalog Fields
+  rawPrice?: string;
+  recipients?: string[];
+  sourceUrl?: string;
+  researchedAt?: string;
+  priceVerifiedAt?: string;
+  availabilityStatus?: string;
+  verificationStatus?: 'verified' | 'partially_verified' | 'unverified' | string;
+  reviewStatus?: 'needs_review' | 'approved' | 'rejected' | string;
+  brand?: string;
+  descriptionSource?: string;
 }
 
 export interface GiftFinderInputs {

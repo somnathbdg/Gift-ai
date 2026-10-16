@@ -50,7 +50,8 @@ import {
   testAmazonConnectionApi,
   importAmazonProductsApi,
   testMatchingEngineApi,
-  aiSuggestTagsApi
+  aiSuggestTagsApi,
+  adminApproveAllProducts
 } from '../services/api';
 
 interface AdminDashboardProps {
@@ -300,11 +301,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           if (extracted) finalProduct.asin = extracted;
         }
 
-        // Apply partner tag
-        if (finalProduct.affiliateUrl) {
+        // Apply partner tag only if a genuine affiliate link was supplied (Requirement 5)
+        if (finalProduct.affiliateUrl && finalProduct.affiliateUrl.trim()) {
           finalProduct.affiliateUrl = buildAmazonAffiliateUrl(finalProduct.affiliateUrl, DEFAULT_AMAZON_PARTNER_TAG);
-        } else if (finalProduct.productUrl) {
-          finalProduct.affiliateUrl = buildAmazonAffiliateUrl(finalProduct.productUrl, DEFAULT_AMAZON_PARTNER_TAG);
+        } else {
+          finalProduct.affiliateUrl = '';
         }
       }
 
@@ -335,6 +336,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       onRefreshProducts();
     } catch (err) {
       alert('Status update failed');
+    }
+  };
+
+  const handleApproveAll = async () => {
+    const pendingCount = products.filter(p => p.status === 'needs_review').length;
+    if (pendingCount === 0) return;
+    if (!confirm(`Approve and publish all ${pendingCount} products to the public catalog?`)) return;
+    try {
+      const res = await adminApproveAllProducts();
+      alert(`Successfully approved and published ${res.count} products! Total active: ${res.totalActive}`);
+      onRefreshProducts();
+    } catch (err: any) {
+      alert('Failed to approve all products: ' + err.message);
     }
   };
 
@@ -1052,6 +1066,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  {products.some(p => p.status === 'needs_review') && (
+                    <button
+                      onClick={handleApproveAll}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-colors"
+                      title="Approve and publish all pending review products"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Approve All ({products.filter(p => p.status === 'needs_review').length})</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={handleExportJson}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"

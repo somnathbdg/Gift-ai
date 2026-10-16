@@ -104,10 +104,10 @@ export function resolveProductOutboundUrl(
       return buildAmazonAffiliateUrl(product.affiliateUrl, partnerTag);
     }
     if (product.productUrl && product.productUrl.trim()) {
-      return buildAmazonAffiliateUrl(product.productUrl, partnerTag);
+      return product.productUrl;
     }
     if (product.asin && product.asin.trim()) {
-      return `https://www.amazon.in/dp/${product.asin.trim().toUpperCase()}?tag=${partnerTag}`;
+      return `https://www.amazon.in/dp/${product.asin.trim().toUpperCase()}`;
     }
   }
 

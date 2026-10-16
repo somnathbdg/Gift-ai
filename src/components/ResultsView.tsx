@@ -378,11 +378,16 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                 </button>
 
-                {/* Price Display: Accurate / No Guessing */}
-                <div className="absolute bottom-3 left-3 px-3 py-1 rounded-lg bg-white/90 backdrop-blur-md text-stone-900 text-sm font-bold shadow-xs">
-                  {rec.product.isPriceAvailable !== false && rec.product.price > 0
-                    ? `₹${rec.product.price.toLocaleString('en-IN')}`
-                    : 'Information unavailable'}
+                {/* Price Display: Accurate / No Guessing (Requirement 8) */}
+                <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur-md text-stone-900 shadow-xs flex flex-col">
+                  <span className="text-sm font-bold leading-tight">
+                    {rec.product.isPriceAvailable !== false && rec.product.price > 0
+                      ? `₹${rec.product.price.toLocaleString('en-IN')}`
+                      : 'Information unavailable'}
+                  </span>
+                  <span className="text-[9px] text-stone-500 font-normal leading-tight">
+                    *Price subject to change on Amazon.in
+                  </span>
                 </div>
               </div>
 

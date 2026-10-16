@@ -76,7 +76,7 @@ export default function App() {
 
   const loadCatalog = async () => {
     try {
-      const items = await fetchProducts();
+      const items = await fetchProducts({ status: 'all' });
       if (items && items.length > 0) {
         setProducts(items);
       }

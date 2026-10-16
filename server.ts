@@ -383,10 +383,10 @@ app.get('/api/products', (req, res) => {
   const { category, occasion, budget, status, search, limit } = req.query;
   let filtered = [...products];
 
-  if (status) {
+  if (status && status !== 'all') {
     filtered = filtered.filter(p => p.status === status);
-  } else {
-    // Default to active for normal requests
+  } else if (!status) {
+    // Default to active for normal public requests
     filtered = filtered.filter(p => p.status === 'active');
   }
 
@@ -987,21 +987,16 @@ function normalizeAdminProduct(data: any): Product {
       productUrl = `https://www.amazon.in/dp/${asin}`;
     }
 
-    // Standardize affiliateUrl with the configured Partner Tag (digitalrani01-21)
-    if (!affiliateUrl) {
-      if (asin) {
-        affiliateUrl = `https://www.amazon.in/dp/${asin}?tag=${partnerTag}`;
-      } else if (productUrl) {
-        const sep = productUrl.includes('?') ? '&' : '?';
-        affiliateUrl = `${productUrl}${sep}tag=${partnerTag}`;
-      }
-    } else if (/amazon\.(in|com)|amzn\.to/i.test(affiliateUrl)) {
+    // Keep affiliateUrl empty when no genuine Amazon Associates affiliate link is supplied (Requirement 5)
+    if (affiliateUrl && /amazon\.(in|com)|amzn\.to/i.test(affiliateUrl)) {
       if (affiliateUrl.includes('tag=')) {
         affiliateUrl = affiliateUrl.replace(/tag=[^&]+/i, `tag=${partnerTag}`);
       } else {
         const sep = affiliateUrl.includes('?') ? '&' : '?';
         affiliateUrl = `${affiliateUrl}${sep}tag=${partnerTag}`;
       }
+    } else {
+      affiliateUrl = '';
     }
   }
 
@@ -1011,11 +1006,11 @@ function normalizeAdminProduct(data: any): Product {
     merchant,
     source,
     productUrl: productUrl || 'https://www.amazon.in',
-    affiliateUrl: affiliateUrl || productUrl,
+    affiliateUrl: affiliateUrl || '',
     currency: 'INR',
     isPriceAvailable: true,
-    isRatingAvailable: true,
-    isReviewCountAvailable: true,
+    isRatingAvailable: typeof data.rating === 'number' && data.rating > 0,
+    isReviewCountAvailable: typeof data.reviewCount === 'number' && data.reviewCount > 0,
     isAvailabilityAvailable: true
   };
 }
@@ -1053,6 +1048,39 @@ app.put('/api/admin/products/:id', (req, res) => {
   };
 
   res.json({ product: products[index] });
+});
+
+// Approve a single product (Requirement 6 & 7)
+app.post('/api/admin/products/:id/approve', (req, res) => {
+  const index = products.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+  products[index] = {
+    ...products[index],
+    status: 'active',
+    reviewStatus: 'approved',
+    updatedAt: new Date().toISOString()
+  };
+  res.json({ success: true, product: products[index] });
+});
+
+// Approve all pending products (Demo / Admin convenience)
+app.post('/api/admin/products/approve-all', (req, res) => {
+  let count = 0;
+  products = products.map(p => {
+    if (p.status === 'needs_review' || p.reviewStatus === 'needs_review') {
+      count++;
+      return {
+        ...p,
+        status: 'active',
+        reviewStatus: 'approved',
+        updatedAt: new Date().toISOString()
+      };
+    }
+    return p;
+  });
+  res.json({ success: true, count, totalActive: products.filter(p => p.status === 'active').length });
 });
 
 app.delete('/api/admin/products/:id', (req, res) => {

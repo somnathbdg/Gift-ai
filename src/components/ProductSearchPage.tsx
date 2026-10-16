@@ -306,8 +306,9 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
                     {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                   </button>
 
-                  <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-stone-900 text-xs font-bold shadow-xs">
-                    ₹{product.price.toLocaleString('en-IN')}
+                  <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-md text-stone-900 shadow-xs flex flex-col">
+                    <span className="text-xs font-bold leading-tight">₹{product.price.toLocaleString('en-IN')}</span>
+                    <span className="text-[8px] text-stone-500 font-normal leading-tight">*Subject to change</span>
                   </div>
                 </div>
 
@@ -316,10 +317,14 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
                   <div>
                     <div className="flex items-center justify-between text-[11px] text-stone-500 mb-1">
                       <span>{product.category}</span>
-                      <div className="flex items-center gap-1 text-amber-600 font-semibold">
-                        <Star className="w-3 h-3 fill-current" />
-                        <span>{product.rating}</span>
-                      </div>
+                      {product.isRatingAvailable !== false && product.rating > 0 ? (
+                        <div className="flex items-center gap-1 text-amber-600 font-semibold">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span>{product.rating}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-stone-400">Rating unavailable</span>
+                      )}
                     </div>
 
                     <h3 className="font-serif font-bold text-stone-900 text-sm mb-1.5 line-clamp-2">
@@ -354,6 +359,14 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
           })}
         </div>
       )}
+
+      {/* Pricing & Availability Transparency Disclaimer (Requirement 8) */}
+      <div className="mt-12 pt-6 border-t border-stone-200 text-center text-xs text-stone-500 max-w-2xl mx-auto">
+        <p>
+          *Product prices and availability on Amazon.in are accurate as of the verification date and are subject to change.
+          Real-time pricing and stock status are confirmed upon checkout on Amazon.in.
+        </p>
+      </div>
     </div>
   );
 };
