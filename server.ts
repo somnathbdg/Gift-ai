@@ -25,6 +25,7 @@ import {
   executeAmazonGiftSearch,
   parseBudgetRange
 } from './services/amazonSearch';
+import { parseAmazonUrl, detectAmazonDomain } from './src/utils/affiliate';
 
 dotenv.config();
 
@@ -954,7 +955,6 @@ Provide a clear, professional, executive response with concise bullet points and
 
 // Helper to normalize Amazon Affiliate Products entered manually via Admin Panel
 function normalizeAdminProduct(data: any): Product {
-  const partnerTag = process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21';
   let productUrl = data.productUrl ? String(data.productUrl).trim() : '';
   let affiliateUrl = data.affiliateUrl ? String(data.affiliateUrl).trim() : '';
   let asin = data.asin ? String(data.asin).trim().toUpperCase() : '';
@@ -968,9 +968,17 @@ function normalizeAdminProduct(data: any): Product {
     /amazon\.(in|com)|amzn\.to/i.test(productUrl) ||
     /amazon\.(in|com)|amzn\.to/i.test(affiliateUrl);
 
+  let currency = data.currency || 'INR';
+
   if (isAmazon) {
     source = 'amazon';
-    merchant = 'Amazon.in';
+    const isUsMarket = /amazon\.com/i.test(productUrl) || /amazon\.com/i.test(affiliateUrl) || (data.merchant && /amazon\.com/i.test(data.merchant));
+    merchant = isUsMarket ? 'Amazon.com' : 'Amazon.in';
+    const domain = isUsMarket ? 'amazon.com' : 'amazon.in';
+    const partnerTag = isUsMarket
+      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
+      : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+    currency = isUsMarket ? 'USD' : (data.currency || 'INR');
 
     // Auto-extract ASIN from productUrl or affiliateUrl if missing
     if (!asin && productUrl) {
@@ -984,7 +992,7 @@ function normalizeAdminProduct(data: any): Product {
 
     // Standardize productUrl
     if (!productUrl && asin) {
-      productUrl = `https://www.amazon.in/dp/${asin}`;
+      productUrl = `https://www.${domain}/dp/${asin}`;
     }
 
     // Keep affiliateUrl empty when no genuine Amazon Associates affiliate link is supplied (Requirement 5)
@@ -1007,13 +1015,27 @@ function normalizeAdminProduct(data: any): Product {
     source,
     productUrl: productUrl || 'https://www.amazon.in',
     affiliateUrl: affiliateUrl || '',
-    currency: 'INR',
+    currency,
     isPriceAvailable: true,
     isRatingAvailable: typeof data.rating === 'number' && data.rating > 0,
     isReviewCountAvailable: typeof data.reviewCount === 'number' && data.reviewCount > 0,
     isAvailabilityAvailable: true
   };
 }
+
+// Quick Amazon Link Parser endpoint for Admin
+app.post('/api/admin/amazon/parse-link', (req, res) => {
+  const { url } = req.body;
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'Amazon URL is required' });
+  }
+  const isUsMarket = /amazon\.com/i.test(url);
+  const tag = isUsMarket
+    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
+    : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+  const parsed = parseAmazonUrl(url, tag);
+  res.json(parsed);
+});
 
 // Admin Product CRUD
 app.post('/api/admin/products', (req, res) => {

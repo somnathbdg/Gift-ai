@@ -36,9 +36,14 @@ import {
 import { Product, AmazonIntegrationStatus } from '../types';
 import {
   DEFAULT_AMAZON_PARTNER_TAG,
+  DEFAULT_AMAZON_IN_PARTNER_TAG,
+  DEFAULT_AMAZON_COM_PARTNER_TAG,
+  getAmazonPartnerTag,
   extractAmazonAsin,
   buildAmazonAffiliateUrl,
-  resolveProductOutboundUrl
+  resolveProductOutboundUrl,
+  parseAmazonUrl,
+  detectAmazonDomain
 } from '../utils/affiliate';
 import {
   fetchAnalyticsSummary,
@@ -120,6 +125,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+
+  // Quick Add Amazon Link State
+  const [isAmazonLinkModalOpen, setIsAmazonLinkModalOpen] = useState(false);
+  const [amazonLinkUrl, setAmazonLinkUrl] = useState('');
+  const [marketplaceFilter, setMarketplaceFilter] = useState<'all' | 'amazon.in' | 'amazon.com' | 'other'>('all');
+  const [amazonLinkDetails, setAmazonLinkDetails] = useState({
+    name: '',
+    price: '',
+    currency: 'INR' as 'INR' | 'USD',
+    category: 'Personalized gifts',
+    subcategory: 'Amazon Choice',
+    imageUrl: '',
+    description: '',
+    asin: '',
+    domain: 'amazon.in' as 'amazon.in' | 'amazon.com',
+    merchant: 'Amazon.in',
+    canonicalUrl: '',
+    affiliateUrl: '',
+    attachAffiliateTag: true,
+    status: 'active' as 'active' | 'needs_review'
+  });
 
   // Admin AI Assistant chat state
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'admin' | 'assistant'; text: string; time: string }>>([
@@ -289,7 +315,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       if (isAmazon) {
         finalProduct.source = 'amazon';
-        finalProduct.merchant = 'Amazon.in';
+        const isUsMarket =
+          /amazon\.com/i.test(finalProduct.productUrl || '') ||
+          /amazon\.com/i.test(finalProduct.affiliateUrl || '') ||
+          finalProduct.currency === 'USD' ||
+          (finalProduct.merchant && /amazon\.com/i.test(finalProduct.merchant));
+
+        finalProduct.merchant = isUsMarket ? 'Amazon.com' : 'Amazon.in';
+        finalProduct.currency = isUsMarket ? 'USD' : (finalProduct.currency || 'INR');
+        const domain = isUsMarket ? 'amazon.com' : 'amazon.in';
 
         // Auto-extract ASIN if missing
         if (!finalProduct.asin && finalProduct.productUrl) {
@@ -301,9 +335,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           if (extracted) finalProduct.asin = extracted;
         }
 
+        if (finalProduct.asin && !finalProduct.productUrl) {
+          finalProduct.productUrl = `https://www.${domain}/dp/${finalProduct.asin}`;
+        }
+
         // Apply partner tag only if a genuine affiliate link was supplied (Requirement 5)
+        const targetTag = isUsMarket ? DEFAULT_AMAZON_COM_PARTNER_TAG : DEFAULT_AMAZON_IN_PARTNER_TAG;
         if (finalProduct.affiliateUrl && finalProduct.affiliateUrl.trim()) {
-          finalProduct.affiliateUrl = buildAmazonAffiliateUrl(finalProduct.affiliateUrl, DEFAULT_AMAZON_PARTNER_TAG);
+          finalProduct.affiliateUrl = buildAmazonAffiliateUrl(finalProduct.affiliateUrl, targetTag);
         } else {
           finalProduct.affiliateUrl = '';
         }
@@ -315,6 +354,96 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       onRefreshProducts();
     } catch (err) {
       alert('Failed to save product');
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleAmazonLinkChange = (url: string) => {
+    setAmazonLinkUrl(url);
+    if (!url.trim()) return;
+
+    const parsed = parseAmazonUrl(url, DEFAULT_AMAZON_PARTNER_TAG);
+    if (parsed.asin) {
+      setAmazonLinkDetails(prev => ({
+        ...prev,
+        asin: parsed.asin || '',
+        domain: parsed.domain,
+        merchant: parsed.merchant,
+        currency: parsed.currency,
+        canonicalUrl: parsed.canonicalUrl,
+        affiliateUrl: prev.attachAffiliateTag ? parsed.affiliateUrl : '',
+        imageUrl: prev.imageUrl || (parsed.asin ? `https://m.media-amazon.com/images/P/${parsed.asin}.01._SCLZZZZZZZ_SX500_.jpg` : prev.imageUrl)
+      }));
+    }
+  };
+
+  const handleSaveAmazonLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amazonLinkDetails.name.trim() || !amazonLinkDetails.price) {
+      alert('Please enter a product name and price.');
+      return;
+    }
+
+    try {
+      setIsSavingProduct(true);
+      const priceNum = parseFloat(amazonLinkDetails.price);
+      const isUsd = amazonLinkDetails.currency === 'USD';
+      const asin = amazonLinkDetails.asin || extractAmazonAsin(amazonLinkUrl) || '';
+      const domain = amazonLinkDetails.domain || (isUsd ? 'amazon.com' : 'amazon.in');
+      const merchant = isUsd ? 'Amazon.com' : 'Amazon.in';
+
+      const finalProduct: Partial<Product> = {
+        name: amazonLinkDetails.name.trim(),
+        description: amazonLinkDetails.description.trim() || `Authentic ${merchant} verified item. ASIN: ${asin}`,
+        category: amazonLinkDetails.category,
+        subcategory: amazonLinkDetails.subcategory || amazonLinkDetails.category,
+        price: isNaN(priceNum) ? 999 : priceNum,
+        rawPrice: isUsd ? `$${priceNum.toFixed(2)}` : `₹${priceNum.toLocaleString('en-IN')}`,
+        currency: amazonLinkDetails.currency,
+        merchant: merchant,
+        asin: asin || undefined,
+        productUrl: amazonLinkDetails.canonicalUrl || amazonLinkUrl.trim() || (asin ? `https://www.${domain}/dp/${asin}` : ''),
+        affiliateUrl: amazonLinkDetails.attachAffiliateTag ? (amazonLinkDetails.affiliateUrl || buildAmazonAffiliateUrl(amazonLinkUrl, DEFAULT_AMAZON_PARTNER_TAG)) : '',
+        imageUrl: amazonLinkDetails.imageUrl.trim() || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+        rating: 4.8,
+        reviewCount: 42,
+        availability: 'in_stock',
+        tags: [domain, 'amazon_link', amazonLinkDetails.category.toLowerCase()],
+        occasions: ['Birthday', 'Anniversary', 'Celebration'],
+        relationships: ['Partner', 'Friend', 'Family'],
+        personalityTags: ['Thoughtful', 'Modern'],
+        interestTags: [amazonLinkDetails.category],
+        emotionalTags: ['Joy', 'Delight'],
+        genderPreference: 'unisex',
+        status: amazonLinkDetails.status,
+        source: 'amazon',
+        reviewStatus: amazonLinkDetails.status === 'active' ? 'approved' : 'needs_review'
+      };
+
+      await adminSaveProduct(finalProduct, false);
+      setIsAmazonLinkModalOpen(false);
+      setAmazonLinkUrl('');
+      setAmazonLinkDetails({
+        name: '',
+        price: '',
+        currency: 'INR',
+        category: 'Personalized gifts',
+        subcategory: 'Amazon Choice',
+        imageUrl: '',
+        description: '',
+        asin: '',
+        domain: 'amazon.in',
+        merchant: 'Amazon.in',
+        canonicalUrl: '',
+        affiliateUrl: '',
+        attachAffiliateTag: true,
+        status: 'active'
+      });
+      onRefreshProducts();
+      alert('Product from Amazon link added successfully to catalog!');
+    } catch (err: any) {
+      alert('Failed to save Amazon product: ' + (err.message || 'Unknown error'));
     } finally {
       setIsSavingProduct(false);
     }
@@ -416,12 +545,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const filteredProducts = products.filter(p => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
+    if (marketplaceFilter === 'amazon.in') {
+      if (p.merchant !== 'Amazon.in' && !(p.productUrl && /amazon\.in/i.test(p.productUrl))) return false;
+    } else if (marketplaceFilter === 'amazon.com') {
+      if (p.merchant !== 'Amazon.com' && !(p.productUrl && /amazon\.com/i.test(p.productUrl))) return false;
+    } else if (marketplaceFilter === 'other') {
+      if (p.merchant?.toLowerCase().includes('amazon')) return false;
+    }
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
       return (
         p.name.toLowerCase().includes(q) ||
         p.merchant.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
+        p.category.toLowerCase().includes(q) ||
+        Boolean(p.asin && p.asin.toLowerCase().includes(q))
       );
     }
     return true;
@@ -1100,12 +1237,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </button>
 
                   <button
-                    onClick={handleOpenAddAmazonModal}
+                    onClick={() => setIsAmazonLinkModalOpen(true)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#e47911] hover:bg-[#d66a06] text-white text-xs font-semibold shadow-xs"
-                    title={`Add product with Amazon Partner Tag ${DEFAULT_AMAZON_PARTNER_TAG}`}
+                    title="Paste any Amazon.in or Amazon.com URL to instantly add to catalog"
                   >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Amazon Affiliate Product</span>
+                    <Link className="w-4 h-4" />
+                    <span>Add via Amazon Link</span>
+                  </button>
+
+                  <button
+                    onClick={handleOpenAddAmazonModal}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold shadow-xs"
+                    title={`Add product manually with Amazon Partner Tag ${DEFAULT_AMAZON_PARTNER_TAG}`}
+                  >
+                    <ShoppingBag className="w-4 h-4 text-[#e47911]" />
+                    <span>Manual Amazon Form</span>
                   </button>
                 </div>
               </div>
@@ -1118,12 +1264,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     type="text"
                     value={productSearch}
                     onChange={e => setProductSearch(e.target.value)}
-                    placeholder="Search by product name or brand..."
+                    placeholder="Search by product name, ASIN, or merchant..."
                     className="w-full text-xs bg-transparent border-none focus:outline-none"
                   />
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <select
+                    value={marketplaceFilter}
+                    onChange={e => setMarketplaceFilter(e.target.value as any)}
+                    className="text-xs px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-stone-800 font-medium"
+                  >
+                    <option value="all">All Marketplaces ({products.length})</option>
+                    <option value="amazon.com">Amazon.com US ({products.filter(p => p.merchant === 'Amazon.com' || (p.productUrl && /amazon\.com/i.test(p.productUrl))).length})</option>
+                    <option value="amazon.in">Amazon.in India ({products.filter(p => p.merchant === 'Amazon.in' || (p.productUrl && /amazon\.in/i.test(p.productUrl))).length})</option>
+                    <option value="other">Other Merchants</option>
+                  </select>
+
                   <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value as any)}
@@ -1156,8 +1313,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <tr>
                         <th className="p-4">Product</th>
                         <th className="p-4">Category</th>
-                        <th className="p-4">Price (INR)</th>
-                        <th className="p-4">Merchant</th>
+                        <th className="p-4">Price</th>
+                        <th className="p-4">Marketplace</th>
                         <th className="p-4">Status</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
@@ -1175,13 +1332,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               />
                               <div>
                                 <p className="font-bold text-stone-900 line-clamp-1">{prod.name}</p>
-                                <p className="text-[11px] text-stone-400">ID: {prod.id}</p>
+                                <p className="text-[11px] text-stone-400">
+                                  ID: {prod.id} {prod.asin ? `• ASIN: ${prod.asin}` : ''}
+                                </p>
                               </div>
                             </div>
                           </td>
                           <td className="p-4 font-medium">{prod.category}</td>
-                          <td className="p-4 font-bold text-stone-900">₹{prod.price.toLocaleString('en-IN')}</td>
-                          <td className="p-4 text-stone-600">{prod.merchant}</td>
+                          <td className="p-4 font-bold text-stone-900">
+                            {prod.currency === 'USD' ? `$${prod.price.toFixed(2)}` : `₹${prod.price.toLocaleString('en-IN')}`}
+                            {prod.currency === 'USD' && (
+                              <span className="block text-[10px] text-stone-400 font-normal">
+                                ~₹{Math.round(prod.price * 84).toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              prod.merchant === 'Amazon.com'
+                                ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                                : prod.merchant === 'Amazon.in'
+                                ? 'bg-amber-50 text-amber-900 border border-amber-200'
+                                : 'bg-stone-100 text-stone-700'
+                            }`}>
+                              {prod.merchant}
+                            </span>
+                          </td>
                           <td className="p-4">
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1488,12 +1664,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => setIsAmazonLinkModalOpen(true)}
+                    className="shrink-0 px-4 py-2 rounded-xl bg-[#e47911] hover:bg-[#d66a06] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+                  >
+                    <Link className="w-4 h-4" />
+                    <span>Paste Amazon Link</span>
+                  </button>
+
+                  <button
+                    onClick={handleOpenAddAmazonModal}
+                    className="shrink-0 px-4 py-2 rounded-xl bg-white border border-amber-300 text-amber-950 hover:bg-amber-50 text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-[#e47911]" />
+                    <span>Manual Form</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Direct Amazon Link Quick Importer Card */}
+              <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white p-5 rounded-2xl border border-amber-200 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-[#e47911] text-white flex items-center justify-center font-bold text-xs">
+                      a
+                    </span>
+                    <h3 className="font-serif text-base font-bold text-stone-900">
+                      Add Direct Amazon Link (amazon.com & amazon.in)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-600 max-w-2xl">
+                    Quickly add products by pasting any URL from <strong>Amazon.in</strong> or <strong>Amazon.com</strong>. The ASIN is automatically extracted and outbound clicks are attributed with your partner tag (<span className="font-mono font-bold text-amber-900">{DEFAULT_AMAZON_PARTNER_TAG}</span>).
+                  </p>
+                </div>
                 <button
-                  onClick={handleOpenAddAmazonModal}
-                  className="shrink-0 px-4 py-2 rounded-xl bg-[#e47911] hover:bg-[#d66a06] text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors"
+                  onClick={() => setIsAmazonLinkModalOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-[#e47911] hover:bg-[#d66a06] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 transition-transform hover:scale-102"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add Amazon Product Manually</span>
+                  <span>Paste & Import Amazon URL</span>
                 </button>
               </div>
 
@@ -1511,15 +1721,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-100">
-                      <span className="text-stone-600 font-medium">Target Marketplace</span>
-                      <span className="font-mono font-bold text-stone-900">www.amazon.in</span>
+                      <span className="text-stone-600 font-medium">Target Marketplaces</span>
+                      <span className="font-mono font-bold text-stone-900">amazon.in & amazon.com</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-100">
-                      <span className="text-stone-600 font-medium">Partner Tag</span>
-                      <span className="font-mono font-bold text-stone-900">
-                        {amazonStatus?.partnerTag || 'Not Configured (Demo)'}
-                      </span>
+                    <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-stone-600 font-medium">Amazon India Partner Tag</span>
+                        <span className="font-mono font-bold text-stone-900">
+                          {amazonStatus?.partnerTagIn || amazonStatus?.partnerTag || DEFAULT_AMAZON_IN_PARTNER_TAG}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-stone-600 font-medium">Amazon.com (US) Partner Tag</span>
+                        <span className="font-mono font-bold text-[#e47911]">
+                          {amazonStatus?.partnerTagUs || DEFAULT_AMAZON_COM_PARTNER_TAG}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-100">
@@ -1858,7 +2076,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                   Product Type:
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -1867,20 +2085,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         ...editingProduct,
                         source: 'amazon',
                         merchant: 'Amazon.in',
-                        productUrl: editingProduct.productUrl && editingProduct.productUrl !== 'https://example.com/item'
-                          ? editingProduct.productUrl
-                          : (asin ? `https://www.amazon.in/dp/${asin}` : 'https://www.amazon.in/dp/'),
-                        affiliateUrl: editingProduct.affiliateUrl || (asin ? `https://www.amazon.in/dp/${asin}?tag=${DEFAULT_AMAZON_PARTNER_TAG}` : `https://www.amazon.in/dp/?tag=${DEFAULT_AMAZON_PARTNER_TAG}`)
+                        currency: 'INR',
+                        productUrl: asin ? `https://www.amazon.in/dp/${asin}` : (editingProduct.productUrl?.includes('amazon.in') ? editingProduct.productUrl : 'https://www.amazon.in/dp/'),
+                        affiliateUrl: asin ? `https://www.amazon.in/dp/${asin}?tag=${DEFAULT_AMAZON_IN_PARTNER_TAG}` : `https://www.amazon.in/dp/?tag=${DEFAULT_AMAZON_IN_PARTNER_TAG}`
                       });
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-colors ${
-                      editingProduct.source === 'amazon' || editingProduct.merchant === 'Amazon.in'
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                      editingProduct.source === 'amazon' && editingProduct.merchant === 'Amazon.in'
                         ? 'border-[#e47911] bg-amber-50/70 text-[#9c4d05]'
                         : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                     }`}
                   >
                     <ShoppingBag className="w-3.5 h-3.5 text-[#e47911]" />
-                    <span>Amazon India (Affiliate Link)</span>
+                    <span>Amazon.in (tag: {DEFAULT_AMAZON_IN_PARTNER_TAG})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const asin = editingProduct.asin || '';
+                      setEditingProduct({
+                        ...editingProduct,
+                        source: 'amazon',
+                        merchant: 'Amazon.com',
+                        currency: 'USD',
+                        productUrl: asin ? `https://www.amazon.com/dp/${asin}` : (editingProduct.productUrl?.includes('amazon.com') ? editingProduct.productUrl : 'https://www.amazon.com/dp/'),
+                        affiliateUrl: asin ? `https://www.amazon.com/dp/${asin}?tag=${DEFAULT_AMAZON_COM_PARTNER_TAG}` : `https://www.amazon.com/dp/?tag=${DEFAULT_AMAZON_COM_PARTNER_TAG}`
+                      });
+                    }}
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                      editingProduct.source === 'amazon' && editingProduct.merchant === 'Amazon.com'
+                        ? 'border-[#e47911] bg-amber-50/70 text-[#9c4d05]'
+                        : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#e47911]" />
+                    <span>Amazon.com (tag: {DEFAULT_AMAZON_COM_PARTNER_TAG})</span>
                   </button>
 
                   <button
@@ -1889,17 +2129,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       setEditingProduct({
                         ...editingProduct,
                         source: 'curated',
-                        merchant: editingProduct.merchant === 'Amazon.in' ? 'Artisan Works' : editingProduct.merchant
+                        merchant: editingProduct.merchant?.toLowerCase().includes('amazon') ? 'Artisan Works' : editingProduct.merchant
                       });
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-colors ${
-                      editingProduct.source !== 'amazon' && editingProduct.merchant !== 'Amazon.in'
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                      editingProduct.source !== 'amazon' && !editingProduct.merchant?.toLowerCase().includes('amazon')
                         ? 'border-stone-800 bg-stone-900 text-white'
                         : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                     }`}
                   >
                     <Globe className="w-3.5 h-3.5" />
-                    <span>Direct / Independent Merchant</span>
+                    <span>Direct / Artisan</span>
                   </button>
                 </div>
               </div>
@@ -1920,139 +2160,149 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               {/* Amazon-Specific URL and ASIN Panel */}
-              {(editingProduct.source === 'amazon' || editingProduct.merchant === 'Amazon.in') && (
-                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                      <ShoppingBag className="w-3.5 h-3.5 text-[#e47911]" />
-                      <span>Amazon India Affiliate Link Configuration</span>
-                    </span>
-                    <span className="text-[10px] font-mono font-bold text-stone-600 bg-white px-2 py-0.5 rounded border border-amber-200">
-                      Partner Tag: {DEFAULT_AMAZON_PARTNER_TAG}
-                    </span>
-                  </div>
+              {(editingProduct.source === 'amazon' || editingProduct.merchant?.toLowerCase().includes('amazon')) && (() => {
+                const isCom = editingProduct.merchant === 'Amazon.com' || /amazon\.com/i.test(editingProduct.productUrl || '') || /amazon\.com/i.test(editingProduct.affiliateUrl || '');
+                const domain = isCom ? 'amazon.com' : 'amazon.in';
+                const currentTag = isCom ? DEFAULT_AMAZON_COM_PARTNER_TAG : DEFAULT_AMAZON_IN_PARTNER_TAG;
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                        Amazon ASIN (10 chars):
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. B08N5WRWNW"
-                        maxLength={10}
-                        value={editingProduct.asin || ''}
-                        onChange={e => {
-                          const val = e.target.value.trim().toUpperCase();
-                          setEditingProduct({
-                            ...editingProduct,
-                            asin: val,
-                            productUrl: val ? `https://www.amazon.in/dp/${val}` : editingProduct.productUrl,
-                            affiliateUrl: val ? `https://www.amazon.in/dp/${val}?tag=${DEFAULT_AMAZON_PARTNER_TAG}` : editingProduct.affiliateUrl
-                          });
-                        }}
-                        className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono uppercase bg-white text-stone-900 focus:outline-none focus:border-amber-500"
-                      />
+                return (
+                  <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#e47911]" />
+                        <span>Amazon Affiliate Link Configuration ({domain})</span>
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-stone-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                        Tag: {currentTag}
+                      </span>
                     </div>
 
-                    <div className="sm:col-span-2 flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!editingProduct.asin) {
-                            alert('Please enter a 10-character Amazon ASIN first (e.g. B08N5WRWNW)');
-                            return;
-                          }
-                          const asin = editingProduct.asin.trim().toUpperCase();
-                          setEditingProduct({
-                            ...editingProduct,
-                            asin,
-                            productUrl: `https://www.amazon.in/dp/${asin}`,
-                            affiliateUrl: `https://www.amazon.in/dp/${asin}?tag=${DEFAULT_AMAZON_PARTNER_TAG}`
-                          });
-                        }}
-                        className="w-full py-1.5 px-3 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-[11px] font-semibold text-amber-900 flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-[#e47911]" />
-                        <span>Autofill Links with ASIN & Partner Tag</span>
-                      </button>
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                          Amazon ASIN (10 chars):
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. B08N5WRWNW"
+                          maxLength={10}
+                          value={editingProduct.asin || ''}
+                          onChange={e => {
+                            const val = e.target.value.trim().toUpperCase();
+                            setEditingProduct({
+                              ...editingProduct,
+                              asin: val,
+                              productUrl: val ? `https://www.${domain}/dp/${val}` : editingProduct.productUrl,
+                              affiliateUrl: val ? `https://www.${domain}/dp/${val}?tag=${currentTag}` : editingProduct.affiliateUrl
+                            });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono uppercase bg-white text-stone-900 focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
 
-                  {/* Product URL */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                      Amazon Product Page URL:
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="Paste any Amazon.in product link (e.g. https://www.amazon.in/dp/B08N5WRWNW)"
-                      value={editingProduct.productUrl || ''}
-                      onChange={e => {
-                        const url = e.target.value;
-                        const extractedAsin = extractAmazonAsin(url);
-                        const autoAffiliate = url ? buildAmazonAffiliateUrl(url, DEFAULT_AMAZON_PARTNER_TAG) : '';
-
-                        setEditingProduct({
-                          ...editingProduct,
-                          productUrl: url,
-                          asin: extractedAsin || editingProduct.asin,
-                          affiliateUrl: autoAffiliate || editingProduct.affiliateUrl
-                        });
-                      }}
-                      className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono bg-white text-stone-900 focus:outline-none focus:border-amber-500"
-                    />
-                    <span className="text-[10px] text-stone-500 mt-0.5 block">
-                      Pasting an Amazon URL will automatically extract the ASIN and append tag={DEFAULT_AMAZON_PARTNER_TAG}.
-                    </span>
-                  </div>
-
-                  {/* Affiliate URL */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] font-semibold text-stone-700">
-                        Outbound Affiliate URL (with Tag):
-                      </label>
-                      <div className="flex items-center gap-2">
+                      <div className="sm:col-span-2 flex items-end">
                         <button
                           type="button"
                           onClick={() => {
-                            const current = editingProduct.affiliateUrl || editingProduct.productUrl || '';
-                            if (current) {
-                              setEditingProduct({
-                                ...editingProduct,
-                                affiliateUrl: buildAmazonAffiliateUrl(current, DEFAULT_AMAZON_PARTNER_TAG)
-                              });
+                            if (!editingProduct.asin) {
+                              alert('Please enter a 10-character Amazon ASIN first (e.g. B08N5WRWNW)');
+                              return;
                             }
+                            const asin = editingProduct.asin.trim().toUpperCase();
+                            setEditingProduct({
+                              ...editingProduct,
+                              asin,
+                              productUrl: `https://www.${domain}/dp/${asin}`,
+                              affiliateUrl: `https://www.${domain}/dp/${asin}?tag=${currentTag}`
+                            });
                           }}
-                          className="text-[10px] font-bold text-[#e47911] hover:underline flex items-center gap-1"
+                          className="w-full py-1.5 px-3 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-[11px] font-semibold text-amber-900 flex items-center justify-center gap-1.5 transition-colors"
                         >
-                          <Check className="w-3 h-3" />
-                          <span>Attach tag={DEFAULT_AMAZON_PARTNER_TAG}</span>
+                          <Sparkles className="w-3.5 h-3.5 text-[#e47911]" />
+                          <span>Autofill Links with ASIN & Tag ({currentTag})</span>
                         </button>
-                        {editingProduct.affiliateUrl && (
-                          <a
-                            href={editingProduct.affiliateUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10px] font-bold text-stone-600 hover:text-stone-900 flex items-center gap-0.5"
-                          >
-                            <span>Test</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
-                        )}
                       </div>
                     </div>
-                    <input
-                      type="url"
-                      placeholder={`https://www.amazon.in/dp/ASIN?tag=${DEFAULT_AMAZON_PARTNER_TAG}`}
-                      value={editingProduct.affiliateUrl || ''}
-                      onChange={e => setEditingProduct({ ...editingProduct, affiliateUrl: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono bg-white text-stone-900 focus:outline-none focus:border-amber-500"
-                    />
+
+                    {/* Product URL */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        Amazon Product Page URL:
+                      </label>
+                      <input
+                        type="url"
+                        placeholder={`Paste any ${domain} product link (e.g. https://www.${domain}/dp/B08N5WRWNW)`}
+                        value={editingProduct.productUrl || ''}
+                        onChange={e => {
+                          const url = e.target.value;
+                          const detectedDomain = detectAmazonDomain(url);
+                          const tag = detectedDomain === 'amazon.com' ? DEFAULT_AMAZON_COM_PARTNER_TAG : DEFAULT_AMAZON_IN_PARTNER_TAG;
+                          const extractedAsin = extractAmazonAsin(url);
+                          const autoAffiliate = url ? buildAmazonAffiliateUrl(url, tag) : '';
+
+                          setEditingProduct({
+                            ...editingProduct,
+                            productUrl: url,
+                            merchant: detectedDomain === 'amazon.com' ? 'Amazon.com' : 'Amazon.in',
+                            currency: detectedDomain === 'amazon.com' ? 'USD' : (editingProduct.currency || 'INR'),
+                            asin: extractedAsin || editingProduct.asin,
+                            affiliateUrl: autoAffiliate || editingProduct.affiliateUrl
+                          });
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono bg-white text-stone-900 focus:outline-none focus:border-amber-500"
+                      />
+                      <span className="text-[10px] text-stone-500 mt-0.5 block">
+                        Pasting an Amazon link automatically extracts ASIN, detects domain, and attaches tag={currentTag}.
+                      </span>
+                    </div>
+
+                    {/* Affiliate URL */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] font-semibold text-stone-700">
+                          Outbound Affiliate URL (with Tag):
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = editingProduct.affiliateUrl || editingProduct.productUrl || '';
+                              if (current) {
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  affiliateUrl: buildAmazonAffiliateUrl(current, currentTag)
+                                });
+                              }
+                            }}
+                            className="text-[10px] font-bold text-[#e47911] hover:underline flex items-center gap-1"
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>Attach tag={currentTag}</span>
+                          </button>
+                          {editingProduct.affiliateUrl && (
+                            <a
+                              href={editingProduct.affiliateUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-bold text-stone-600 hover:text-stone-900 flex items-center gap-0.5"
+                            >
+                              <span>Test</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      <input
+                        type="url"
+                        placeholder={`https://www.${domain}/dp/ASIN?tag=${currentTag}`}
+                        value={editingProduct.affiliateUrl || ''}
+                        onChange={e => setEditingProduct({ ...editingProduct, affiliateUrl: e.target.value })}
+                        className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono bg-white text-stone-900 focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Price, Category, Merchant */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -2389,6 +2639,217 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Quick Add Amazon Link Modal */}
+      {isAmazonLinkModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#e47911] flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-stone-900">
+                    Add via Amazon Link
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Paste any Amazon.in or Amazon.com product link to quickly add it to your catalog
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAmazonLinkModalOpen(false)}
+                className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAmazonLink} className="space-y-4">
+              {/* Amazon URL Input */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                  Amazon Product Link (amazon.in or amazon.com) <span className="text-rose-600">*</span>:
+                </label>
+                <div className="relative">
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://www.amazon.com/dp/B084DWCZY6 or https://www.amazon.in/dp/..."
+                    value={amazonLinkUrl}
+                    onChange={e => handleAmazonLinkChange(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-mono text-stone-900 focus:outline-none focus:border-amber-500 pr-24"
+                  />
+                  {amazonLinkDetails.asin && (
+                    <span className="absolute right-3 top-2.5 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      ASIN: {amazonLinkDetails.asin}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-500 mt-1">
+                  <span>
+                    Detected: <strong className="text-stone-800">{amazonLinkDetails.merchant}</strong> ({amazonLinkDetails.domain})
+                  </span>
+                  {amazonLinkDetails.asin && (
+                    <span className="text-emerald-700 font-semibold">✓ Valid ASIN extracted</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Product Name */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                  Product Name / Title <span className="text-rose-600">*</span>:
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Custom Spotify Song Plaque with Acrylic Stand"
+                  value={amazonLinkDetails.name}
+                  onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"
+                />
+              </div>
+
+              {/* Price & Currency */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-800 mb-1">
+                    Price <span className="text-rose-600">*</span>:
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder={amazonLinkDetails.currency === 'USD' ? '29.99' : '1499'}
+                    value={amazonLinkDetails.price}
+                    onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, price: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-800 mb-1">
+                    Currency:
+                  </label>
+                  <select
+                    value={amazonLinkDetails.currency}
+                    onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, currency: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-stone-50 text-stone-800 font-medium"
+                  >
+                    <option value="USD">USD ($) - Amazon.com</option>
+                    <option value="INR">INR (₹) - Amazon.in</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                  Gift Category:
+                </label>
+                <select
+                  value={amazonLinkDetails.category}
+                  onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, category: e.target.value, subcategory: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-stone-50 text-stone-800 font-medium"
+                >
+                  {categories.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Image URL */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                  Image URL (Amazon Media / Photo):
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://m.media-amazon.com/images/..."
+                  value={amazonLinkDetails.imageUrl}
+                  onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, imageUrl: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                  Description / Features:
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Key features, gifting reasons, or customer appeal..."
+                  value={amazonLinkDetails.description}
+                  onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"
+                />
+              </div>
+
+              {/* Affiliate & Status Options */}
+              <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-amber-950">
+                  <input
+                    type="checkbox"
+                    checked={amazonLinkDetails.attachAffiliateTag}
+                    onChange={e => setAmazonLinkDetails({ ...amazonLinkDetails, attachAffiliateTag: e.target.checked })}
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span>Attach Amazon Partner Tag (<strong className="font-mono">{DEFAULT_AMAZON_PARTNER_TAG}</strong>) to outbound link</span>
+                </label>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-stone-600">Initial Status:</span>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="linkStatus"
+                        value="active"
+                        checked={amazonLinkDetails.status === 'active'}
+                        onChange={() => setAmazonLinkDetails({ ...amazonLinkDetails, status: 'active' })}
+                      />
+                      <span className="font-semibold text-emerald-800">Active (Published)</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="linkStatus"
+                        value="needs_review"
+                        checked={amazonLinkDetails.status === 'needs_review'}
+                        onChange={() => setAmazonLinkDetails({ ...amazonLinkDetails, status: 'needs_review' })}
+                      />
+                      <span className="text-amber-800">Needs Review</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsAmazonLinkModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingProduct}
+                  className="px-5 py-2 rounded-xl bg-[#e47911] hover:bg-[#d66a06] text-white text-xs font-bold shadow-xs flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isSavingProduct ? 'Adding Product...' : 'Add Product to Catalog'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

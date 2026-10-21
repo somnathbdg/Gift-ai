@@ -57,6 +57,8 @@ export interface AmazonSearchResponse {
 }
 
 export const DEFAULT_PARTNER_TAG = 'digitalrani01-21';
+export const DEFAULT_PARTNER_TAG_IN = 'digitalrani01-21';
+export const DEFAULT_PARTNER_TAG_US = 'digital04b9-20';
 
 /**
  * Check if the server has live Amazon Creators API credentials configured
@@ -76,10 +78,13 @@ export function isAmazonConfigured(): boolean {
 }
 
 /**
- * Get active partner tag for affiliate links (defaults to digitalrani01-21)
+ * Get active partner tag for affiliate links (defaults to digitalrani01-21 for IN, digital04b9-20 for US)
  */
-export function getPartnerTag(): string {
-  return process.env.AMAZON_PARTNER_TAG || DEFAULT_PARTNER_TAG;
+export function getPartnerTag(domain: 'amazon.com' | 'amazon.in' = 'amazon.in'): string {
+  if (domain === 'amazon.com') {
+    return process.env.AMAZON_COM_PARTNER_TAG || DEFAULT_PARTNER_TAG_US;
+  }
+  return process.env.AMAZON_PARTNER_TAG || DEFAULT_PARTNER_TAG_IN;
 }
 
 /**
@@ -94,13 +99,16 @@ export function getMaskedPartnerTag(): string {
  */
 export function getAmazonStatus(productsNeedingReviewCount: number = 0): AmazonIntegrationStatus {
   const configured = isAmazonConfigured();
-  const activeTag = getPartnerTag();
+  const activeTag = getPartnerTag('amazon.in');
+  const usTag = process.env.AMAZON_COM_PARTNER_TAG || DEFAULT_PARTNER_TAG_US;
   return {
     marketplace: MARKETPLACE,
     connectionStatus: configured ? 'CONNECTED' : 'DEMO_MODE',
     mode: configured ? 'live' : 'demo',
     partnerTagMasked: activeTag,
     partnerTag: activeTag,
+    partnerTagIn: activeTag,
+    partnerTagUs: usTag,
     creatorsApiStatus: configured ? 'Connected' : 'Not Connected',
     lastSuccessfulRequest: lastApiRequestTimestamp,
     lastError: lastApiError,

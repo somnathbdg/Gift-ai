@@ -41,17 +41,13 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
   const [selectedBudget, setSelectedBudget] = useState(initialBudget);
   const [sortBy, setSortBy] = useState<'rating' | 'price-asc' | 'price-desc' | 'name'>('rating');
 
-  const categories = [
-    'All Categories',
-    'Personalized Items',
-    'Fashion & Jewelry',
-    'Food',
-    'Technology',
-    'Wellness',
-    'Books',
-    'Home Decor',
-    'Experiences'
-  ];
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach(p => {
+      if (p.category) set.add(p.category);
+    });
+    return ['All Categories', ...Array.from(set)];
+  }, [products]);
 
   const occasions = [
     'All Occasions',
@@ -81,11 +77,20 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
       // Must be active
       if (p.status !== 'active') return false;
 
-      // Category filter
+      // Category filter (flexible match)
       if (selectedCategory && selectedCategory !== 'All Categories') {
-        if (p.category.toLowerCase() !== selectedCategory.toLowerCase()) {
-          return false;
-        }
+        const catLower = p.category.toLowerCase();
+        const selLower = selectedCategory.toLowerCase();
+        const matchesCategory =
+          catLower === selLower ||
+          catLower.includes(selLower) ||
+          selLower.includes(catLower) ||
+          (selLower.includes('personalized') && catLower.includes('personalized')) ||
+          (selLower.includes('tech') && catLower.includes('tech')) ||
+          (selLower.includes('fashion') && catLower.includes('fashion')) ||
+          (selLower.includes('home') && catLower.includes('home')) ||
+          (selLower.includes('wellness') && (catLower.includes('beauty') || catLower.includes('fitness')));
+        if (!matchesCategory) return false;
       }
 
       // Occasion filter
@@ -96,13 +101,14 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
         if (!matches) return false;
       }
 
-      // Budget filter
+      // Budget filter (handles both INR and USD equivalent ~₹84)
       if (selectedBudget && selectedBudget !== 'All Budgets') {
-        if (selectedBudget.includes('Under ₹500') && p.price > 500) return false;
-        if (selectedBudget.includes('₹500–₹1,000') && (p.price < 500 || p.price > 1000)) return false;
-        if (selectedBudget.includes('₹1,000–₹2,000') && (p.price < 1000 || p.price > 2000)) return false;
-        if (selectedBudget.includes('₹2,000–₹5,000') && (p.price < 2000 || p.price > 5000)) return false;
-        if (selectedBudget.includes('₹5,000+') && p.price < 5000) return false;
+        const effectivePrice = p.currency === 'USD' ? p.price * 84 : p.price;
+        if (selectedBudget.includes('Under ₹500') && effectivePrice > 500) return false;
+        if (selectedBudget.includes('₹500–₹1,000') && (effectivePrice < 500 || effectivePrice > 1000)) return false;
+        if (selectedBudget.includes('₹1,000–₹2,000') && (effectivePrice < 1000 || effectivePrice > 2000)) return false;
+        if (selectedBudget.includes('₹2,000–₹5,000') && (effectivePrice < 2000 || effectivePrice > 5000)) return false;
+        if (selectedBudget.includes('₹5,000+') && effectivePrice < 5000) return false;
       }
 
       // Search term
@@ -307,7 +313,9 @@ export const ProductSearchPage: React.FC<ProductSearchPageProps> = ({
                   </button>
 
                   <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-md text-stone-900 shadow-xs flex flex-col">
-                    <span className="text-xs font-bold leading-tight">₹{product.price.toLocaleString('en-IN')}</span>
+                    <span className="text-xs font-bold leading-tight">
+                      {product.currency === 'USD' ? `$${product.price.toFixed(2)}` : `₹${product.price.toLocaleString('en-IN')}`}
+                    </span>
                     <span className="text-[8px] text-stone-500 font-normal leading-tight">*Subject to change</span>
                   </div>
                 </div>

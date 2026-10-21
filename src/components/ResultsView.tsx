@@ -382,11 +382,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                 <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur-md text-stone-900 shadow-xs flex flex-col">
                   <span className="text-sm font-bold leading-tight">
                     {rec.product.isPriceAvailable !== false && rec.product.price > 0
-                      ? `₹${rec.product.price.toLocaleString('en-IN')}`
+                      ? rec.product.currency === 'USD'
+                        ? `$${rec.product.price.toFixed(2)}`
+                        : `₹${rec.product.price.toLocaleString('en-IN')}`
                       : 'Information unavailable'}
                   </span>
                   <span className="text-[9px] text-stone-500 font-normal leading-tight">
-                    *Price subject to change on Amazon.in
+                    *Price subject to change on {rec.product.merchant || 'Amazon'}
                   </span>
                 </div>
               </div>

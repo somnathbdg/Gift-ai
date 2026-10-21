@@ -124,17 +124,20 @@ export function scoreProductDetailed(
   // 1. BUDGET MATCH (Max 25 points)
   let budgetScore = 0;
   let budgetExplanation = '';
-  const price = product.price;
+  // Support both USD and INR pricing against INR budget brackets (~₹84 per USD)
+  const isUsd = product.currency === 'USD';
+  const price = isUsd ? Math.round(product.price * 84) : product.price;
+  const priceLabel = isUsd ? `$${product.price.toFixed(2)} (~₹${price.toLocaleString('en-IN')})` : `₹${price.toLocaleString('en-IN')}`;
 
   if (price >= budgetRange.min && price <= budgetRange.max) {
     budgetScore = 25;
-    budgetExplanation = `₹${price.toLocaleString('en-IN')} is perfectly within your budget range (₹${budgetRange.min.toLocaleString('en-IN')} – ₹${budgetRange.max.toLocaleString('en-IN')}).`;
+    budgetExplanation = `${priceLabel} is perfectly within your budget range (₹${budgetRange.min.toLocaleString('en-IN')} – ₹${budgetRange.max.toLocaleString('en-IN')}).`;
     matchHighlights.push('Direct budget fit');
   } else if (price < budgetRange.min) {
     // Under budget: highly acceptable, small proportional scale
     const ratio = budgetRange.min > 0 ? price / budgetRange.min : 1;
     budgetScore = Math.max(16, Math.round(18 + ratio * 6));
-    budgetExplanation = `₹${price.toLocaleString('en-IN')} is comfortably below your minimum budget, offering great value.`;
+    budgetExplanation = `${priceLabel} is comfortably below your minimum budget, offering great value.`;
     matchHighlights.push('High value for money');
   } else {
     // Over budget:
@@ -142,13 +145,13 @@ export function scoreProductDetailed(
     if (overPercent <= 0.10) {
       // Up to 10% above budget is acceptable with modest penalty
       budgetScore = Math.max(16, Math.round(25 - overPercent * 50));
-      budgetExplanation = `₹${price.toLocaleString('en-IN')} is slightly above max budget (+${Math.round(overPercent * 100)}%), but within 10% acceptable flexibility.`;
+      budgetExplanation = `${priceLabel} is slightly above max budget (+${Math.round(overPercent * 100)}%), but within 10% acceptable flexibility.`;
       matchHighlights.push('Slightly above budget (within 10%)');
     } else {
       // Severely over budget
       const penalty = Math.min(25, Math.round(overPercent * 35));
       budgetScore = Math.max(0, 25 - penalty);
-      budgetExplanation = `₹${price.toLocaleString('en-IN')} exceeds target budget by ${Math.round(overPercent * 100)}%.`;
+      budgetExplanation = `${priceLabel} exceeds target budget by ${Math.round(overPercent * 100)}%.`;
     }
   }
 

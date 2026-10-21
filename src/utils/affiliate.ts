@@ -1,9 +1,24 @@
 /**
- * Affiliate URL Utilities for Amazon India & Multi-Merchant Links
- * Active Partner Tag: digitalrani01-21
+ * Affiliate URL Utilities for Amazon India (amazon.in) & Amazon US (amazon.com)
+ * Active Partner Tags:
+ * - Amazon.in: digitalrani01-21
+ * - Amazon.com: digital04b9-20
  */
 
-export const DEFAULT_AMAZON_PARTNER_TAG = 'digitalrani01-21';
+export const DEFAULT_AMAZON_IN_PARTNER_TAG = 'digitalrani01-21';
+export const DEFAULT_AMAZON_COM_PARTNER_TAG = 'digital04b9-20';
+export const DEFAULT_AMAZON_PARTNER_TAG = DEFAULT_AMAZON_IN_PARTNER_TAG;
+
+/**
+ * Resolves the appropriate Amazon partner tag based on the domain (amazon.com vs amazon.in)
+ */
+export function getAmazonPartnerTag(domainOrUrl?: string, customTag?: string): string {
+  if (customTag && customTag.trim()) return customTag.trim();
+  if (domainOrUrl && /amazon\.com/i.test(domainOrUrl)) {
+    return DEFAULT_AMAZON_COM_PARTNER_TAG; // digital04b9-20
+  }
+  return DEFAULT_AMAZON_IN_PARTNER_TAG; // digitalrani01-21
+}
 
 /**
  * Extracts a 10-character Amazon ASIN from a URL or raw string
@@ -32,55 +47,99 @@ export function extractAmazonAsin(input: string): string | null {
 }
 
 /**
- * Ensures an Amazon India URL has the partner tag digitalrani01-21 attached
+ * Detects whether an Amazon link is from amazon.com or amazon.in
+ */
+export function detectAmazonDomain(urlOrInput: string): 'amazon.com' | 'amazon.in' {
+  if (/amazon\.com/i.test(urlOrInput)) return 'amazon.com';
+  return 'amazon.in';
+}
+
+export interface ParsedAmazonUrl {
+  asin: string | null;
+  domain: 'amazon.com' | 'amazon.in';
+  merchant: 'Amazon.com' | 'Amazon.in';
+  canonicalUrl: string;
+  affiliateUrl: string;
+  currency: 'USD' | 'INR';
+}
+
+/**
+ * Parses any Amazon link (amazon.in, amazon.com, amzn.to) and extracts
+ * ASIN, marketplace, canonical URL, currency, and partner tag link.
+ */
+export function parseAmazonUrl(input: string, partnerTag?: string): ParsedAmazonUrl {
+  const trimmed = (input || '').trim();
+  const asin = extractAmazonAsin(trimmed);
+  const domain = detectAmazonDomain(trimmed);
+  const activeTag = partnerTag || getAmazonPartnerTag(domain);
+  const merchant = domain === 'amazon.com' ? 'Amazon.com' : 'Amazon.in';
+  const currency: 'USD' | 'INR' = domain === 'amazon.com' ? 'USD' : 'INR';
+  const canonicalUrl = asin ? `https://www.${domain}/dp/${asin}` : trimmed;
+  const affiliateUrl = asin
+    ? `https://www.${domain}/dp/${asin}?tag=${activeTag}`
+    : buildAmazonAffiliateUrl(trimmed, activeTag);
+
+  return {
+    asin,
+    domain,
+    merchant,
+    canonicalUrl,
+    affiliateUrl,
+    currency
+  };
+}
+
+/**
+ * Ensures an Amazon URL (Amazon India or Amazon.com) has the partner tag attached
  */
 export function buildAmazonAffiliateUrl(
   urlOrAsin: string,
-  partnerTag: string = DEFAULT_AMAZON_PARTNER_TAG
+  partnerTag?: string
 ): string {
   if (!urlOrAsin) return '';
   const trimmed = urlOrAsin.trim();
+  const domain = detectAmazonDomain(trimmed);
+  const activeTag = (partnerTag && partnerTag !== DEFAULT_AMAZON_PARTNER_TAG)
+    ? partnerTag
+    : getAmazonPartnerTag(domain, partnerTag);
 
   // If input is simply an ASIN
   const asin = extractAmazonAsin(trimmed);
   if (trimmed.length === 10 && !trimmed.includes('/') && !trimmed.includes('.')) {
-    return `https://www.amazon.in/dp/${trimmed.toUpperCase()}?tag=${partnerTag}`;
+    return `https://www.${domain}/dp/${trimmed.toUpperCase()}?tag=${activeTag}`;
   }
 
   // Check if it's an Amazon URL
   const isAmazonUrl = /amazon\.(in|com|co\.uk|de)|amzn\.to/i.test(trimmed);
 
   if (!isAmazonUrl) {
-    // If it's an ASIN found inside the text, build a clean amazon.in URL
     if (asin) {
-      return `https://www.amazon.in/dp/${asin}?tag=${partnerTag}`;
+      return `https://www.${domain}/dp/${asin}?tag=${activeTag}`;
     }
     return trimmed;
   }
 
   // If it's an Amazon URL, normalize with clean ASIN path if possible
   if (asin) {
-    return `https://www.amazon.in/dp/${asin}?tag=${partnerTag}`;
+    return `https://www.${domain}/dp/${asin}?tag=${activeTag}`;
   }
 
   // Otherwise replace or append the tag query param
   try {
     const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
-    url.searchParams.set('tag', partnerTag);
+    url.searchParams.set('tag', activeTag);
     return url.toString();
   } catch {
-    // Fallback regex replacement or appending
     if (trimmed.includes('tag=')) {
-      return trimmed.replace(/tag=[^&]+/i, `tag=${partnerTag}`);
+      return trimmed.replace(/tag=[^&]+/i, `tag=${activeTag}`);
     }
     const sep = trimmed.includes('?') ? '&' : '?';
-    return `${trimmed}${sep}tag=${partnerTag}`;
+    return `${trimmed}${sep}tag=${activeTag}`;
   }
 }
 
 /**
- * Resolves the outbound click URL for any product, ensuring Amazon products
- * are attributed to digitalrani01-21 even if entered manually as a raw link.
+ * Resolves the outbound click URL for any product, preserving Amazon.com vs Amazon.in
  */
 export function resolveProductOutboundUrl(
   product: {
@@ -90,7 +149,7 @@ export function resolveProductOutboundUrl(
     merchant?: string;
     source?: string;
   },
-  partnerTag: string = DEFAULT_AMAZON_PARTNER_TAG
+  partnerTag?: string
 ): string {
   const isAmazon =
     product.source === 'amazon' ||
@@ -100,16 +159,26 @@ export function resolveProductOutboundUrl(
     (product.affiliateUrl && /amazon\.(in|com)|amzn\.to/i.test(product.affiliateUrl));
 
   if (isAmazon) {
+    const domain = (product.merchant && /amazon\.com/i.test(product.merchant)) ||
+      (product.productUrl && /amazon\.com/i.test(product.productUrl)) ||
+      (product.affiliateUrl && /amazon\.com/i.test(product.affiliateUrl))
+      ? 'amazon.com'
+      : 'amazon.in';
+    const activeTag = (partnerTag && partnerTag !== DEFAULT_AMAZON_PARTNER_TAG)
+      ? partnerTag
+      : getAmazonPartnerTag(domain, partnerTag);
+
     if (product.affiliateUrl && product.affiliateUrl.trim()) {
-      return buildAmazonAffiliateUrl(product.affiliateUrl, partnerTag);
+      return buildAmazonAffiliateUrl(product.affiliateUrl, activeTag);
     }
     if (product.productUrl && product.productUrl.trim()) {
-      return product.productUrl;
+      return buildAmazonAffiliateUrl(product.productUrl, activeTag);
     }
     if (product.asin && product.asin.trim()) {
-      return `https://www.amazon.in/dp/${product.asin.trim().toUpperCase()}`;
+      return `https://www.${domain}/dp/${product.asin.trim().toUpperCase()}?tag=${activeTag}`;
     }
   }
 
   return product.affiliateUrl || product.productUrl || '#';
 }
+

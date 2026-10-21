@@ -74,6 +74,31 @@ export default function App() {
     }
   }, [savedProducts]);
 
+  // Handle shared shortlist URL parameters (?saved=id1,id2)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const savedParam = params.get('saved') || params.get('savedIds');
+      if (savedParam) {
+        const idList = savedParam.split(',').map(s => decodeURIComponent(s.trim())).filter(Boolean);
+        if (idList.length > 0) {
+          const catalogPool = products.length > 0 ? products : SEED_PRODUCTS;
+          const found = catalogPool.filter(p => idList.includes(p.id) || (p.asin && idList.includes(p.asin)));
+          if (found.length > 0) {
+            setSavedProducts(prev => {
+              const prevIds = new Set(prev.map(p => p.id));
+              const newItems = found.filter(p => !prevIds.has(p.id));
+              return [...prev, ...newItems];
+            });
+            setIsSavedDrawerOpen(true);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading shared saved gifts from URL:', e);
+    }
+  }, [products]);
+
   const loadCatalog = async () => {
     try {
       const items = await fetchProducts({ status: 'all' });

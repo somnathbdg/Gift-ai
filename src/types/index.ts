@@ -133,6 +133,8 @@ export interface AmazonIntegrationStatus {
   mode?: 'live' | 'demo';
   partnerTagMasked: string;
   partnerTag?: string;
+  partnerTagUs?: string;
+  partnerTagIn?: string;
   creatorsApiStatus: 'Connected' | 'Not Connected';
   lastSuccessfulRequest: string | null;
   lastError: string | null;

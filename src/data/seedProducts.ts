@@ -1,6 +1,7 @@
 import { Product } from '../types';
+import { AMAZON_COM_PRODUCTS } from './amazonComProducts';
 
-export const SEED_PRODUCTS: Product[] = [
+const AMAZON_IN_PRODUCTS: Product[] = [
   {
     id: '1',
     name: 'Forever Yours Dual Photo & Message Frame, Book Style Anniversary Photo Frame, Birthday Gift, Couple Gifts, Friendship Day, Personalized Gifts - 5x7 Inch White (Layout 2)',
@@ -1411,4 +1412,9 @@ export const SEED_PRODUCTS: Product[] = [
     genderPreference: 'kids',
     status: 'needs_review'
   }
+];
+
+export const SEED_PRODUCTS: Product[] = [
+  ...AMAZON_IN_PRODUCTS,
+  ...AMAZON_COM_PRODUCTS
 ];
