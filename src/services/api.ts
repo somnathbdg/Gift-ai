@@ -171,6 +171,67 @@ export async function importAmazonProductsApi(params: AmazonImportParams): Promi
   return await res.json();
 }
 
+export async function fetchCategoryAmazonProductsApi(params: {
+  category?: string;
+  limitPerCategory?: number;
+  attachAffiliateTag?: boolean;
+  partnerTag?: string;
+}): Promise<{
+  success: boolean;
+  count: number;
+  categoriesAdded: string[];
+  products: Product[];
+  message: string;
+}> {
+  const res = await fetch('/api/admin/amazon/fetch-category-products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to fetch category products from Amazon.com');
+  }
+  return await res.json();
+}
+
+export async function batchAttachAmazonAffiliateApi(params: {
+  productIds?: string[];
+  partnerTag?: string;
+}): Promise<{
+  success: boolean;
+  updatedCount: number;
+  partnerTag: string;
+  message: string;
+}> {
+  const res = await fetch('/api/admin/amazon/batch-attach-affiliate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to batch attach affiliate links');
+  }
+  return await res.json();
+}
+
+export async function updateProductAffiliateApi(
+  productId: string,
+  affiliateUrl: string
+): Promise<{ success: boolean; product: Product }> {
+  const res = await fetch(`/api/admin/products/${encodeURIComponent(productId)}/affiliate`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ affiliateUrl })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to update affiliate URL');
+  }
+  return await res.json();
+}
+
 export async function searchAmazonProductsApi(params: {
   keyword?: string;
   minPrice?: number;

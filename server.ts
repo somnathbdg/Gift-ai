@@ -25,7 +25,8 @@ import {
   executeAmazonGiftSearch,
   parseBudgetRange
 } from './services/amazonSearch';
-import { parseAmazonUrl, detectAmazonDomain } from './src/utils/affiliate';
+import { parseAmazonUrl, detectAmazonDomain, buildAmazonAffiliateUrl } from './src/utils/affiliate';
+import { generateCategoryAmazonProducts } from './services/amazonDiscoveryService';
 
 dotenv.config();
 
@@ -1035,6 +1036,118 @@ app.post('/api/admin/amazon/parse-link', (req, res) => {
     : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
   const parsed = parseAmazonUrl(url, tag);
   res.json(parsed);
+});
+
+// Fetch new Amazon.com products by category with optional deferred affiliate link addition
+app.post('/api/admin/amazon/fetch-category-products', (req, res) => {
+  try {
+    const {
+      category = 'all',
+      limitPerCategory = 2,
+      attachAffiliateTag = false,
+      partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20'
+    } = req.body;
+
+    const existingAsins = new Set<string>();
+    const existingNames = new Set<string>();
+
+    products.forEach(p => {
+      if (p.asin) existingAsins.add(p.asin.toUpperCase());
+      if (p.name) existingNames.add(p.name.toLowerCase().trim());
+    });
+
+    const newItems = generateCategoryAmazonProducts({
+      category: String(category),
+      limitPerCategory: Math.min(Math.max(Number(limitPerCategory) || 2, 1), 10),
+      attachAffiliateTag: Boolean(attachAffiliateTag),
+      partnerTag: String(partnerTag).trim(),
+      existingAsins,
+      existingNames
+    });
+
+    if (newItems.length > 0) {
+      // Prepend to catalog so new items appear at the very top of admin and store
+      products = [...newItems, ...products];
+    }
+
+    const categoriesAdded = Array.from(new Set(newItems.map(p => p.category)));
+
+    res.json({
+      success: true,
+      count: newItems.length,
+      categoriesAdded,
+      products: newItems,
+      message: newItems.length > 0
+        ? `Successfully fetched and added ${newItems.length} new Amazon.com products across ${categoriesAdded.length} categories.`
+        : 'All category-matched Amazon.com items are already present in the catalog.'
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to fetch Amazon.com category products' });
+  }
+});
+
+// Batch attach affiliate partner tag to products missing affiliate links
+app.post('/api/admin/amazon/batch-attach-affiliate', (req, res) => {
+  try {
+    const { productIds, partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20' } = req.body;
+
+    let updatedCount = 0;
+    products = products.map(p => {
+      const isTarget = Array.isArray(productIds) && productIds.length > 0
+        ? productIds.includes(p.id)
+        : (p.merchant === 'Amazon.com' && (!p.affiliateUrl || !p.affiliateUrl.includes('tag=')));
+
+      if (isTarget) {
+        const targetUrl = p.productUrl || (p.asin ? `https://www.amazon.com/dp/${p.asin}` : '');
+        if (targetUrl) {
+          updatedCount++;
+          return {
+            ...p,
+            affiliateUrl: buildAmazonAffiliateUrl(targetUrl, partnerTag),
+            updatedAt: new Date().toISOString()
+          };
+        }
+      }
+      return p;
+    });
+
+    res.json({
+      success: true,
+      updatedCount,
+      partnerTag,
+      message: `Successfully attached tag ${partnerTag} to ${updatedCount} products.`
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to batch attach affiliate links' });
+  }
+});
+
+// Update affiliate URL for a specific product
+app.put('/api/admin/products/:id/affiliate', (req, res) => {
+  const index = products.findIndex(p => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const { affiliateUrl } = req.body;
+  const prod = products[index];
+  const domain = prod.merchant === 'Amazon.com' || /amazon\.com/i.test(prod.productUrl) ? 'amazon.com' : 'amazon.in';
+  const defaultTag = domain === 'amazon.com'
+    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
+    : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+
+  let finalAffiliateUrl = String(affiliateUrl || '').trim();
+  if (finalAffiliateUrl && !finalAffiliateUrl.includes('tag=') && /amazon\.(com|in)/i.test(finalAffiliateUrl)) {
+    finalAffiliateUrl = buildAmazonAffiliateUrl(finalAffiliateUrl, defaultTag);
+  }
+
+  products[index] = {
+    ...prod,
+    affiliateUrl: finalAffiliateUrl,
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json({ success: true, product: products[index] });
 });
 
 // Admin Product CRUD

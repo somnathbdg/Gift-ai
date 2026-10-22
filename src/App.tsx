@@ -87,7 +87,9 @@ export default function App() {
           if (found.length > 0) {
             setSavedProducts(prev => {
               const prevIds = new Set(prev.map(p => p.id));
-              const newItems = found.filter(p => !prevIds.has(p.id));
+              const newItems = found
+                .filter(p => !prevIds.has(p.id))
+                .map(p => ({ ...p, savedAt: p.savedAt || new Date().toISOString() }));
               return [...prev, ...newItems];
             });
             setIsSavedDrawerOpen(true);
@@ -133,7 +135,7 @@ export default function App() {
       if (exists) {
         return prev.filter(p => p.id !== product.id);
       } else {
-        return [...prev, product];
+        return [...prev, { ...product, savedAt: new Date().toISOString() }];
       }
     });
   };

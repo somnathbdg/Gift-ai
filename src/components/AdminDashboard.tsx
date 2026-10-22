@@ -56,7 +56,10 @@ import {
   importAmazonProductsApi,
   testMatchingEngineApi,
   aiSuggestTagsApi,
-  adminApproveAllProducts
+  adminApproveAllProducts,
+  fetchCategoryAmazonProductsApi,
+  batchAttachAmazonAffiliateApi,
+  updateProductAffiliateApi
 } from '../services/api';
 
 interface AdminDashboardProps {
@@ -147,6 +150,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     status: 'active' as 'active' | 'needs_review'
   });
 
+  // Category-based Amazon.com Fetching State
+  const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
+  const [isFetchingCategoryProducts, setIsFetchingCategoryProducts] = useState(false);
+  const [fetchCategoryForm, setFetchCategoryForm] = useState({
+    category: 'all',
+    limitPerCategory: 3,
+    attachAffiliateTag: false, // Default false as requested: option to add affiliate link later
+    partnerTag: DEFAULT_AMAZON_COM_PARTNER_TAG
+  });
+  const [fetchCategoryResult, setFetchCategoryResult] = useState<{
+    count: number;
+    message: string;
+    categoriesAdded: string[];
+  } | null>(null);
+
+  // Affiliate Link Management State (for adding/updating affiliate links later)
+  const [isAffiliateModalOpen, setIsAffiliateModalOpen] = useState(false);
+  const [targetAffiliateProduct, setTargetAffiliateProduct] = useState<Product | null>(null);
+  const [affiliateInputUrl, setAffiliateInputUrl] = useState('');
+  const [isSavingAffiliate, setIsSavingAffiliate] = useState(false);
+  const [isBatchAttaching, setIsBatchAttaching] = useState(false);
+  const [affiliateFilter, setAffiliateFilter] = useState<'all' | 'missing' | 'has_tag'>('all');
+
   // Admin AI Assistant chat state
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'admin' | 'assistant'; text: string; time: string }>>([
     {
@@ -235,6 +261,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       });
     } finally {
       setIsImportingAmazon(false);
+    }
+  };
+
+  const handleFetchCategoryAmazonProducts = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsFetchingCategoryProducts(true);
+    setFetchCategoryResult(null);
+
+    try {
+      const res = await fetchCategoryAmazonProductsApi({
+        category: fetchCategoryForm.category,
+        limitPerCategory: Number(fetchCategoryForm.limitPerCategory) || 3,
+        attachAffiliateTag: fetchCategoryForm.attachAffiliateTag,
+        partnerTag: fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG
+      });
+
+      setFetchCategoryResult({
+        count: res.count,
+        message: res.message,
+        categoriesAdded: res.categoriesAdded
+      });
+
+      onRefreshProducts();
+      await loadAmazonStatus();
+    } catch (err: any) {
+      alert('Error fetching Amazon.com category products: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsFetchingCategoryProducts(false);
+    }
+  };
+
+  const handleOpenAffiliateModal = (product: Product) => {
+    setTargetAffiliateProduct(product);
+    setAffiliateInputUrl(product.affiliateUrl || '');
+    setIsAffiliateModalOpen(true);
+  };
+
+  const handleSaveAffiliateUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetAffiliateProduct) return;
+    setIsSavingAffiliate(true);
+
+    try {
+      await updateProductAffiliateApi(targetAffiliateProduct.id, affiliateInputUrl);
+      setIsAffiliateModalOpen(false);
+      setTargetAffiliateProduct(null);
+      setAffiliateInputUrl('');
+      onRefreshProducts();
+    } catch (err: any) {
+      alert('Failed to save affiliate URL: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsSavingAffiliate(false);
+    }
+  };
+
+  const handleBatchAttachAffiliate = async () => {
+    const defaultTag = DEFAULT_AMAZON_COM_PARTNER_TAG;
+    if (!window.confirm(`Attach partner tag ${defaultTag} to all Amazon.com products that currently have no affiliate link?`)) {
+      return;
+    }
+    setIsBatchAttaching(true);
+    try {
+      const res = await batchAttachAmazonAffiliateApi({
+        partnerTag: defaultTag
+      });
+      alert(`Success: ${res.message}`);
+      onRefreshProducts();
+    } catch (err: any) {
+      alert('Batch attach failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsBatchAttaching(false);
     }
   };
 
@@ -552,6 +649,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } else if (marketplaceFilter === 'other') {
       if (p.merchant?.toLowerCase().includes('amazon')) return false;
     }
+
+    if (affiliateFilter === 'missing') {
+      const hasTag = p.affiliateUrl && p.affiliateUrl.trim().length > 0 && p.affiliateUrl.includes('tag=');
+      if (hasTag) return false;
+    } else if (affiliateFilter === 'has_tag') {
+      const hasTag = p.affiliateUrl && p.affiliateUrl.trim().length > 0 && p.affiliateUrl.includes('tag=');
+      if (!hasTag) return false;
+    }
+
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
       return (
@@ -563,6 +669,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
     return true;
   });
+
+  const missingAffiliateCount = products.filter(
+    p => (p.merchant === 'Amazon.com' || (p.productUrl && /amazon\.com/i.test(p.productUrl))) &&
+      (!p.affiliateUrl || !p.affiliateUrl.includes('tag='))
+  ).length;
 
   const categories = Array.from(new Set(products.map(p => p.category)));
 
@@ -1229,6 +1340,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </label>
 
                   <button
+                    onClick={() => {
+                      setFetchCategoryResult(null);
+                      setIsFetchModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all"
+                    title="Fetch newly added category products from Amazon.com and add affiliate links now or later"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Fetch Amazon.com Products</span>
+                  </button>
+
+                  <button
                     onClick={handleOpenAddModal}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold shadow-xs"
                   >
@@ -1302,6 +1425,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+
+                  <select
+                    value={affiliateFilter}
+                    onChange={e => setAffiliateFilter(e.target.value as any)}
+                    className="text-xs px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-stone-800 font-medium"
+                  >
+                    <option value="all">Affiliate: All</option>
+                    <option value="missing">Missing Affiliate Tag ({missingAffiliateCount})</option>
+                    <option value="has_tag">Has Partner Tag</option>
+                  </select>
+
+                  {missingAffiliateCount > 0 && (
+                    <button
+                      onClick={handleBatchAttachAffiliate}
+                      disabled={isBatchAttaching}
+                      className="text-xs px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold flex items-center gap-1.5 transition-colors"
+                      title={`Auto-attach partner tag ${DEFAULT_AMAZON_COM_PARTNER_TAG} to all ${missingAffiliateCount} Amazon.com products`}
+                    >
+                      <Link className="w-3.5 h-3.5 text-amber-700" />
+                      <span>{isBatchAttaching ? 'Attaching...' : `Batch Attach Tag (${missingAffiliateCount})`}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1315,6 +1460,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <th className="p-4">Category</th>
                         <th className="p-4">Price</th>
                         <th className="p-4">Marketplace</th>
+                        <th className="p-4">Affiliate Status</th>
                         <th className="p-4">Status</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
@@ -1359,6 +1505,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </span>
                           </td>
                           <td className="p-4">
+                            {prod.merchant === 'Amazon.com' || prod.merchant === 'Amazon.in' || (prod.productUrl && /amazon/i.test(prod.productUrl)) ? (
+                              prod.affiliateUrl && prod.affiliateUrl.includes('tag=') ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                    <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                    Tag Active
+                                  </span>
+                                  <button
+                                    onClick={() => handleOpenAffiliateModal(prod)}
+                                    className="text-[10px] text-stone-500 hover:text-stone-800 underline"
+                                    title="Edit Affiliate URL"
+                                  >
+                                    Edit
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                    <AlertCircle className="w-3 h-3 text-amber-600" />
+                                    No Link
+                                  </span>
+                                  <button
+                                    onClick={() => handleOpenAffiliateModal(prod)}
+                                    className="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold shadow-2xs transition-colors"
+                                    title="Add or attach affiliate tracking link now"
+                                  >
+                                    + Add Link
+                                  </button>
+                                </div>
+                              )
+                            ) : (
+                              <span className="text-stone-400 text-[11px]">Direct Partner</span>
+                            )}
+                          </td>
+                          <td className="p-4">
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                 prod.status === 'active'
@@ -1373,6 +1554,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {(prod.merchant === 'Amazon.com' || prod.merchant === 'Amazon.in' || (prod.productUrl && /amazon/i.test(prod.productUrl))) && (
+                                <button
+                                  onClick={() => handleOpenAffiliateModal(prod)}
+                                  className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50"
+                                  title="Add or Customize Affiliate Link"
+                                >
+                                  <Link className="w-4 h-4" />
+                                </button>
+                              )}
                               {prod.status === 'needs_review' && (
                                 <button
                                   onClick={() => handleToggleStatus(prod, 'active')}
@@ -1704,6 +1894,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 >
                   <Plus className="w-4 h-4" />
                   <span>Paste & Import Amazon URL</span>
+                </button>
+              </div>
+
+              {/* Category Amazon.com Auto-Discovery & Product Fetcher Card */}
+              <div className="bg-gradient-to-r from-blue-600/10 via-indigo-600/5 to-white p-5 rounded-2xl border border-blue-200 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                    </span>
+                    <h3 className="font-serif text-base font-bold text-stone-900">
+                      Fetch New Category Products from Amazon.com
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-600 max-w-2xl">
+                    Discover and import new products across all 13 gift categories from Amazon.com in 1 click. You have the flexibility to leave affiliate links unassigned and attach or customize them later.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setFetchCategoryResult(null);
+                    setIsFetchModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 transition-transform hover:scale-102"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Fetch Category Products</span>
                 </button>
               </div>
 
@@ -2843,6 +3060,338 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{isSavingProduct ? 'Adding Product...' : 'Add Product to Catalog'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: FETCH NEW AMAZON.COM CATEGORY PRODUCTS */}
+      {isFetchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-stone-900">
+                    Fetch Amazon.com Category Products
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Discover & automatically add new products across your store categories
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFetchModalOpen(false)}
+                className="text-stone-400 hover:text-stone-600 p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {fetchCategoryResult ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
+                  <div className="flex items-center gap-2 font-bold text-sm mb-1">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span>{fetchCategoryResult.message}</span>
+                  </div>
+                  <p className="text-xs text-emerald-800">
+                    Successfully added <strong>{fetchCategoryResult.count}</strong> new items across categories:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {fetchCategoryResult.categoriesAdded.map((cat, i) => (
+                      <span key={i} className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 border border-emerald-200">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs space-y-1.5">
+                  <p className="font-bold flex items-center gap-1.5">
+                    <Link className="w-3.5 h-3.5 text-blue-700" />
+                    <span>Affiliate Link Note:</span>
+                  </p>
+                  <p className="leading-relaxed">
+                    {fetchCategoryForm.attachAffiliateTag
+                      ? `Partner tag "${DEFAULT_AMAZON_COM_PARTNER_TAG}" was automatically attached to all new products.`
+                      : 'These products were added with empty affiliate links as requested. You can attach your affiliate link anytime from the Products table using "+ Add Link", or click "Batch Attach Tag" to bind digital04b9-20 in 1 click!'}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      setFetchCategoryResult(null);
+                      setIsFetchModalOpen(false);
+                      setActiveTab('products');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-stone-900 text-white text-xs font-semibold hover:bg-black transition-colors"
+                  >
+                    View in Products Catalog
+                  </button>
+                  <button
+                    onClick={() => setFetchCategoryResult(null)}
+                    className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 text-xs font-semibold hover:bg-stone-50"
+                  >
+                    Fetch More
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleFetchCategoryAmazonProducts} className="space-y-4">
+                {/* Category Selection */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                    Select Target Category:
+                  </label>
+                  <select
+                    value={fetchCategoryForm.category}
+                    onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-stone-50 text-stone-900 font-medium focus:outline-none focus:border-blue-600"
+                  >
+                    <option value="all">🌟 All Categories (13 Core Categories)</option>
+                    {categories.map(c => (
+                      <option key={c} value={c}>📁 {c}</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    Selecting "All Categories" scans for new Amazon.com items across each gift category in your store.
+                  </p>
+                </div>
+
+                {/* Items Per Category */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                    Products to Add per Category:
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={1}
+                      max={5}
+                      value={fetchCategoryForm.limitPerCategory}
+                      onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, limitPerCategory: Number(e.target.value) })}
+                      className="flex-1 accent-blue-600"
+                    />
+                    <span className="font-mono font-bold text-sm bg-stone-100 px-3 py-1 rounded-lg text-stone-800 border border-stone-200">
+                      {fetchCategoryForm.limitPerCategory} items
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    {fetchCategoryForm.category === 'all'
+                      ? `Will add up to ${fetchCategoryForm.limitPerCategory * 13} new items to your catalog.`
+                      : `Will add up to ${fetchCategoryForm.limitPerCategory} new items to "${fetchCategoryForm.category}".`}
+                  </p>
+                </div>
+
+                {/* Affiliate Link Strategy */}
+                <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2.5">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                    <Link className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Affiliate Link Strategy (Add Link Later Option):</span>
+                  </div>
+
+                  <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+                    <input
+                      type="radio"
+                      name="affiliateStrategy"
+                      checked={!fetchCategoryForm.attachAffiliateTag}
+                      onChange={() => setFetchCategoryForm({ ...fetchCategoryForm, attachAffiliateTag: false })}
+                      className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                    />
+                    <div>
+                      <span className="font-bold text-stone-900">Add without affiliate link (Recommended)</span>
+                      <p className="text-stone-500 text-[11px] leading-relaxed">
+                        Products are imported with clean URLs. You can attach your affiliate link or customized SiteStripe URL later from the admin table at any time.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+                    <input
+                      type="radio"
+                      name="affiliateStrategy"
+                      checked={fetchCategoryForm.attachAffiliateTag}
+                      onChange={() => setFetchCategoryForm({ ...fetchCategoryForm, attachAffiliateTag: true })}
+                      className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                    />
+                    <div>
+                      <span className="font-bold text-stone-900">Auto-attach partner tag now ({fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG})</span>
+                      <p className="text-stone-500 text-[11px] leading-relaxed">
+                        Automatically appends <code className="font-mono font-bold text-amber-900">tag={fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG}</code> to all imported outbound links immediately.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Partner Tag input if checked */}
+                {fetchCategoryForm.attachAffiliateTag && (
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-800 mb-1">
+                      Amazon.com Partner Tag:
+                    </label>
+                    <input
+                      type="text"
+                      value={fetchCategoryForm.partnerTag}
+                      onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, partnerTag: e.target.value })}
+                      placeholder="e.g. digital04b9-20"
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono text-stone-900 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                )}
+
+                {/* Footer Controls */}
+                <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setIsFetchModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isFetchingCategoryProducts}
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-2"
+                  >
+                    {isFetchingCategoryProducts ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Fetching Amazon.com Products...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Fetch & Add Products</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ATTACH / EDIT AFFILIATE LINK FOR A PRODUCT */}
+      {isAffiliateModalOpen && targetAffiliateProduct && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                  <Link className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-stone-900">
+                    Manage Affiliate Link
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Attach, customize, or update the outbound affiliate link
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAffiliateModalOpen(false);
+                  setTargetAffiliateProduct(null);
+                }}
+                className="text-stone-400 hover:text-stone-600 p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Target Product Summary */}
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-center gap-3 mb-4">
+              <img
+                src={targetAffiliateProduct.imageUrl}
+                alt={targetAffiliateProduct.name}
+                className="w-12 h-12 rounded-lg object-cover bg-stone-100 shrink-0 border border-stone-200"
+              />
+              <div className="overflow-hidden">
+                <p className="font-bold text-stone-900 text-xs truncate">{targetAffiliateProduct.name}</p>
+                <div className="flex items-center gap-2 text-[11px] text-stone-500 mt-0.5">
+                  <span>Merchant: <strong className="text-stone-800">{targetAffiliateProduct.merchant}</strong></span>
+                  {targetAffiliateProduct.asin && (
+                    <span>• ASIN: <strong className="font-mono text-stone-800">{targetAffiliateProduct.asin}</strong></span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveAffiliateUrl} className="space-y-4">
+              {/* Affiliate URL input */}
+              <div>
+                <label className="block text-xs font-bold text-stone-800 mb-1">
+                  Affiliate / Tracking Outbound URL:
+                </label>
+                <input
+                  type="url"
+                  value={affiliateInputUrl}
+                  onChange={e => setAffiliateInputUrl(e.target.value)}
+                  placeholder="https://www.amazon.com/dp/B00...?tag=digital04b9-20 or https://amzn.to/..."
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono text-stone-900 focus:outline-none focus:border-amber-600"
+                />
+                <p className="text-[11px] text-stone-500 mt-1">
+                  When users click "View on Amazon", they will be redirected to this URL with your affiliate commission attribution.
+                </p>
+              </div>
+
+              {/* 1-Click Helper Buttons */}
+              <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2">
+                <p className="text-[11px] font-bold text-amber-950">Quick One-Click Helpers:</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const asin = targetAffiliateProduct.asin;
+                      const baseUrl = targetAffiliateProduct.productUrl || (asin ? `https://www.amazon.com/dp/${asin}` : 'https://www.amazon.com');
+                      const fullAffiliate = buildAmazonAffiliateUrl(baseUrl, DEFAULT_AMAZON_COM_PARTNER_TAG);
+                      setAffiliateInputUrl(fullAffiliate);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Check className="w-3 h-3" />
+                    <span>Auto-Attach tag ({DEFAULT_AMAZON_COM_PARTNER_TAG})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAffiliateInputUrl('')}
+                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 text-[11px] font-semibold transition-colors"
+                  >
+                    Clear Link (Set Empty)
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAffiliateModalOpen(false);
+                    setTargetAffiliateProduct(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingAffiliate}
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+                >
+                  {isSavingAffiliate ? 'Saving...' : 'Save Affiliate Link'}
                 </button>
               </div>
             </form>

@@ -30,6 +30,7 @@ export interface Product {
   genderPreference: 'any' | 'men' | 'women' | 'kids' | 'unisex';
   createdAt: string;
   updatedAt: string;
+  savedAt?: string;
   status: 'active' | 'inactive' | 'needs_review';
   isDemo?: boolean;
   source?: 'amazon' | 'curated' | 'hermes' | string;
