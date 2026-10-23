@@ -25,22 +25,30 @@ export function getAmazonPartnerTag(domainOrUrl?: string, customTag?: string): s
  * Handles formats like:
  * - /dp/B08N5WRWNW
  * - /gp/product/B08N5WRWNW
- * - B08N5WRWNW
+ * - /gp/aw/d/B08N5WRWNW (mobile)
+ * - /d/B08N5WRWNW
+ * - /gp/offer-listing/B08N5WRWNW
+ * - B08N5WRWNW or numeric 10-digit ISBNs (e.g. 0399579951, 9354400507)
  */
 export function extractAmazonAsin(input: string): string | null {
   if (!input) return null;
   const trimmed = input.trim();
 
-  // Check direct ASIN pattern (10 chars, typically starts with B or digits)
-  const directMatch = trimmed.match(/\b([B0-9][A-Z0-9]{9})\b/i);
-  if (directMatch && trimmed.length <= 15) {
-    return directMatch[1].toUpperCase();
+  // 1. Direct ASIN pattern (10 chars, starting with B or digit)
+  if (/^[B0-9][A-Z0-9]{9}$/i.test(trimmed)) {
+    return trimmed.toUpperCase();
   }
 
-  // Check URL paths /dp/ASIN or /gp/product/ASIN
-  const urlMatch = trimmed.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([B0-9][A-Z0-9]{9})/i);
+  // 2. Standard and mobile URL paths: /dp/, /gp/product/, /product/, /gp/aw/d/, /d/, /gp/offer-listing/
+  const urlMatch = trimmed.match(/(?:\/dp\/|\/gp\/product\/|\/product\/|\/gp\/aw\/d\/|\/d\/|\/gp\/offer-listing\/)([B0-9][A-Z0-9]{9})/i);
   if (urlMatch) {
     return urlMatch[1].toUpperCase();
+  }
+
+  // 3. Fallback: Any 10-char ASIN token preceded by a slash or equal sign
+  const looseMatch = trimmed.match(/[\/=]([B0-9][A-Z0-9]{9})(?:[?\/&#]|$)/i);
+  if (looseMatch) {
+    return looseMatch[1].toUpperCase();
   }
 
   return null;
@@ -74,10 +82,21 @@ export function parseAmazonUrl(input: string, partnerTag?: string): ParsedAmazon
   const activeTag = partnerTag || getAmazonPartnerTag(domain);
   const merchant = domain === 'amazon.com' ? 'Amazon.com' : 'Amazon.in';
   const currency: 'USD' | 'INR' = domain === 'amazon.com' ? 'USD' : 'INR';
-  const canonicalUrl = asin ? `https://www.${domain}/dp/${asin}` : trimmed;
+
+  let canonicalUrl = '';
+  if (asin) {
+    canonicalUrl = `https://www.${domain}/dp/${asin}`;
+  } else if (/^https?:\/\//i.test(trimmed)) {
+    canonicalUrl = trimmed;
+  } else if (trimmed) {
+    canonicalUrl = `https://www.${domain}/s?k=${encodeURIComponent(trimmed)}`;
+  } else {
+    canonicalUrl = `https://www.${domain}`;
+  }
+
   const affiliateUrl = asin
     ? `https://www.${domain}/dp/${asin}?tag=${activeTag}`
-    : buildAmazonAffiliateUrl(trimmed, activeTag);
+    : buildAmazonAffiliateUrl(canonicalUrl, activeTag);
 
   return {
     asin,

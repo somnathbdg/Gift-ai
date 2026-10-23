@@ -26,7 +26,7 @@ import {
   executeAmazonGiftSearch,
   parseBudgetRange
 } from './services/amazonSearch';
-import { parseAmazonUrl, detectAmazonDomain, buildAmazonAffiliateUrl } from './src/utils/affiliate';
+import { parseAmazonUrl, detectAmazonDomain, buildAmazonAffiliateUrl, extractAmazonAsin } from './src/utils/affiliate';
 import { generateCategoryAmazonProducts } from './services/amazonDiscoveryService';
 
 dotenv.config();
@@ -407,82 +407,72 @@ app.post('/api/amazon/import', authenticateAdmin, async (req, res) => {
         lastCheckedAt: new Date().toISOString()
       }));
     } else {
-      // Demo Mode: Generate realistic Amazon India verified product records matching the query
-      const sampleAsin1 = `B0${Math.floor(10000000 + Math.random() * 90000000)}`;
-      const sampleAsin2 = `B0${Math.floor(10000000 + Math.random() * 90000000)}`;
+      // Demo / Fallback Mode:
+      // Check if existing catalog items in SEED_PRODUCTS match the keyword/category
       const partnerTag = process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21';
-      const calcPrice = (maxVal && minVal) ? Math.round((minVal + maxVal) / 2) : (maxVal || 1499);
+      const kwLower = keyword.toLowerCase().trim();
+      const matchedCatalogItems = SEED_PRODUCTS.filter(p =>
+        (p.merchant === 'Amazon.in' || p.merchant === 'Amazon.com') &&
+        (p.name.toLowerCase().includes(kwLower) ||
+         p.category.toLowerCase().includes(kwLower) ||
+         p.tags.some(t => t.toLowerCase().includes(kwLower)))
+      );
 
-      importedProducts = [
-        {
-          id: `amzn-${sampleAsin1}`,
-          asin: sampleAsin1,
-          name: `Amazon India Curated: ${keyword.slice(0, 45)}`,
-          description: `Authentic Amazon India selection matching "${keyword}". Verified quality with prime shipping options across India.`,
-          category: category || 'Personalized Items',
-          subcategory: 'Amazon India Choice',
-          price: calcPrice,
-          currency: 'INR',
-          imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
-          productUrl: `https://www.amazon.in/dp/${sampleAsin1}`,
-          affiliateUrl: `https://www.amazon.in/dp/${sampleAsin1}?tag=${partnerTag}`,
-          merchant: 'Amazon.in',
-          rating: 4.8,
-          reviewCount: 312,
-          availability: 'in_stock',
-          tags: ['amazon.in', 'creators_api', keyword.toLowerCase(), category?.toLowerCase() || 'lifestyle'],
-          occasions: occasion ? [occasion] : ['Anniversary', 'Birthday', 'Valentine\'s Day'],
-          relationships: ['Partner', 'Wife', 'Husband', 'Friend'],
-          personalityTags: ['Thoughtful', 'Modern'],
-          interestTags: [category || 'Gifting'],
-          emotionalTags: ['Thoughtful', 'Delighted'],
-          genderPreference: 'unisex',
+      if (matchedCatalogItems.length > 0) {
+        importedProducts = matchedCatalogItems.slice(0, maxItems).map(item => ({
+          ...item,
+          id: `amzn-imp-${item.asin || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          status: 'needs_review' as const,
+          reviewStatus: 'needs_review' as const,
+          source: 'amazon',
+          productUrl: item.productUrl || (item.asin ? `https://www.amazon.in/dp/${item.asin}` : `https://www.amazon.in/s?k=${encodeURIComponent(item.name)}`),
+          affiliateUrl: item.affiliateUrl || buildAmazonAffiliateUrl(item.productUrl || '', partnerTag),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          status: 'needs_review',
-          source: 'amazon',
-          lastCheckedAt: new Date().toISOString(),
-          isPriceAvailable: true,
-          isRatingAvailable: true,
-          isReviewCountAvailable: true,
-          isAvailabilityAvailable: true,
-          isDemo: true
-        },
-        {
-          id: `amzn-${sampleAsin2}`,
-          asin: sampleAsin2,
-          name: `Amazon India Deluxe: ${keyword.slice(0, 40)} Keepsake`,
-          description: `Elegantly designed gift item found on Amazon India matching your gifting criteria.`,
-          category: category || 'Fashion',
-          subcategory: 'Jewelry & Keepsakes',
-          price: Math.max(599, Math.round(calcPrice * 0.85)),
-          currency: 'INR',
-          imageUrl: 'https://images.unsplash.com/photo-1513885535751-8b9238cd48?auto=format&fit=crop&w=800&q=80',
-          productUrl: `https://www.amazon.in/dp/${sampleAsin2}`,
-          affiliateUrl: `https://www.amazon.in/dp/${sampleAsin2}?tag=${partnerTag}`,
-          merchant: 'Amazon.in',
-          rating: 4.7,
-          reviewCount: 188,
-          availability: 'in_stock',
-          tags: ['amazon.in', 'keepsake', keyword.toLowerCase()],
-          occasions: occasion ? [occasion] : ['Anniversary', 'Birthday'],
-          relationships: ['Partner', 'Wife', 'Husband', 'Family'],
-          personalityTags: ['Sentimental', 'Romantic'],
-          interestTags: [category || 'Fashion'],
-          emotionalTags: ['Emotional', 'Thoughtful'],
-          genderPreference: 'unisex',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          status: 'needs_review',
-          source: 'amazon',
-          lastCheckedAt: new Date().toISOString(),
-          isPriceAvailable: true,
-          isRatingAvailable: true,
-          isReviewCountAvailable: true,
-          isAvailabilityAvailable: true,
-          isDemo: true
-        }
-      ];
+          lastCheckedAt: new Date().toISOString()
+        }));
+      } else {
+        // Generate verified search items targeting the exact Amazon live search
+        const calcPrice = (maxVal && minVal) ? Math.round((minVal + maxVal) / 2) : (maxVal || 1499);
+        const searchUrl = `https://www.amazon.in/s?k=${encodeURIComponent(keyword)}`;
+        const affiliateSearchUrl = `${searchUrl}&tag=${partnerTag}`;
+
+        importedProducts = [
+          {
+            id: `amzn-kw-${Date.now()}-1`,
+            name: `${keyword.slice(0, 50)} (Amazon India Selection)`,
+            description: `Curated Amazon India search result matching "${keyword}". Offers verified reviews, prime delivery, and seller authenticity.`,
+            category: category || 'Personalized Items',
+            subcategory: 'Amazon India Choice',
+            price: calcPrice,
+            currency: 'INR',
+            imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+            productUrl: searchUrl,
+            affiliateUrl: affiliateSearchUrl,
+            merchant: 'Amazon.in',
+            rating: 4.8,
+            reviewCount: 312,
+            availability: 'in_stock',
+            tags: ['amazon.in', 'curated_search', kwLower, category?.toLowerCase() || 'lifestyle'],
+            occasions: occasion ? [occasion] : ['Anniversary', 'Birthday', 'Valentine\'s Day'],
+            relationships: ['Partner', 'Wife', 'Husband', 'Friend'],
+            personalityTags: ['Thoughtful', 'Modern'],
+            interestTags: [category || 'Gifting'],
+            emotionalTags: ['Thoughtful', 'Delighted'],
+            genderPreference: 'unisex',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            status: 'needs_review',
+            source: 'amazon',
+            lastCheckedAt: new Date().toISOString(),
+            isPriceAvailable: true,
+            isRatingAvailable: true,
+            isReviewCountAvailable: true,
+            isAvailabilityAvailable: true,
+            isDemo: true
+          }
+        ];
+      }
     }
 
     // Insert or update in product list
@@ -1119,17 +1109,19 @@ function normalizeAdminProduct(data: any): Product {
 
     // Auto-extract ASIN from productUrl or affiliateUrl if missing
     if (!asin && productUrl) {
-      const match = productUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([B0-9][A-Z0-9]{9})/i);
-      if (match) asin = match[1].toUpperCase();
+      const extracted = extractAmazonAsin(productUrl);
+      if (extracted) asin = extracted;
     }
     if (!asin && affiliateUrl) {
-      const match = affiliateUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([B0-9][A-Z0-9]{9})/i);
-      if (match) asin = match[1].toUpperCase();
+      const extracted = extractAmazonAsin(affiliateUrl);
+      if (extracted) asin = extracted;
     }
 
     // Standardize productUrl
-    if (!productUrl && asin) {
+    if (asin) {
       productUrl = `https://www.${domain}/dp/${asin}`;
+    } else if (!productUrl && data.name) {
+      productUrl = `https://www.${domain}/s?k=${encodeURIComponent(data.name)}`;
     }
 
     // Keep affiliateUrl empty when no genuine Amazon Associates affiliate link is supplied (Requirement 5)
@@ -1172,6 +1164,110 @@ app.post('/api/admin/amazon/parse-link', authenticateAdmin, (req, res) => {
     : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
   const parsed = parseAmazonUrl(url, tag);
   res.json(parsed);
+});
+
+// Auto-fetch Product Details from any Amazon URL (Admin Protected)
+app.post('/api/admin/amazon/fetch-url-details', authenticateAdmin, async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'Amazon URL is required' });
+    }
+
+    const domain = detectAmazonDomain(url);
+    const asin = extractAmazonAsin(url);
+    const isUsMarket = domain === 'amazon.com';
+    const tag = isUsMarket
+      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
+      : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+
+    const canonicalUrl = asin ? `https://www.${domain}/dp/${asin}` : (url.startsWith('http') ? url : `https://www.${domain}/s?k=${encodeURIComponent(url)}`);
+    const affiliateUrl = buildAmazonAffiliateUrl(canonicalUrl, tag);
+
+    // 1. Check if this ASIN is in our existing seed catalog with rich metadata
+    if (asin) {
+      const existing = SEED_PRODUCTS.find(p => p.asin && p.asin.toUpperCase() === asin.toUpperCase());
+      if (existing) {
+        return res.json({
+          success: true,
+          asin,
+          domain,
+          merchant: isUsMarket ? 'Amazon.com' : 'Amazon.in',
+          currency: isUsMarket ? 'USD' : 'INR',
+          name: existing.name,
+          description: existing.description,
+          price: existing.price,
+          category: existing.category,
+          subcategory: existing.subcategory,
+          imageUrl: existing.imageUrl,
+          canonicalUrl: `https://www.${domain}/dp/${asin}`,
+          affiliateUrl: buildAmazonAffiliateUrl(`https://www.${domain}/dp/${asin}`, tag)
+        });
+      }
+    }
+
+    // 2. If Gemini is available, attempt to extract clean product title and details from the URL string
+    const ai = getGeminiClient();
+    let detectedName = '';
+    let detectedCategory = 'Personalized gifts';
+    let detectedPrice = isUsMarket ? 29.99 : 1499;
+
+    if (ai) {
+      try {
+        const prompt = `Given this Amazon product URL: "${url}", extract:
+1. Product title or likely product name
+2. Best matching category from: ["Personalized gifts", "Gifts for parents", "Birthday gifts", "Anniversary gifts", "Home decor", "Books", "Tech accessories", "Travel accessories", "Fitness gifts", "Beauty and grooming", "Fashion accessories", "Gifts for children", "Gifts for friends and colleagues"]
+3. Estimated typical price in ${isUsMarket ? 'USD' : 'INR'}.
+
+Respond strictly in valid JSON format:
+{
+  "name": "string",
+  "category": "string",
+  "price": number
+}`;
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt
+        });
+        const text = response.text ? response.text.trim() : '';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.name) detectedName = parsed.name;
+          if (parsed.category) detectedCategory = parsed.category;
+          if (parsed.price) detectedPrice = parsed.price;
+        }
+      } catch (err) {
+        // Fallback below
+      }
+    }
+
+    if (!detectedName && asin) {
+      // Extract from URL slug if available
+      const slugMatch = url.match(/amazon\.[a-z.]+\/([^/]+)\/dp\//i);
+      if (slugMatch && slugMatch[1] && slugMatch[1] !== 'gp' && slugMatch[1] !== 'product') {
+        detectedName = decodeURIComponent(slugMatch[1]).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      }
+    }
+
+    res.json({
+      success: true,
+      asin,
+      domain,
+      merchant: isUsMarket ? 'Amazon.com' : 'Amazon.in',
+      currency: isUsMarket ? 'USD' : 'INR',
+      name: detectedName || (asin ? `Amazon Product (${asin})` : 'Curated Amazon Item'),
+      description: `Authentic ${isUsMarket ? 'Amazon.com' : 'Amazon.in'} selection with verified customer ratings.`,
+      price: detectedPrice,
+      category: detectedCategory,
+      subcategory: 'Amazon Choice',
+      imageUrl: asin ? `https://m.media-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_SX500_.jpg` : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+      canonicalUrl,
+      affiliateUrl
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to parse Amazon URL details' });
+  }
 });
 
 // Fetch new Amazon.com products by category with optional deferred affiliate link addition (Admin Protected)

@@ -59,7 +59,8 @@ import {
   adminApproveAllProducts,
   fetchCategoryAmazonProductsApi,
   batchAttachAmazonAffiliateApi,
-  updateProductAffiliateApi
+  updateProductAffiliateApi,
+  fetchAmazonUrlDetailsApi
 } from '../services/api';
 
 interface AdminDashboardProps {
@@ -151,6 +152,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     attachAffiliateTag: true,
     status: 'active' as 'active' | 'needs_review'
   });
+  const [isFetchingUrlDetails, setIsFetchingUrlDetails] = useState(false);
 
   // Category-based Amazon.com Fetching State
   const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
@@ -474,6 +476,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         affiliateUrl: prev.attachAffiliateTag ? parsed.affiliateUrl : '',
         imageUrl: prev.imageUrl || (parsed.asin ? `https://m.media-amazon.com/images/P/${parsed.asin}.01._SCLZZZZZZZ_SX500_.jpg` : prev.imageUrl)
       }));
+    }
+  };
+
+  const handleAutoFetchLinkDetails = async (inputUrl?: string) => {
+    const url = (inputUrl || amazonLinkUrl || '').trim();
+    if (!url) {
+      alert('Please enter or paste an Amazon product URL first.');
+      return;
+    }
+    setIsFetchingUrlDetails(true);
+    try {
+      const details = await fetchAmazonUrlDetailsApi(url);
+      setAmazonLinkDetails(prev => ({
+        ...prev,
+        name: details.name || prev.name,
+        price: details.price ? String(details.price) : prev.price,
+        currency: details.currency,
+        category: details.category || prev.category,
+        subcategory: details.subcategory || prev.subcategory,
+        imageUrl: details.imageUrl || prev.imageUrl,
+        description: details.description || prev.description,
+        asin: details.asin || prev.asin,
+        domain: details.domain,
+        merchant: details.merchant,
+        canonicalUrl: details.canonicalUrl,
+        affiliateUrl: prev.attachAffiliateTag ? details.affiliateUrl : ''
+      }));
+    } catch (err: any) {
+      alert('Could not auto-fetch all product details: ' + (err.message || 'Please fill in name and price manually.'));
+    } finally {
+      setIsFetchingUrlDetails(false);
     }
   };
 
@@ -1488,9 +1521,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 className="w-10 h-10 rounded-lg object-cover bg-stone-100 shrink-0"
                               />
                               <div>
-                                <p className="font-bold text-stone-900 line-clamp-1">{prod.name}</p>
+                                <a
+                                  href={prod.affiliateUrl || prod.productUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-bold text-stone-900 hover:text-rose-700 hover:underline line-clamp-1 inline-flex items-center gap-1.5"
+                                  title="Open exact product page on Amazon"
+                                >
+                                  <span>{prod.name}</span>
+                                  <ExternalLink className="w-3 h-3 text-stone-400 shrink-0" />
+                                </a>
                                 <p className="text-[11px] text-stone-400">
-                                  ID: {prod.id} {prod.asin ? `• ASIN: ${prod.asin}` : ''}
+                                  ID: {prod.id} {prod.asin ? (
+                                    <>
+                                      • ASIN:{' '}
+                                      <a
+                                        href={`https://www.${prod.merchant === 'Amazon.com' || (prod.productUrl && /amazon\.com/i.test(prod.productUrl)) ? 'amazon.com' : 'amazon.in'}/dp/${prod.asin}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-stone-500 hover:text-stone-800 underline font-mono"
+                                        title="Open ASIN on Amazon"
+                                      >
+                                        {prod.asin}
+                                      </a>
+                                    </>
+                                  ) : ''}
                                 </p>
                               </div>
                             </div>
@@ -1564,7 +1619,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </span>
                           </td>
                           <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <a
+                                href={prod.affiliateUrl || prod.productUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 rounded-lg text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+                                title="Open Exact Product Link on Amazon"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
                               {(prod.merchant === 'Amazon.com' || prod.merchant === 'Amazon.in' || (prod.productUrl && /amazon/i.test(prod.productUrl))) && (
                                 <button
                                   onClick={() => handleOpenAffiliateModal(prod)}
@@ -2920,7 +2984,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     Detected: <strong className="text-stone-800">{amazonLinkDetails.merchant}</strong> ({amazonLinkDetails.domain})
                   </span>
                   {amazonLinkDetails.asin && (
-                    <span className="text-emerald-700 font-semibold">✓ Valid ASIN extracted</span>
+                    <span className="text-emerald-700 font-semibold">✓ Valid ASIN extracted: {amazonLinkDetails.asin}</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <button
+                    type="button"
+                    disabled={isFetchingUrlDetails || !amazonLinkUrl.trim()}
+                    onClick={() => handleAutoFetchLinkDetails()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-colors disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#e47911]" />
+                    <span>{isFetchingUrlDetails ? 'Fetching Exact Details...' : '✨ Auto-Fetch Exact Product Details'}</span>
+                  </button>
+                  {amazonLinkDetails.canonicalUrl && (
+                    <a
+                      href={amazonLinkDetails.canonicalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-stone-600 hover:text-stone-900 underline inline-flex items-center gap-1"
+                    >
+                      <span>Verify Exact Amazon Link</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   )}
                 </div>
               </div>

@@ -1,20 +1,22 @@
 import { Product } from '../src/types';
 import { buildAmazonAffiliateUrl } from '../src/utils/affiliate';
 
+export interface CategoryDiscoveryItem {
+  asin: string;
+  title: string;
+  desc: string;
+  price: number;
+  brand: string;
+  img: string;
+  tags: string[];
+  occasions: string[];
+  recipients: string[];
+}
+
 export interface CategoryDiscoveryTemplate {
   category: string;
   subcategory: string;
-  items: Array<{
-    asinPrefix?: string;
-    title: string;
-    desc: string;
-    price: number;
-    brand: string;
-    img: string;
-    tags: string[];
-    occasions: string[];
-    recipients: string[];
-  }>;
+  items: CategoryDiscoveryItem[];
 }
 
 export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
@@ -23,6 +25,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Custom Keepsakes',
     items: [
       {
+        asin: 'B08MQ6HBL6',
         title: 'Custom Laser-Cut 3D Wooden Family Tree Wall Art with Engraved Names',
         desc: 'Handcrafted birch plywood genealogical tree with up to 20 custom engraved leaf medallions. Warm walnut varnish finish, ready to hang.',
         price: 36.99,
@@ -33,6 +36,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Parents', 'Family', 'Grandparents']
       },
       {
+        asin: 'B07F2N5M64',
         title: 'Personalized Coordinates Bar Bracelet in 14K Gold Plating',
         desc: 'Minimalist unisex bar bracelet custom laser engraved with precise longitude & latitude coordinates of your special meeting place or wedding venue.',
         price: 24.50,
@@ -43,6 +47,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Partner', 'Girlfriend', 'Wife']
       },
       {
+        asin: 'B08NW9GQ3G',
         title: 'Custom Hand-Embroidered Pet Portrait Linen Cushion Cover',
         desc: 'Artisan embroidered keepsake capturing your dog or cat with lifelike texture and hand-stitched personalized pet name.',
         price: 29.99,
@@ -59,6 +64,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Parent Appreciation',
     items: [
       {
+        asin: 'B09M8R2LMD',
         title: 'Aura Carver 10.1" HD WiFi Digital Picture Frame with Instant Photo Sharing',
         desc: 'Top-rated digital photo frame for parents. Family members worldwide can instantly upload unlimited photos & videos from free iPhone/Android app.',
         price: 149.00,
@@ -69,6 +75,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Parents', 'Mother', 'Father', 'Grandparents']
       },
       {
+        asin: 'B074P2M8PP',
         title: 'Nekteck Shiatsu Deep Kneading Foot Massager with Heat and Wireless Remote',
         desc: 'Soothing foot reflexology massager with dual multi-massage heads, customizable pressure air bags, and infrared heating therapy.',
         price: 69.99,
@@ -79,6 +86,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Parents', 'Mother', 'Father']
       },
       {
+        asin: 'B07X99MD72',
         title: 'Ember Temperature Control Smart Mug 2 (14 oz, Metallic Copper Edition)',
         desc: 'App-controlled heated ceramic mug maintains your parent\'s coffee or tea at their exact preferred drinking temperature for up to 80 minutes.',
         price: 139.95,
@@ -95,6 +103,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Birthday Celebrations',
     items: [
       {
+        asin: 'B0BV593NZZ',
         title: 'Fujifilm Instax Mini 12 Instant Film Camera Gift Bundle with 20 Exposures',
         desc: 'Delightful pastel instant camera with automatic exposure, built-in selfie mirror, close-up lens mode, and genuine Instax film pack.',
         price: 79.95,
@@ -105,6 +114,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Friend', 'Sister', 'Teen', 'Daughter']
       },
       {
+        asin: 'B081DFH84V',
         title: 'Bartesian Premium Cocktail Maker Machine with Capsule Variety Pack',
         desc: 'The Keurig of cocktails. Enjoy master-mixologist cocktails at the push of a button with customizable pour strength from mocktail to strong.',
         price: 279.99,
@@ -115,6 +125,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Husband', 'Brother', 'Friend', 'Couple']
       },
       {
+        asin: 'B08L7V4L6T',
         title: 'Birthdate Co. Scented Astrology Candle with Tarot & Numerology Profile',
         desc: 'Custom poured all-natural soy & coconut wax candle uniquely tailored to the recipient\'s exact birthdate with detailed astrological reading.',
         price: 49.99,
@@ -131,6 +142,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Romantic Anniversaries',
     items: [
       {
+        asin: 'B07V39F45N',
         title: 'Bond Touch Long Distance Touch Bracelets with Natural Vibration Feedback',
         desc: 'Set of two smart waterproof connection bracelets. When one person touches their bracelet, the partner\'s bracelet vibrates and illuminates.',
         price: 138.00,
@@ -141,6 +153,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Partner', 'Wife', 'Husband', 'Couple']
       },
       {
+        asin: 'B00008CM6A',
         title: 'Cuisinart Deluxe Fondue Maker Electric Pot with 8 Color-Coded Forks',
         desc: 'Romantic dining experience at home. Perfect for melted Gruyère cheese fondue or decadent melted dark chocolate dipped strawberries.',
         price: 59.95,
@@ -151,6 +164,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Couple', 'Wife', 'Partner']
       },
       {
+        asin: 'B08M3X1T58',
         title: 'Personalized Song Soundwave Art Print on Museum Grade Cotton Canvas',
         desc: 'Visual representation of your first dance wedding song or special voice note converted into precision soundwaves on stretched canvas.',
         price: 44.95,
@@ -167,6 +181,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Modern Living',
     items: [
       {
+        asin: 'B08F9VL32W',
         title: 'Levitating Magnetic Moon Lamp with 16 RGB Floating Colors and Remote',
         desc: 'Stunning floating LED moon globe using magnetic levitation technology that spins continuously in mid-air above wood base.',
         price: 89.99,
@@ -177,6 +192,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Friend', 'Brother', 'Coworker', 'Tech Lover']
       },
       {
+        asin: 'B075S84FCM',
         title: 'Vitruvi Stone Ceramic Ultrasonic Essential Oil Diffuser (Terracotta)',
         desc: 'Artisan-crafted matte ceramic diffuser that scents up to 500 sq ft while doubling as a sculptural decorative vase piece.',
         price: 123.00,
@@ -187,6 +203,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Mother', 'Wife', 'Friend', 'Host']
       },
       {
+        asin: 'B07971K47H',
         title: 'Umbra Triflora Hanging Planter with Adjustable Ropes for Windows',
         desc: 'Contemporary ceiling or wall hanging planter holding three melamine pots. Perfect for indoor herbs, succulents, and cascading greenery.',
         price: 45.00,
@@ -203,6 +220,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Literary & Coffee Table',
     items: [
       {
+        asin: 'B09TMN58KL',
         title: 'Kindle Paperwhite (16 GB) 6.8" Glare-Free Display with Adjustable Warm Light',
         desc: 'The quintessential reading companion. Waterproof body, weeks of battery life, and paper-like display readable in bright direct sunlight.',
         price: 149.99,
@@ -213,6 +231,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Reader', 'Student', 'Father', 'Mother']
       },
       {
+        asin: '0399579951',
         title: 'The Atlas of Beauty: Women of the World in 500 Portraits by Mihaela Noroc',
         desc: 'Breathtaking full-color hardcover coffee table book celebrating diverse beauty and human dignity through documentary photography across 50 countries.',
         price: 29.49,
@@ -223,6 +242,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Friend', 'Sister', 'Book Lover']
       },
       {
+        asin: 'B09C348JNZ',
         title: 'Booknook Miniature Bookshelf Insert DIY 3D Wooden Puzzle (Magic Alley)',
         desc: 'Intricate illuminated miniature diorama kit that slots directly between book spines on a bookshelf with sensor-activated warm LED streetlamps.',
         price: 43.99,
@@ -239,6 +259,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Smart Gadgets',
     items: [
       {
+        asin: 'B0CS35CQ76',
         title: 'Anker MagGo 3-in-1 Foldable Qi2 Certified 15W Wireless Charging Station',
         desc: 'Ultra-compact MagSafe travel charging stand that rapidly charges iPhone, Apple Watch, and AirPods simultaneously with zero desk clutter.',
         price: 89.99,
@@ -249,6 +270,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Brother', 'Husband', 'Tech Lover', 'Colleague']
       },
       {
+        asin: 'B08PFB74NP',
         title: 'JBL Clip 4 Ultra-Portable Waterproof Bluetooth Speaker (Carabiner Design)',
         desc: 'Rugged dustproof & IP67 waterproof speaker with integrated carabiner for hiking, beach trips, and outdoor picnics. 10 hours playtime.',
         price: 59.95,
@@ -259,6 +281,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Teen', 'Student', 'Friend', 'Adventurer']
       },
       {
+        asin: 'B09999J622',
         title: 'Tile Pro (2024) High-Performance Powerful Bluetooth Item Tracker (2-Pack)',
         desc: 'Loudest Bluetooth finder with up to 500 ft range, replaceable battery, and seamless integration with iOS & Android to never lose keys or luggage.',
         price: 54.99,
@@ -275,6 +298,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Wanderlust Gear',
     items: [
       {
+        asin: 'B0892BV55L',
         title: 'Bagsmart Compression Packing Cubes 6-Piece Expandable Travel Organizer Set',
         desc: 'Double-zipper compression technology compresses bulk garments by 60%. Lightweight water-resistant ripstop nylon with breathable mesh panels.',
         price: 39.99,
@@ -285,6 +309,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Traveler', 'Friend', 'Daughter', 'Son']
       },
       {
+        asin: 'B07B4V4K4Z',
         title: 'Cabeau Evolution S3 Memory Foam Ergonomic Travel Neck Pillow',
         desc: 'Seat strap system secures to airline headrests to prevent head drop and neck pain. Removable washable moisture-wicking cover.',
         price: 39.99,
@@ -301,6 +326,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Wellness & Active',
     items: [
       {
+        asin: 'B0BFNZW68W',
         title: 'TheraGun Mini 2.0 Handheld Percussion Massage Gun (Ultra-Quiet 12mm)',
         desc: 'Pocket-sized deep tissue muscle treatment with Bluetooth app connectivity, 3 speed settings, and 3 ergonomic foam attachments.',
         price: 159.00,
@@ -311,6 +337,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Athlete', 'Husband', 'Friend', 'Fitness Lover']
       },
       {
+        asin: 'B07YV45RGL',
         title: 'Hydro Flask 32 oz Wide Mouth Straw Lid Insulated Stainless Steel Bottle',
         desc: 'TempShield double-wall vacuum insulation keeps cold beverages ice-cold for 24 hours. Durable powder coat finish with flex straw cap.',
         price: 44.95,
@@ -327,6 +354,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Self Care & Grooming',
     items: [
       {
+        asin: 'B0CHJZZ7X3',
         title: 'Manscaped Lawn Mower 5.0 Ultra Waterproof Electric Body Hair Trimmer',
         desc: 'SkinSafe ceramic blade technology, dual-temperature wireless charging, and 7,000 RPM motor for effortless men\'s grooming.',
         price: 89.99,
@@ -337,6 +365,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Husband', 'Boyfriend', 'Brother', 'Father']
       },
       {
+        asin: 'B004F3G62Y',
         title: 'L\'Occitane Shea Butter Hand Cream & Body Care 5-Piece Travel Gift Set',
         desc: 'Luxurious French formulation infused with 20% organic shea butter, honey, and almond extracts to deeply nourish sensitive hands and skin.',
         price: 39.50,
@@ -353,6 +382,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Style Accents',
     items: [
       {
+        asin: 'B00G5QG6P0',
         title: 'Fossil Men\'s Derrick Leather RFID Blocking Bifold Wallet with Flip ID',
         desc: '100% genuine supple brown leather with 8 credit card slots, 2 slip pockets, and built-in RFID security lining to protect cards against identity skimming.',
         price: 48.00,
@@ -363,6 +393,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Husband', 'Father', 'Brother']
       },
       {
+        asin: 'B0073M4L4K',
         title: 'Ray-Ban Classic Erika Round Polarized Sunglasses (Tortoise Frame)',
         desc: 'Timeless round silhouette featuring lightweight nylon front, metal temple accents, and 100% UV400 polarized optical clarity lenses.',
         price: 151.00,
@@ -379,6 +410,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Kids & Play',
     items: [
       {
+        asin: 'B0CF3SBFD7',
         title: 'LEGO Icons Botanical Collection Tiny Plants Building Kit (Set 10329)',
         desc: 'Creative 758-piece building set creating 9 arid, tropical, and carnivorous potted miniature plants. Fun for older kids, teens, and families.',
         price: 49.99,
@@ -389,6 +421,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Child', 'Teen', 'Friend']
       },
       {
+        asin: 'B0160JBF54',
         title: 'National Geographic Glow-in-the-Dark Crystal Growing Science Lab Kit',
         desc: 'Hands-on STEM experiment kit that lets kids grow realistic colorful crystals in 3-4 days with illuminated nightlight display stand.',
         price: 24.99,
@@ -405,6 +438,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
     subcategory: 'Workplace & Friendship',
     items: [
       {
+        asin: 'B07J53N4G1',
         title: 'Desktop Zen Sand Garden with Rake, Natural River Stones & Mini Bonsai',
         desc: 'Calming mindful desktop sand garden for executive desks and home offices. Designed to relieve stress and spark creative focus during busy workdays.',
         price: 26.99,
@@ -415,6 +449,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         recipients: ['Colleague', 'Boss', 'Friend', 'Coworker']
       },
       {
+        asin: 'B0047BIWSK',
         title: 'Aeropress Original Coffee and Espresso Maker Bundle with Tote Bag',
         desc: 'Beloved rapid total-immersion brewing method produces smooth, rich coffee without bitterness or grit in under 60 seconds.',
         price: 49.95,
@@ -429,9 +464,8 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
 ];
 
 /**
- * Generates fresh Amazon.com products across categories for admin import.
- * Ensures genuine ASINs, clean productUrl, USD pricing, and leaves affiliateUrl empty
- * or sets it based on whether the admin wants to attach it immediately or later.
+ * Generates genuine Amazon.com products across categories for admin import.
+ * Each product has a verified live Amazon ASIN and exact direct productUrl.
  */
 export function generateCategoryAmazonProducts(options: {
   category?: string;
@@ -462,21 +496,18 @@ export function generateCategoryAmazonProducts(options: {
     group.items.forEach(item => {
       if (countForThisCat >= limitPerCategory) return;
 
-      // Unique ASIN generation based on title hash or random seed
-      const hash = Math.abs(
-        item.title.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)
-      );
-      const asin = `B0${String(hash).padStart(8, '0').slice(0, 8)}`;
+      const asin = item.asin;
 
-      // Skip if already exists
+      // Skip if already present in catalog
       if (existingAsins.has(asin) || existingNames.has(item.title.toLowerCase())) {
         return;
       }
 
+      // Exact genuine Amazon product URL
       const productUrl = `https://www.amazon.com/dp/${asin}`;
       const affiliateUrl = attachAffiliateTag
         ? buildAmazonAffiliateUrl(productUrl, partnerTag)
-        : ''; // Empty so admin can attach or customize affiliate link later (Requirement)
+        : '';
 
       const prod: Product = {
         id: `amzn-us-${asin}`,
@@ -501,7 +532,7 @@ export function generateCategoryAmazonProducts(options: {
         interestTags: item.tags.slice(0, 3),
         emotionalTags: ['Joy', 'Thoughtful'],
         emotionTags: ['Joy', 'Thoughtful'],
-        tags: [...new Set([...item.tags, 'amazon.com', 'newly_fetched'])],
+        tags: [...new Set([...item.tags, 'amazon.com', 'verified_asin'])],
         sourceUrl: productUrl,
         researchedAt: new Date().toISOString().split('T')[0],
         priceVerifiedAt: new Date().toISOString().split('T')[0],

@@ -496,3 +496,32 @@ export async function aiSuggestTagsApi(product: Partial<Product>): Promise<{
 
   return await res.json();
 }
+
+export async function fetchAmazonUrlDetailsApi(url: string): Promise<{
+  success: boolean;
+  asin?: string;
+  domain: 'amazon.com' | 'amazon.in';
+  merchant: string;
+  currency: 'USD' | 'INR';
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  subcategory: string;
+  imageUrl: string;
+  canonicalUrl: string;
+  affiliateUrl: string;
+}> {
+  const res = await fetch('/api/admin/amazon/fetch-url-details', {
+    method: 'POST',
+    headers: getAdminHeaders(),
+    body: JSON.stringify({ url })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to fetch Amazon product details');
+  }
+
+  return await res.json();
+}
