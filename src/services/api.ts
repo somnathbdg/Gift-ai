@@ -278,9 +278,16 @@ export async function fetchCategoryAmazonProductsApi(params: {
   limitPerCategory?: number;
   attachAffiliateTag?: boolean;
   partnerTag?: string;
+  validateLinks?: boolean;
+  previewOnly?: boolean;
+  saveOnlyActive?: boolean;
 }): Promise<{
   success: boolean;
   count: number;
+  totalFetched?: number;
+  activeCount?: number;
+  deadCount?: number;
+  preview?: boolean;
   categoriesAdded: string[];
   products: Product[];
   message: string;

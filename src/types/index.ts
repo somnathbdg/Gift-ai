@@ -50,6 +50,22 @@ export interface Product {
   reviewStatus?: 'needs_review' | 'approved' | 'rejected' | string;
   brand?: string;
   descriptionSource?: string;
+  // Link Health & Validation Status
+  linkStatus?: 'active' | 'dead' | 'checking' | 'unknown';
+  linkStatusCode?: number;
+  lastValidatedAt?: string;
+  linkValidationMessage?: string;
+}
+
+export interface LinkValidationResult {
+  url: string;
+  asin?: string;
+  productId?: string;
+  statusCode: number;
+  isActive: boolean;
+  status: 'active' | 'dead';
+  message: string;
+  checkedAt: string;
 }
 
 export interface GiftFinderInputs {

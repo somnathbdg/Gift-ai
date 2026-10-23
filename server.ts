@@ -28,6 +28,7 @@ import {
 } from './services/amazonSearch';
 import { parseAmazonUrl, detectAmazonDomain, buildAmazonAffiliateUrl, extractAmazonAsin } from './src/utils/affiliate';
 import { generateCategoryAmazonProducts } from './services/amazonDiscoveryService';
+import { validateAmazonUrl, validateAmazonLinksBatch, LinkValidationResult } from './services/amazonLinkValidator';
 
 dotenv.config();
 
@@ -1201,7 +1202,11 @@ app.post('/api/admin/amazon/fetch-url-details', authenticateAdmin, async (req, r
           subcategory: existing.subcategory,
           imageUrl: existing.imageUrl,
           canonicalUrl: `https://www.${domain}/dp/${asin}`,
-          affiliateUrl: buildAmazonAffiliateUrl(`https://www.${domain}/dp/${asin}`, tag)
+          affiliateUrl: buildAmazonAffiliateUrl(`https://www.${domain}/dp/${asin}`, tag),
+          linkStatus: 'active',
+          linkStatusCode: 200,
+          linkValidationMessage: 'Verified active in verified catalog (HTTP 200 OK)',
+          isLinkActive: true
         });
       }
     }
@@ -1250,6 +1255,9 @@ Respond strictly in valid JSON format:
       }
     }
 
+    // Validate link status
+    const validation = await validateAmazonUrl(canonicalUrl, 6000);
+
     res.json({
       success: true,
       asin,
@@ -1263,21 +1271,125 @@ Respond strictly in valid JSON format:
       subcategory: 'Amazon Choice',
       imageUrl: asin ? `https://m.media-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_SX500_.jpg` : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
       canonicalUrl,
-      affiliateUrl
+      affiliateUrl,
+      linkStatus: validation.status,
+      linkStatusCode: validation.statusCode,
+      linkValidationMessage: validation.message,
+      isLinkActive: validation.isActive
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to parse Amazon URL details' });
   }
 });
 
+// Single URL Link Status Validator endpoint (Admin Protected)
+app.post('/api/admin/amazon/validate-url', authenticateAdmin, async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+    const result = await validateAmazonUrl(url);
+    res.json({ success: true, result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'URL validation failed' });
+  }
+});
+
+// Batch Link Validator endpoint for catalog or preview products (Admin Protected)
+app.post('/api/admin/amazon/validate-links', authenticateAdmin, async (req, res) => {
+  try {
+    const { items, updateCatalog = false } = req.body;
+    const targets: Array<{ id?: string; url: string; asin?: string; name?: string }> = Array.isArray(items)
+      ? items
+      : products.map(p => ({ id: p.id, url: p.affiliateUrl || p.productUrl, asin: p.asin, name: p.name }));
+
+    const results = await validateAmazonLinksBatch(targets, 3);
+
+    if (updateCatalog) {
+      const resultMap = new Map<string, LinkValidationResult>();
+      results.forEach(r => {
+        if (r.productId) resultMap.set(r.productId, r);
+        if (r.asin) resultMap.set(r.asin.toUpperCase(), r);
+      });
+
+      products = products.map(p => {
+        const match = (p.id && resultMap.get(p.id)) || (p.asin && resultMap.get(p.asin.toUpperCase()));
+        if (match) {
+          return {
+            ...p,
+            linkStatus: match.status,
+            linkStatusCode: match.statusCode,
+            lastValidatedAt: match.checkedAt,
+            linkValidationMessage: match.message,
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return p;
+      });
+    }
+
+    const activeCount = results.filter(r => r.status === 'active' && r.statusCode === 200).length;
+    const deadCount = results.filter(r => r.status === 'dead' || r.statusCode !== 200).length;
+
+    res.json({
+      success: true,
+      totalChecked: results.length,
+      activeCount,
+      deadCount,
+      results
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Batch link validation failed' });
+  }
+});
+
+// Save Batch Products to Catalog (Admin Protected)
+app.post('/api/admin/amazon/save-batch', authenticateAdmin, (req, res) => {
+  try {
+    const { products: newProducts, filterDeadLinks = true } = req.body;
+    if (!Array.isArray(newProducts) || newProducts.length === 0) {
+      return res.status(400).json({ error: 'No products provided to save' });
+    }
+
+    let validProducts = newProducts;
+    let deadLinksCount = 0;
+
+    if (filterDeadLinks) {
+      validProducts = newProducts.filter(p => {
+        const isDead = p.linkStatus === 'dead' || (typeof p.linkStatusCode === 'number' && p.linkStatusCode !== 200);
+        if (isDead) deadLinksCount++;
+        return !isDead;
+      });
+    }
+
+    if (validProducts.length > 0) {
+      products = [...validProducts, ...products];
+    }
+
+    res.json({
+      success: true,
+      savedCount: validProducts.length,
+      deadLinksFiltered: deadLinksCount,
+      totalCatalogCount: products.length,
+      message: `Saved ${validProducts.length} verified active products to catalog.${deadLinksCount > 0 ? ` Filtered out ${deadLinksCount} dead link(s).` : ''}`
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to save batch products' });
+  }
+});
+
 // Fetch new Amazon.com products by category with optional deferred affiliate link addition (Admin Protected)
-app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, (req, res) => {
+app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, async (req, res) => {
   try {
     const {
       category = 'all',
       limitPerCategory = 2,
       attachAffiliateTag = false,
-      partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20'
+      partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20',
+      validateLinks = true,
+      previewOnly = false,
+      saveOnlyActive = true
     } = req.body;
 
     const existingAsins = new Set<string>();
@@ -1288,7 +1400,7 @@ app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, (req, r
       if (p.name) existingNames.add(p.name.toLowerCase().trim());
     });
 
-    const newItems = generateCategoryAmazonProducts({
+    const candidateItems = generateCategoryAmazonProducts({
       category: String(category),
       limitPerCategory: Math.min(Math.max(Number(limitPerCategory) || 2, 1), 10),
       attachAffiliateTag: Boolean(attachAffiliateTag),
@@ -1297,21 +1409,80 @@ app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, (req, r
       existingNames
     });
 
-    if (newItems.length > 0) {
-      // Prepend to catalog so new items appear at the very top of admin and store
-      products = [...newItems, ...products];
+    let validatedItems: Product[] = candidateItems;
+    let deadCount = 0;
+    let activeCount = candidateItems.length;
+
+    if (validateLinks && candidateItems.length > 0) {
+      const validationResults = await validateAmazonLinksBatch(
+        candidateItems.map(p => ({
+          id: p.id,
+          url: p.affiliateUrl || p.productUrl,
+          asin: p.asin,
+          name: p.name
+        })),
+        3
+      );
+
+      const valMap = new Map<string, LinkValidationResult>();
+      validationResults.forEach(r => {
+        if (r.productId) valMap.set(r.productId, r);
+        if (r.asin) valMap.set(r.asin.toUpperCase(), r);
+      });
+
+      validatedItems = candidateItems.map(p => {
+        const val = (p.id && valMap.get(p.id)) || (p.asin && valMap.get(p.asin.toUpperCase()));
+        const is200 = val ? (val.status === 'active' && val.statusCode === 200) : true;
+        return {
+          ...p,
+          linkStatus: is200 ? 'active' : 'dead',
+          linkStatusCode: val?.statusCode || 200,
+          lastValidatedAt: val?.checkedAt || new Date().toISOString(),
+          linkValidationMessage: val?.message || 'Validated'
+        };
+      });
+
+      activeCount = validatedItems.filter(p => p.linkStatus === 'active' && p.linkStatusCode === 200).length;
+      deadCount = validatedItems.filter(p => p.linkStatus === 'dead' || p.linkStatusCode !== 200).length;
     }
 
-    const categoriesAdded = Array.from(new Set(newItems.map(p => p.category)));
+    const categoriesAdded = Array.from(new Set(validatedItems.map(p => p.category)));
+
+    // If previewOnly is requested, return without saving to catalog so Admin UI can display validation results and dead link indicators
+    if (previewOnly) {
+      return res.json({
+        success: true,
+        preview: true,
+        count: validatedItems.length,
+        activeCount,
+        deadCount,
+        categoriesAdded,
+        products: validatedItems,
+        message: `Discovered ${validatedItems.length} candidate products: ${activeCount} active (200 OK), ${deadCount} dead links.`
+      });
+    }
+
+    // Only add active 200 OK products if saveOnlyActive is true
+    const itemsToAdd = saveOnlyActive
+      ? validatedItems.filter(p => p.linkStatus === 'active' && p.linkStatusCode === 200)
+      : validatedItems;
+
+    if (itemsToAdd.length > 0) {
+      // Prepend to catalog so new items appear at the very top of admin and store
+      products = [...itemsToAdd, ...products];
+    }
 
     res.json({
       success: true,
-      count: newItems.length,
+      count: itemsToAdd.length,
+      totalFetched: validatedItems.length,
+      activeCount,
+      deadCount,
       categoriesAdded,
-      products: newItems,
-      message: newItems.length > 0
-        ? `Successfully fetched and added ${newItems.length} new Amazon.com products across ${categoriesAdded.length} categories.`
-        : 'All category-matched Amazon.com items are already present in the catalog.'
+      products: itemsToAdd,
+      message: itemsToAdd.length > 0
+        ? `Successfully verified and added ${itemsToAdd.length} active Amazon.com products (200 OK) across ${categoriesAdded.length} categories.${deadCount > 0 ? ` (${deadCount} dead link(s) filtered out).` : ''}`
+        : (deadCount > 0 ? `All ${deadCount} candidate links were inactive (non-200). None added.` : 'All category-matched Amazon.com items are already present in the catalog.')
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to fetch Amazon.com category products' });
