@@ -22,8 +22,28 @@ import { SEED_PRODUCTS } from './data/seedProducts';
 
 export default function App() {
   // Navigation & Views
-  const [currentView, setCurrentView] = useState<string>('home');
-  const [viewParams, setViewParams] = useState<any>({});
+
+  // Initialize the page from the current URL
+  const getInitialRoute = () => {
+    const slug = window.location.pathname.replace(/^\/+|\/+$/g, '');
+
+    if (slug) {
+      return {
+        view: 'seo-page',
+        params: { slug },
+      };
+    }
+
+    return {
+      view: 'home',
+      params: {},
+    };
+  };
+
+  const [initialRoute] = useState(getInitialRoute);
+
+  const [currentView, setCurrentView] = useState<string>(initialRoute.view);
+  const [viewParams, setViewParams] = useState<any>(initialRoute.params);
 
   // Products & Health State
   const [products, setProducts] = useState<Product[]>(SEED_PRODUCTS);
@@ -139,9 +159,40 @@ export default function App() {
   };
 
   // Navigation Handler
+
   const handleNavigate = (view: string, params?: any) => {
+    const nextParams = params || {};
+
+    let nextPath = '/';
+
+    if (view === 'seo-page') {
+      const slug = String(nextParams.slug || 'gifts-for-wife')
+        .toLowerCase()
+        .replace(/^\/+|\/+$/g, '');
+
+      nextPath = `/${slug}`;
+    } else if (view === 'search') {
+      nextPath = '/search';
+    } else if (view === 'finder') {
+      nextPath = '/gift-finder';
+    } else if (view === 'personalization') {
+      nextPath = '/personalize';
+    } else if (view === 'message-generator') {
+      nextPath = '/gift-message-generator';
+    } else if (view === 'digital-card') {
+      nextPath = '/digital-gift-card';
+    } else if (view === 'admin') {
+      nextPath = '/admin';
+    } else if (view === 'hermes-spec') {
+      nextPath = '/hermes-spec';
+    }
+
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath);
+    }
+
     setCurrentView(view);
-    setViewParams(params || {});
+    setViewParams(nextParams);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
