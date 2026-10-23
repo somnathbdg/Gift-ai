@@ -66,12 +66,14 @@ interface AdminDashboardProps {
   products: Product[];
   onRefreshProducts: () => void;
   onExitAdmin: () => void;
+  onLogout?: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   products,
   onRefreshProducts,
-  onExitAdmin
+  onExitAdmin,
+  onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<
     'dashboard' | 'products' | 'matching_tester' | 'categories' | 'searches' | 'affiliate' | 'amazon' | 'assistant' | 'settings'
@@ -695,13 +697,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onExitAdmin}
             className="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold border border-stone-700 transition-colors"
           >
             Exit to Storefront
           </button>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="px-3 py-1.5 rounded-xl bg-rose-900/40 hover:bg-rose-900/60 text-rose-200 text-xs font-semibold border border-rose-800/60 transition-colors"
+              title="End active administrator session"
+            >
+              Log Out
+            </button>
+          )}
         </div>
       </header>
 

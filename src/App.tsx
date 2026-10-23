@@ -17,7 +17,7 @@ import { AdminLoginModal } from './components/AdminLoginModal';
 import { SavedGiftsDrawer } from './components/SavedGiftsDrawer';
 import { HermesSpecView } from './components/HermesSpecView';
 import { Product, GiftFinderInputs, RecommendationResponse } from './types';
-import { fetchProducts, checkServerHealth } from './services/api';
+import { fetchProducts, checkServerHealth, adminVerifyAuthApi, adminLogoutApi } from './services/api';
 import { SEED_PRODUCTS } from './data/seedProducts';
 
 export default function App() {
@@ -52,18 +52,35 @@ export default function App() {
   // Admin State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     try {
-      return sessionStorage.getItem('pg_admin_logged_in') === 'true';
+      return sessionStorage.getItem('pg_admin_logged_in') === 'true' && Boolean(sessionStorage.getItem('pg_admin_token'));
     } catch {
       return false;
     }
   });
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
-  // Initial Load: check health & fetch products from backend
+  // Initial Load: check health, load catalog & verify admin session
   useEffect(() => {
     loadCatalog();
     checkHealth();
+    verifyAdminSession();
   }, []);
+
+  const verifyAdminSession = async () => {
+    try {
+      const authStatus = await adminVerifyAuthApi();
+      if (authStatus.authenticated) {
+        setIsAdminLoggedIn(true);
+      } else {
+        setIsAdminLoggedIn(false);
+        if (currentView === 'admin') {
+          setCurrentView('home');
+        }
+      }
+    } catch {
+      setIsAdminLoggedIn(false);
+    }
+  };
 
   // Sync saved gifts with local storage
   useEffect(() => {
@@ -183,11 +200,16 @@ export default function App() {
 
   const handleAdminSuccess = () => {
     setIsAdminLoggedIn(true);
-    try {
-      sessionStorage.setItem('pg_admin_logged_in', 'true');
-    } catch {}
     setIsAdminModalOpen(false);
     handleNavigate('admin');
+    loadCatalog();
+  };
+
+  const handleAdminLogout = async () => {
+    await adminLogoutApi();
+    setIsAdminLoggedIn(false);
+    handleNavigate('home');
+    loadCatalog();
   };
 
   const handleExitAdmin = () => {
@@ -342,6 +364,7 @@ export default function App() {
             products={products}
             onRefreshProducts={loadCatalog}
             onExitAdmin={handleExitAdmin}
+            onLogout={handleAdminLogout}
           />
         )}
 

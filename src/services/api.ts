@@ -9,7 +9,98 @@ import {
   AmazonImportParams
 } from '../types';
 
-export async function checkServerHealth(): Promise<{ demoMode: boolean; geminiConfigured: boolean; productCount: number }> {
+// ==========================================
+// ADMIN TOKEN & HEADER MANAGEMENT
+// ==========================================
+
+export function getAdminToken(): string | null {
+  try {
+    return sessionStorage.getItem('pg_admin_token');
+  } catch {
+    return null;
+  }
+}
+
+export function setAdminToken(token: string | null): void {
+  try {
+    if (token) {
+      sessionStorage.setItem('pg_admin_token', token);
+      sessionStorage.setItem('pg_admin_logged_in', 'true');
+    } else {
+      sessionStorage.removeItem('pg_admin_token');
+      sessionStorage.removeItem('pg_admin_logged_in');
+    }
+  } catch {}
+}
+
+export function getAdminHeaders(extraHeaders: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...extraHeaders
+  };
+  const token = getAdminToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+// Admin Authentication API Calls
+export async function adminLoginApi(password: string): Promise<{
+  success: boolean;
+  token?: string;
+  error?: string;
+  message?: string;
+}> {
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Admin authentication failed.');
+  }
+  return data;
+}
+
+export async function adminVerifyAuthApi(): Promise<{ authenticated: boolean }> {
+  try {
+    const res = await fetch('/api/admin/verify', {
+      headers: getAdminHeaders()
+    });
+    if (!res.ok) return { authenticated: false };
+    return await res.json();
+  } catch {
+    return { authenticated: false };
+  }
+}
+
+export async function adminLogoutApi(): Promise<{ success: boolean }> {
+  try {
+    const res = await fetch('/api/admin/logout', {
+      method: 'POST',
+      headers: getAdminHeaders()
+    });
+    setAdminToken(null);
+    return res.ok ? await res.json() : { success: true };
+  } catch {
+    setAdminToken(null);
+    return { success: true };
+  }
+}
+
+// ==========================================
+// PUBLIC CATALOG & HEALTH API
+// ==========================================
+
+export async function checkServerHealth(): Promise<{
+  demoMode: boolean;
+  geminiConfigured: boolean;
+  productCount: number;
+  adminAuthRequired?: boolean;
+  adminConfigured?: boolean;
+}> {
   try {
     const res = await fetch('/api/health');
     if (!res.ok) throw new Error('Health check failed');
@@ -37,7 +128,9 @@ export async function fetchProducts(params?: {
     if (params?.search) query.set('search', params.search);
     if (params?.limit) query.set('limit', String(params.limit));
 
-    const res = await fetch(`/api/products?${query.toString()}`);
+    const res = await fetch(`/api/products?${query.toString()}`, {
+      headers: getAdminHeaders()
+    });
     if (!res.ok) throw new Error('Failed to fetch products');
     const data = await res.json();
     return data.products || [];
@@ -134,8 +227,13 @@ export async function trackClick(payload: {
 // ==========================================
 
 export async function fetchAmazonStatus(): Promise<AmazonIntegrationStatus> {
-  const res = await fetch('/api/amazon/status');
-  if (!res.ok) throw new Error('Failed to fetch Amazon integration status');
+  const res = await fetch('/api/amazon/status', {
+    headers: getAdminHeaders()
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to fetch Amazon integration status');
+  }
   return await res.json();
 }
 
@@ -146,9 +244,13 @@ export async function testAmazonConnectionApi(): Promise<{
   timestamp: string;
 }> {
   const res = await fetch('/api/amazon/test-connection', {
-    method: 'POST'
+    method: 'POST',
+    headers: getAdminHeaders()
   });
-  if (!res.ok) throw new Error('Amazon connection test failed');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Amazon connection test failed');
+  }
   return await res.json();
 }
 
@@ -161,12 +263,12 @@ export async function importAmazonProductsApi(params: AmazonImportParams): Promi
 }> {
   const res = await fetch('/api/amazon/import', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(params)
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to import Amazon products');
+    throw new Error(err.message || err.error || 'Failed to import Amazon products');
   }
   return await res.json();
 }
@@ -185,12 +287,12 @@ export async function fetchCategoryAmazonProductsApi(params: {
 }> {
   const res = await fetch('/api/admin/amazon/fetch-category-products', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(params)
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to fetch category products from Amazon.com');
+    throw new Error(err.message || err.error || 'Failed to fetch category products from Amazon.com');
   }
   return await res.json();
 }
@@ -206,12 +308,12 @@ export async function batchAttachAmazonAffiliateApi(params: {
 }> {
   const res = await fetch('/api/admin/amazon/batch-attach-affiliate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(params)
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to batch attach affiliate links');
+    throw new Error(err.message || err.error || 'Failed to batch attach affiliate links');
   }
   return await res.json();
 }
@@ -222,12 +324,12 @@ export async function updateProductAffiliateApi(
 ): Promise<{ success: boolean; product: Product }> {
   const res = await fetch(`/api/admin/products/${encodeURIComponent(productId)}/affiliate`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify({ affiliateUrl })
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to update affiliate URL');
+    throw new Error(err.message || err.error || 'Failed to update affiliate URL');
   }
   return await res.json();
 }
@@ -254,19 +356,27 @@ export async function searchAmazonProductsApi(params: {
 }
 
 export async function fetchAnalyticsSummary(): Promise<any> {
-  const res = await fetch('/api/analytics/summary');
-  if (!res.ok) throw new Error('Failed to load analytics summary');
+  const res = await fetch('/api/analytics/summary', {
+    headers: getAdminHeaders()
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to load analytics summary');
+  }
   return await res.json();
 }
 
 export async function queryAdminAssistant(query: string): Promise<{ reply: string; isAiGenerated: boolean }> {
   const res = await fetch('/api/admin/assistant', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify({ query })
   });
 
-  if (!res.ok) throw new Error('Admin assistant is temporarily unavailable');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Admin assistant is temporarily unavailable');
+  }
   return await res.json();
 }
 
@@ -276,42 +386,55 @@ export async function adminSaveProduct(product: Partial<Product>, isEditing: boo
 
   const res = await fetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(product)
   });
 
-  if (!res.ok) throw new Error('Failed to save product');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to save product');
+  }
   const data = await res.json();
   return data.product;
 }
 
 export async function adminDeleteProduct(id: string): Promise<boolean> {
   const res = await fetch(`/api/admin/products/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: getAdminHeaders()
   });
   return res.ok;
 }
 
 export async function adminApproveProduct(id: string): Promise<Product> {
   const res = await fetch(`/api/admin/products/${id}/approve`, {
-    method: 'POST'
+    method: 'POST',
+    headers: getAdminHeaders()
   });
-  if (!res.ok) throw new Error('Failed to approve product');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to approve product');
+  }
   const data = await res.json();
   return data.product;
 }
 
 export async function adminApproveAllProducts(): Promise<{ count: number; totalActive: number }> {
   const res = await fetch('/api/admin/products/approve-all', {
-    method: 'POST'
+    method: 'POST',
+    headers: getAdminHeaders()
   });
-  if (!res.ok) throw new Error('Failed to approve all products');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to approve all products');
+  }
   return await res.json();
 }
 
 export async function adminResetProducts(): Promise<boolean> {
   const res = await fetch('/api/admin/products/reset', {
-    method: 'POST'
+    method: 'POST',
+    headers: getAdminHeaders()
   });
   return res.ok;
 }
@@ -334,13 +457,13 @@ export async function testMatchingEngineApi(inputs: GiftFinderInputs): Promise<{
 }> {
   const res = await fetch('/api/matching/test', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(inputs)
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to run matching test');
+    throw new Error(err.message || err.error || 'Failed to run matching test');
   }
 
   return await res.json();
@@ -362,15 +485,14 @@ export async function aiSuggestTagsApi(product: Partial<Product>): Promise<{
 }> {
   const res = await fetch('/api/products/ai-tag', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAdminHeaders(),
     body: JSON.stringify(product)
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to generate AI tags');
+    throw new Error(err.message || err.error || 'Failed to generate AI tags');
   }
 
   return await res.json();
 }
-

@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
+import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
@@ -31,7 +32,7 @@ import { generateCategoryAmazonProducts } from './services/amazonDiscoveryServic
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -146,17 +147,73 @@ function getGeminiClient(): GoogleGenAI | null {
   }
 }
 
-// Hermes Authentication Middleware (Future-Ready, Optional in Demo Mode)
+// ==========================================
+// AUTHENTICATION & SECURITY MIDDLEWARE
+// ==========================================
+
+// In-Memory Admin Session Store
+const activeAdminSessions = new Set<string>();
+
+// Admin Authentication Middleware
+function authenticateAdmin(req: Request, res: Response, next: () => void) {
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  const configuredApiKey = process.env.ADMIN_API_KEY;
+
+  if ((!configuredPassword || configuredPassword.trim() === '') && (!configuredApiKey || configuredApiKey.trim() === '')) {
+    return res.status(503).json({
+      error: 'Service Unavailable',
+      message: 'Admin access is disabled. Please configure ADMIN_PASSWORD in your server environment variables on Render.',
+      code: 'ADMIN_UNCONFIGURED'
+    });
+  }
+
+  const authHeader = req.headers['authorization'] || req.headers['x-admin-token'];
+  if (!authHeader) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Admin authentication required. Please log in with the administrator passcode.',
+      code: 'ADMIN_AUTH_REQUIRED'
+    });
+  }
+
+  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : (typeof authHeader === 'string' ? authHeader.trim() : '');
+
+  if (!token) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Admin authorization token is empty.',
+      code: 'ADMIN_TOKEN_EMPTY'
+    });
+  }
+
+  const isValidSession = activeAdminSessions.has(token);
+  const isValidApiKey = Boolean(configuredApiKey && token === configuredApiKey);
+
+  if (!isValidSession && !isValidApiKey) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Invalid or expired admin session. Please log in again.',
+      code: 'ADMIN_SESSION_INVALID'
+    });
+  }
+
+  next();
+}
+
+// Hermes Agent Authentication Middleware (Zero bypass, constant-time verification)
 function authenticateHermes(req: Request, res: Response, next: () => void) {
   const configuredSecret = process.env.HERMES_API_KEY;
 
-  // If no HERMES_API_KEY is configured in the environment, run in open Demo Mode.
-  // The application runs completely without requiring this key to preview and test.
-  if (!configuredSecret) {
-    return next();
+  if (!configuredSecret || configuredSecret.trim() === '') {
+    return res.status(503).json({
+      error: 'Service Unavailable',
+      message: 'Hermes Agent API is disabled because HERMES_API_KEY is not configured in server environment variables.',
+      code: 'HERMES_UNCONFIGURED'
+    });
   }
 
-  // If HERMES_API_KEY is explicitly set, enforce authentication
   const authHeader = req.headers['x-hermes-api-key'] || req.headers['authorization'];
   if (!authHeader) {
     return res.status(401).json({
@@ -168,9 +225,12 @@ function authenticateHermes(req: Request, res: Response, next: () => void) {
 
   const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
     ? authHeader.slice(7).trim()
-    : authHeader;
+    : (typeof authHeader === 'string' ? authHeader.trim() : '');
 
-  if (token !== configuredSecret && token !== 'hermes_agent_secret_key_demo') {
+  const tokenBuf = Buffer.from(token);
+  const secretBuf = Buffer.from(configuredSecret.trim());
+
+  if (tokenBuf.length !== secretBuf.length || !crypto.timingSafeEqual(tokenBuf, secretBuf)) {
     return res.status(403).json({
       error: 'Forbidden',
       message: 'Invalid Hermes Agent API key.',
@@ -182,14 +242,81 @@ function authenticateHermes(req: Request, res: Response, next: () => void) {
 }
 
 // ==========================================
-// 1. PUBLIC API ROUTES
+// 1. ADMIN AUTHENTICATION API
+// ==========================================
+
+// Admin Login
+app.post('/api/admin/login', (req, res) => {
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  if (!configuredPassword || configuredPassword.trim() === '') {
+    return res.status(503).json({
+      success: false,
+      error: 'ADMIN_PASSWORD is not configured in server environment variables on Render. Please configure it in your dashboard settings.'
+    });
+  }
+
+  const { password } = req.body;
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({
+      success: false,
+      error: 'Passcode is required.'
+    });
+  }
+
+  const providedBuf = Buffer.from(password.trim());
+  const expectedBuf = Buffer.from(configuredPassword.trim());
+
+  if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
+    return res.status(401).json({
+      success: false,
+      error: 'Incorrect admin passcode.'
+    });
+  }
+
+  const sessionToken = crypto.randomBytes(32).toString('hex');
+  activeAdminSessions.add(sessionToken);
+
+  res.json({
+    success: true,
+    token: sessionToken,
+    message: 'Admin authentication successful.'
+  });
+});
+
+// Admin Verify Session
+app.get('/api/admin/verify', (req, res) => {
+  const authHeader = req.headers['authorization'] || req.headers['x-admin-token'];
+  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : (typeof authHeader === 'string' ? authHeader.trim() : '');
+
+  const configuredApiKey = process.env.ADMIN_API_KEY;
+  const isValid = Boolean(token && (activeAdminSessions.has(token) || (configuredApiKey && token === configuredApiKey)));
+  res.json({ authenticated: isValid });
+});
+
+// Admin Logout
+app.post('/api/admin/logout', (req, res) => {
+  const authHeader = req.headers['authorization'] || req.headers['x-admin-token'];
+  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : (typeof authHeader === 'string' ? authHeader.trim() : '');
+
+  if (token) {
+    activeAdminSessions.delete(token);
+  }
+  res.json({ success: true, message: 'Admin logged out successfully.' });
+});
+
+// ==========================================
+// 2. PUBLIC API ROUTES
 // ==========================================
 
 // Health & System Status
 app.get('/api/health', (req, res) => {
   const gemini = getGeminiClient();
-  const hermesConfigured = !!process.env.HERMES_API_KEY;
-  const adminKeyConfigured = !!process.env.ADMIN_ACCESS_KEY;
+  const hermesConfigured = Boolean(process.env.HERMES_API_KEY && process.env.HERMES_API_KEY.trim() !== '');
+  const adminConfigured = Boolean((process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.trim() !== '') || (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim() !== ''));
   const amazonConn = isAmazonConfigured();
   res.json({
     status: 'ok',
@@ -198,8 +325,10 @@ app.get('/api/health', (req, res) => {
     amazonMarketplace: 'www.amazon.in',
     geminiConfigured: !!gemini,
     hermesAgentArchitecture: 'ready',
-    hermesAuthRequired: hermesConfigured,
-    adminAuthRequired: adminKeyConfigured,
+    hermesAuthRequired: true,
+    hermesConfigured,
+    adminAuthRequired: true,
+    adminConfigured,
     productCount: products.length,
     timestamp: new Date().toISOString()
   });
@@ -209,14 +338,14 @@ app.get('/api/health', (req, res) => {
 // AMAZON INDIA CREATORS API INTEGRATION
 // ==========================================
 
-// Amazon Status for Admin Panel
-app.get('/api/amazon/status', (req, res) => {
+// Amazon Status for Admin Panel (Admin Protected)
+app.get('/api/amazon/status', authenticateAdmin, (req, res) => {
   const needsReviewCount = products.filter(p => p.status === 'needs_review').length;
   res.json(getAmazonStatus(needsReviewCount));
 });
 
-// Amazon Test Connection
-app.post('/api/amazon/test-connection', async (req, res) => {
+// Amazon Test Connection (Admin Protected)
+app.post('/api/amazon/test-connection', authenticateAdmin, async (req, res) => {
   const result = await testAmazonConnection();
   res.json(result);
 });
@@ -246,8 +375,8 @@ app.get('/api/amazon/search', async (req, res) => {
   }
 });
 
-// Admin Import Amazon Products
-app.post('/api/amazon/import', async (req, res) => {
+// Admin Import Amazon Products (Admin Protected)
+app.post('/api/amazon/import', authenticateAdmin, async (req, res) => {
   try {
     const { keyword, minPrice, maxPrice, category, occasion, limit } = req.body;
     if (!keyword || !keyword.trim()) {
@@ -380,15 +509,22 @@ app.post('/api/amazon/import', async (req, res) => {
   }
 });
 
-// Products Listing & Filtering
+// Products Listing & Filtering (Public Visitors see Active products; Admins can filter all)
 app.get('/api/products', (req, res) => {
   const { category, occasion, budget, status, search, limit } = req.query;
   let filtered = [...products];
 
-  if (status && status !== 'all') {
+  // Verify if request is from an authenticated admin
+  const authHeader = req.headers['authorization'] || req.headers['x-admin-token'];
+  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : (typeof authHeader === 'string' ? authHeader.trim() : '');
+  const isAdmin = Boolean(token && (activeAdminSessions.has(token) || (process.env.ADMIN_API_KEY && token === process.env.ADMIN_API_KEY)));
+
+  if (isAdmin && status && status !== 'all') {
     filtered = filtered.filter(p => p.status === status);
-  } else if (!status) {
-    // Default to active for normal public requests
+  } else if (!isAdmin || !status) {
+    // Normal public visitors can only browse active, approved products
     filtered = filtered.filter(p => p.status === 'active');
   }
 
@@ -625,8 +761,8 @@ Rules:
   }
 });
 
-// Admin Matching Engine Diagnostic & Tester
-app.post('/api/matching/test', async (req, res) => {
+// Admin Matching Engine Diagnostic & Tester (Admin Protected)
+app.post('/api/matching/test', authenticateAdmin, async (req, res) => {
   try {
     const inputs: GiftFinderInputs = req.body;
     if (!inputs || !inputs.recipient || !inputs.occasion) {
@@ -649,8 +785,8 @@ app.post('/api/matching/test', async (req, res) => {
   }
 });
 
-// Admin AI Product Tagging Service
-app.post('/api/products/ai-tag', async (req, res) => {
+// Admin AI Product Tagging Service (Admin Protected)
+app.post('/api/products/ai-tag', authenticateAdmin, async (req, res) => {
   try {
     const productDraft: Partial<Product> = req.body;
     if (!productDraft || (!productDraft.name && !productDraft.description)) {
@@ -801,8 +937,8 @@ app.post('/api/analytics/track', (req, res) => {
   res.json({ success: true, loggedId: log.id, eventType });
 });
 
-// Analytics Summary for Admin Dashboard
-app.get('/api/analytics/summary', (req, res) => {
+// Analytics Summary for Admin Dashboard (Admin Protected)
+app.get('/api/analytics/summary', authenticateAdmin, (req, res) => {
   const totalSearches = analyticsEvents.filter(e => e.type === 'gift_finder_completed').length;
   const productClicks = clickLogs.filter(c => c.type === 'product_click').length;
   const affiliateClicks = clickLogs.filter(c => c.type === 'affiliate_click').length;
@@ -860,8 +996,8 @@ app.get('/api/analytics/summary', (req, res) => {
   });
 });
 
-// Admin AI Assistant
-app.post('/api/admin/assistant', async (req, res) => {
+// Admin AI Assistant (Admin Protected)
+app.post('/api/admin/assistant', authenticateAdmin, async (req, res) => {
   try {
     const { query } = req.body;
     if (!query) {
@@ -1024,8 +1160,8 @@ function normalizeAdminProduct(data: any): Product {
   };
 }
 
-// Quick Amazon Link Parser endpoint for Admin
-app.post('/api/admin/amazon/parse-link', (req, res) => {
+// Quick Amazon Link Parser endpoint for Admin (Admin Protected)
+app.post('/api/admin/amazon/parse-link', authenticateAdmin, (req, res) => {
   const { url } = req.body;
   if (!url || typeof url !== 'string') {
     return res.status(400).json({ error: 'Amazon URL is required' });
@@ -1038,8 +1174,8 @@ app.post('/api/admin/amazon/parse-link', (req, res) => {
   res.json(parsed);
 });
 
-// Fetch new Amazon.com products by category with optional deferred affiliate link addition
-app.post('/api/admin/amazon/fetch-category-products', (req, res) => {
+// Fetch new Amazon.com products by category with optional deferred affiliate link addition (Admin Protected)
+app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, (req, res) => {
   try {
     const {
       category = 'all',
@@ -1086,8 +1222,8 @@ app.post('/api/admin/amazon/fetch-category-products', (req, res) => {
   }
 });
 
-// Batch attach affiliate partner tag to products missing affiliate links
-app.post('/api/admin/amazon/batch-attach-affiliate', (req, res) => {
+// Batch attach affiliate partner tag to products missing affiliate links (Admin Protected)
+app.post('/api/admin/amazon/batch-attach-affiliate', authenticateAdmin, (req, res) => {
   try {
     const { productIds, partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20' } = req.body;
 
@@ -1122,8 +1258,8 @@ app.post('/api/admin/amazon/batch-attach-affiliate', (req, res) => {
   }
 });
 
-// Update affiliate URL for a specific product
-app.put('/api/admin/products/:id/affiliate', (req, res) => {
+// Update affiliate URL for a specific product (Admin Protected)
+app.put('/api/admin/products/:id/affiliate', authenticateAdmin, (req, res) => {
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: 'Product not found' });
@@ -1150,8 +1286,8 @@ app.put('/api/admin/products/:id/affiliate', (req, res) => {
   res.json({ success: true, product: products[index] });
 });
 
-// Admin Product CRUD
-app.post('/api/admin/products', (req, res) => {
+// Admin Product CRUD (Admin Protected)
+app.post('/api/admin/products', authenticateAdmin, (req, res) => {
   const normalized = normalizeAdminProduct(req.body);
   const newProduct: Product = {
     ...normalized,
@@ -1165,7 +1301,7 @@ app.post('/api/admin/products', (req, res) => {
   res.status(201).json({ product: newProduct });
 });
 
-app.put('/api/admin/products/:id', (req, res) => {
+app.put('/api/admin/products/:id', authenticateAdmin, (req, res) => {
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: 'Product not found' });
@@ -1185,8 +1321,8 @@ app.put('/api/admin/products/:id', (req, res) => {
   res.json({ product: products[index] });
 });
 
-// Approve a single product (Requirement 6 & 7)
-app.post('/api/admin/products/:id/approve', (req, res) => {
+// Approve a single product (Admin Protected)
+app.post('/api/admin/products/:id/approve', authenticateAdmin, (req, res) => {
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: 'Product not found' });
@@ -1200,8 +1336,8 @@ app.post('/api/admin/products/:id/approve', (req, res) => {
   res.json({ success: true, product: products[index] });
 });
 
-// Approve all pending products (Demo / Admin convenience)
-app.post('/api/admin/products/approve-all', (req, res) => {
+// Approve all pending products (Admin Protected)
+app.post('/api/admin/products/approve-all', authenticateAdmin, (req, res) => {
   let count = 0;
   products = products.map(p => {
     if (p.status === 'needs_review' || p.reviewStatus === 'needs_review') {
@@ -1218,7 +1354,7 @@ app.post('/api/admin/products/approve-all', (req, res) => {
   res.json({ success: true, count, totalActive: products.filter(p => p.status === 'active').length });
 });
 
-app.delete('/api/admin/products/:id', (req, res) => {
+app.delete('/api/admin/products/:id', authenticateAdmin, (req, res) => {
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: 'Product not found' });
@@ -1228,7 +1364,7 @@ app.delete('/api/admin/products/:id', (req, res) => {
   res.json({ success: true, removed: removed[0] });
 });
 
-app.post('/api/admin/products/reset', (req, res) => {
+app.post('/api/admin/products/reset', authenticateAdmin, (req, res) => {
   products = [...SEED_PRODUCTS];
   res.json({ success: true, count: products.length });
 });
@@ -1489,12 +1625,16 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Endpoint not found', path: req.path });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Perfect Gift AI server listening on http://0.0.0.0:${PORT}`);
+  const numericPort = Number(PORT) || 3000;
+  app.listen(numericPort, '0.0.0.0', () => {
+    console.log(`Perfect Gift AI server listening on http://0.0.0.0:${numericPort}`);
   });
 }
 
