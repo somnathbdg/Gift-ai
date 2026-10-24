@@ -1890,6 +1890,21 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+app.get('/sitemap.xml', (_req, res) => {
+  const urls = [
+    'https://shop.todkart.com/',
+    'https://shop.todkart.com/gifts-for-wife',
+    'https://shop.todkart.com/gifts-for-husband',
+    'https://shop.todkart.com/birthday-gifts',
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}
+</urlset>`;
+
+  res.status(200).type('application/xml').send(xml);
+});   
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/api/')) {
