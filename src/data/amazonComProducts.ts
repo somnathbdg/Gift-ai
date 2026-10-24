@@ -620,7 +620,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08B3QG6Z2",
     "productUrl": "https://www.amazon.com/dp/B08B3QG6Z2",
     "affiliateUrl": "https://www.amazon.com/dp/B08B3QG6Z2?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1611591475879-1f4864c8d184?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "partner",
       "couple",
@@ -3142,7 +3142,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08KJN3LPD",
     "productUrl": "https://www.amazon.com/dp/B08KJN3LPD",
     "affiliateUrl": "https://www.amazon.com/dp/B08KJN3LPD?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1608248597359-0026f8cb47eb?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "friend",
       "sister",
@@ -3962,7 +3962,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07W9421H2",
     "productUrl": "https://www.amazon.com/dp/B07W9421H2",
     "affiliateUrl": "https://www.amazon.com/dp/B07W9421H2?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1584990347449-3543d395a0a3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "couple",
       "wife",
@@ -5273,7 +5273,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07L4Q8W2J",
     "productUrl": "https://www.amazon.com/dp/B07L4Q8W2J",
     "affiliateUrl": "https://www.amazon.com/dp/B07L4Q8W2J?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1622445268045-8120c8ec042e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "colleague",
       "friend",
@@ -6872,7 +6872,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07D38R9W4",
     "productUrl": "https://www.amazon.com/dp/B07D38R9W4",
     "affiliateUrl": "https://www.amazon.com/dp/B07D38R9W4?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1608248597359-0026f8cb47eb?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "mom",
       "wife",
@@ -9192,7 +9192,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08FB6NZN8",
     "productUrl": "https://www.amazon.com/dp/B08FB6NZN8",
     "affiliateUrl": "https://www.amazon.com/dp/B08FB6NZN8?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1608248597359-0026f8cb47eb?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "mom",
       "grandmother",
@@ -10911,7 +10911,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08N5WRW88",
     "productUrl": "https://www.amazon.com/dp/B08N5WRW88",
     "affiliateUrl": "https://www.amazon.com/dp/B08N5WRW88?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1609592424350-a9cb57c91c3d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "traveler",
       "commuter",
@@ -11220,7 +11220,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07G37W188",
     "productUrl": "https://www.amazon.com/dp/B07G37W188",
     "affiliateUrl": "https://www.amazon.com/dp/B07G37W188?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1622445268045-8120c8ec042e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "apple user",
       "husband",
@@ -12333,7 +12333,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09C7Y8Z88",
     "productUrl": "https://www.amazon.com/dp/B09C7Y8Z88",
     "affiliateUrl": "https://www.amazon.com/dp/B09C7Y8Z88?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1609592424350-a9cb57c91c3d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "international traveler",
       "digital nomad",
@@ -12931,7 +12931,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08G8B6Q88",
     "productUrl": "https://www.amazon.com/dp/B08G8B6Q88",
     "affiliateUrl": "https://www.amazon.com/dp/B08G8B6Q88?tag=digital04b9-20",
-    "imageUrl": "https://images.unsplash.com/photo-1609592424350-a9cb57c91c3d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",
     "recipients": [
       "business traveler",
       "commuter",

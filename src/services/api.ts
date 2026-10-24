@@ -6,7 +6,8 @@ import {
   GiftBundle,
   SurpriseIdea,
   AmazonIntegrationStatus,
-  AmazonImportParams
+  AmazonImportParams,
+  LinkValidationResult
 } from '../types';
 
 // ==========================================
@@ -518,6 +519,10 @@ export async function fetchAmazonUrlDetailsApi(url: string): Promise<{
   imageUrl: string;
   canonicalUrl: string;
   affiliateUrl: string;
+  linkStatus?: 'active' | 'dead';
+  linkStatusCode?: number;
+  linkValidationMessage?: string;
+  isLinkActive?: boolean;
 }> {
   const res = await fetch('/api/admin/amazon/fetch-url-details', {
     method: 'POST',
@@ -532,3 +537,70 @@ export async function fetchAmazonUrlDetailsApi(url: string): Promise<{
 
   return await res.json();
 }
+
+export async function validateAmazonUrlApi(url: string): Promise<{
+  success: boolean;
+  result: LinkValidationResult;
+}> {
+  const res = await fetch('/api/admin/amazon/validate-url', {
+    method: 'POST',
+    headers: getAdminHeaders(),
+    body: JSON.stringify({ url })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to validate Amazon URL');
+  }
+
+  return await res.json();
+}
+
+export async function validateAmazonLinksBatchApi(params?: {
+  items?: Array<{ id?: string; url: string; asin?: string; name?: string }>;
+  updateCatalog?: boolean;
+}): Promise<{
+  success: boolean;
+  totalChecked: number;
+  activeCount: number;
+  deadCount: number;
+  results: LinkValidationResult[];
+}> {
+  const res = await fetch('/api/admin/amazon/validate-links', {
+    method: 'POST',
+    headers: getAdminHeaders(),
+    body: JSON.stringify(params || {})
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to perform batch link validation');
+  }
+
+  return await res.json();
+}
+
+export async function saveBatchProductsApi(params: {
+  products: Product[];
+  filterDeadLinks?: boolean;
+}): Promise<{
+  success: boolean;
+  savedCount: number;
+  deadLinksFiltered: number;
+  totalCatalogCount: number;
+  message: string;
+}> {
+  const res = await fetch('/api/admin/amazon/save-batch', {
+    method: 'POST',
+    headers: getAdminHeaders(),
+    body: JSON.stringify(params)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to save batch products');
+  }
+
+  return await res.json();
+}
+

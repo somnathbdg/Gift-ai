@@ -27,16 +27,34 @@ export default function App() {
   const getInitialRoute = () => {
     const slug = window.location.pathname.replace(/^\/+|\/+$/g, '');
 
-    if (slug) {
-      return {
-        view: 'seo-page',
-        params: { slug },
-      };
+    if (!slug) {
+      return { view: 'home', params: {} };
+    }
+    if (slug === 'search') {
+      return { view: 'search', params: {} };
+    }
+    if (slug === 'gift-finder' || slug === 'finder') {
+      return { view: 'finder', params: {} };
+    }
+    if (slug === 'personalize') {
+      return { view: 'personalization', params: {} };
+    }
+    if (slug === 'gift-message-generator') {
+      return { view: 'message-generator', params: {} };
+    }
+    if (slug === 'digital-gift-card') {
+      return { view: 'digital-card', params: {} };
+    }
+    if (slug === 'admin') {
+      return { view: 'admin', params: {} };
+    }
+    if (slug === 'hermes-spec') {
+      return { view: 'hermes-spec', params: {} };
     }
 
     return {
-      view: 'home',
-      params: {},
+      view: 'seo-page',
+      params: { slug },
     };
   };
 
@@ -84,7 +102,60 @@ export default function App() {
     loadCatalog();
     checkHealth();
     verifyAdminSession();
+
+    const handlePopState = () => {
+      const slug = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      if (slug === 'search') {
+        setCurrentView('search');
+        setViewParams({});
+      } else if (slug === 'gift-finder' || slug === 'finder') {
+        setCurrentView('finder');
+        setViewParams({});
+      } else if (slug === 'personalize') {
+        setCurrentView('personalization');
+        setViewParams({});
+      } else if (slug === 'gift-message-generator') {
+        setCurrentView('message-generator');
+        setViewParams({});
+      } else if (slug === 'digital-gift-card') {
+        setCurrentView('digital-card');
+        setViewParams({});
+      } else if (slug === 'admin') {
+        setCurrentView('admin');
+        setViewParams({});
+      } else if (slug === 'hermes-spec') {
+        setCurrentView('hermes-spec');
+        setViewParams({});
+      } else if (slug) {
+        setCurrentView('seo-page');
+        setViewParams({ slug });
+      } else {
+        setCurrentView('home');
+        setViewParams({});
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Sync homepage title and canonical URL when returning to home view
+  useEffect(() => {
+    if (currentView === 'home') {
+      document.title = 'Perfect Gift AI | Personalized Gift Ideas for Every Occasion';
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute(
+          'content',
+          'Discover personalized gift ideas with Perfect Gift AI. Find thoughtful gifts for birthdays, anniversaries, holidays and special occasions, tailored to their interests and your budget.'
+        );
+      }
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) {
+        canonical.setAttribute('href', 'https://shop.todkart.com/');
+      }
+    }
+  }, [currentView]);
 
   const verifyAdminSession = async () => {
     try {
@@ -295,7 +366,13 @@ export default function App() {
             <HowItWorks onStartFinder={() => handleStartFinder()} />
             <PopularOccasions
               onSelectOccasion={occ => handleStartFinder({ occasion: occ })}
-              onNavigateToSeo={occ => handleNavigate('seo-page', { occasion: occ, slug: occ.toLowerCase() })}
+              onNavigateToSeo={slugOrOcc => {
+                let s = slugOrOcc.toLowerCase().replace(/\s+/g, '-');
+                if (s === 'birthday') s = 'birthday-gifts';
+                if (s === 'wife') s = 'gifts-for-wife';
+                if (s === 'husband') s = 'gifts-for-husband';
+                handleNavigate('seo-page', { slug: s });
+              }}
             />
             <PopularCategories
               onSelectCategory={cat => handleNavigate('search', { category: cat })}

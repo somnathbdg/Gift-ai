@@ -33,7 +33,7 @@ import {
   Radio,
   Clock
 } from 'lucide-react';
-import { Product, AmazonIntegrationStatus } from '../types';
+import { Product, AmazonIntegrationStatus, LinkValidationResult } from '../types';
 import {
   DEFAULT_AMAZON_PARTNER_TAG,
   DEFAULT_AMAZON_IN_PARTNER_TAG,
@@ -60,7 +60,10 @@ import {
   fetchCategoryAmazonProductsApi,
   batchAttachAmazonAffiliateApi,
   updateProductAffiliateApi,
-  fetchAmazonUrlDetailsApi
+  fetchAmazonUrlDetailsApi,
+  validateAmazonUrlApi,
+  validateAmazonLinksBatchApi,
+  saveBatchProductsApi
 } from '../services/api';
 
 interface AdminDashboardProps {
@@ -150,9 +153,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     canonicalUrl: '',
     affiliateUrl: '',
     attachAffiliateTag: true,
-    status: 'active' as 'active' | 'needs_review'
+    status: 'active' as 'active' | 'needs_review',
+    linkStatus: 'unknown' as 'active' | 'dead' | 'checking' | 'unknown',
+    linkStatusCode: 0,
+    linkValidationMessage: '',
+    isValidatingLink: false
   });
   const [isFetchingUrlDetails, setIsFetchingUrlDetails] = useState(false);
+
+  // Link Health Audit & Validation State
+  const [isAuditingLinks, setIsAuditingLinks] = useState(false);
+  const [auditSummary, setAuditSummary] = useState<{
+    totalChecked: number;
+    activeCount: number;
+    deadCount: number;
+    timestamp: string;
+  } | null>(null);
+  const [linkHealthFilter, setLinkHealthFilter] = useState<'all' | 'active_200' | 'dead_links'>('all');
+  const [checkingProductId, setCheckingProductId] = useState<string | null>(null);
+  const [isTestingEditingLink, setIsTestingEditingLink] = useState(false);
 
   // Category-based Amazon.com Fetching State
   const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
@@ -161,13 +180,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     category: 'all',
     limitPerCategory: 3,
     attachAffiliateTag: false, // Default false as requested: option to add affiliate link later
-    partnerTag: DEFAULT_AMAZON_COM_PARTNER_TAG
+    partnerTag: DEFAULT_AMAZON_COM_PARTNER_TAG,
+    validateLinks: true,
+    saveOnlyActive: true
   });
   const [fetchCategoryResult, setFetchCategoryResult] = useState<{
     count: number;
     message: string;
     categoriesAdded: string[];
+    deadLinksFiltered?: number;
   } | null>(null);
+
+  // Category Preview Mode State
+  const [categoryPreviewProducts, setCategoryPreviewProducts] = useState<Product[] | null>(null);
+  const [categoryPreviewStats, setCategoryPreviewStats] = useState<{
+    totalFetched: number;
+    activeCount: number;
+    deadCount: number;
+  } | null>(null);
+  const [isSavingCategoryPreview, setIsSavingCategoryPreview] = useState(false);
 
   // Affiliate Link Management State (for adding/updating affiliate links later)
   const [isAffiliateModalOpen, setIsAffiliateModalOpen] = useState(false);
@@ -268,23 +299,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleFetchCategoryAmazonProducts = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handlePreviewCategoryAmazonProducts = async () => {
     setIsFetchingCategoryProducts(true);
     setFetchCategoryResult(null);
+    setCategoryPreviewProducts(null);
+    setCategoryPreviewStats(null);
 
     try {
       const res = await fetchCategoryAmazonProductsApi({
         category: fetchCategoryForm.category,
         limitPerCategory: Number(fetchCategoryForm.limitPerCategory) || 3,
         attachAffiliateTag: fetchCategoryForm.attachAffiliateTag,
-        partnerTag: fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG
+        partnerTag: fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG,
+        validateLinks: true,
+        previewOnly: true
+      });
+
+      setCategoryPreviewProducts(res.products);
+      setCategoryPreviewStats({
+        totalFetched: res.totalFetched || res.count,
+        activeCount: res.activeCount || 0,
+        deadCount: res.deadCount || 0
+      });
+    } catch (err: any) {
+      alert('Error previewing Amazon.com category products: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsFetchingCategoryProducts(false);
+    }
+  };
+
+  const handleSaveCategoryPreviewProducts = async () => {
+    if (!categoryPreviewProducts || categoryPreviewProducts.length === 0) return;
+    setIsSavingCategoryPreview(true);
+
+    try {
+      const res = await saveBatchProductsApi({
+        products: categoryPreviewProducts,
+        filterDeadLinks: fetchCategoryForm.saveOnlyActive
+      });
+
+      const categoriesAdded = Array.from(new Set(categoryPreviewProducts.map(p => p.category)));
+      setFetchCategoryResult({
+        count: res.savedCount,
+        message: res.message,
+        categoriesAdded,
+        deadLinksFiltered: res.deadLinksFiltered
+      });
+
+      setCategoryPreviewProducts(null);
+      setCategoryPreviewStats(null);
+      onRefreshProducts();
+      await loadAmazonStatus();
+    } catch (err: any) {
+      alert('Failed to save products: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsSavingCategoryPreview(false);
+    }
+  };
+
+  const handleFetchCategoryAmazonProducts = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsFetchingCategoryProducts(true);
+    setFetchCategoryResult(null);
+    setCategoryPreviewProducts(null);
+    setCategoryPreviewStats(null);
+
+    try {
+      const res = await fetchCategoryAmazonProductsApi({
+        category: fetchCategoryForm.category,
+        limitPerCategory: Number(fetchCategoryForm.limitPerCategory) || 3,
+        attachAffiliateTag: fetchCategoryForm.attachAffiliateTag,
+        partnerTag: fetchCategoryForm.partnerTag || DEFAULT_AMAZON_COM_PARTNER_TAG,
+        validateLinks: fetchCategoryForm.validateLinks,
+        previewOnly: false,
+        saveOnlyActive: fetchCategoryForm.saveOnlyActive
       });
 
       setFetchCategoryResult({
         count: res.count,
         message: res.message,
-        categoriesAdded: res.categoriesAdded
+        categoriesAdded: res.categoriesAdded,
+        deadLinksFiltered: res.deadCount
       });
 
       onRefreshProducts();
@@ -293,6 +388,75 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       alert('Error fetching Amazon.com category products: ' + (err.message || 'Unknown error'));
     } finally {
       setIsFetchingCategoryProducts(false);
+    }
+  };
+
+  const handleAuditCatalogLinks = async () => {
+    setIsAuditingLinks(true);
+    try {
+      const res = await validateAmazonLinksBatchApi({ updateCatalog: true });
+      setAuditSummary({
+        totalChecked: res.totalChecked,
+        activeCount: res.activeCount,
+        deadCount: res.deadCount,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      onRefreshProducts();
+    } catch (err: any) {
+      alert('Catalog link audit failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsAuditingLinks(false);
+    }
+  };
+
+  const handleVerifySingleProductLink = async (prod: Product) => {
+    setCheckingProductId(prod.id);
+    try {
+      const targetUrl = prod.affiliateUrl || prod.productUrl || (prod.asin ? `https://www.amazon.com/dp/${prod.asin}` : '');
+      if (!targetUrl) throw new Error('No product URL to validate');
+      const { result } = await validateAmazonUrlApi(targetUrl);
+
+      await adminSaveProduct({
+        ...prod,
+        linkStatus: result.status,
+        linkStatusCode: result.statusCode,
+        lastValidatedAt: result.checkedAt,
+        linkValidationMessage: result.message
+      }, true);
+      onRefreshProducts();
+    } catch (err: any) {
+      alert('Verification failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setCheckingProductId(null);
+    }
+  };
+
+  const handleTestEditingProductLink = async () => {
+    if (!editingProduct) return;
+    const url = editingProduct.affiliateUrl || editingProduct.productUrl || (editingProduct.asin ? `https://www.amazon.com/dp/${editingProduct.asin}` : '');
+    if (!url) {
+      alert('Please enter a product URL or ASIN first');
+      return;
+    }
+    setIsTestingEditingLink(true);
+    try {
+      const { result } = await validateAmazonUrlApi(url);
+      setEditingProduct(prev => prev ? ({
+        ...prev,
+        linkStatus: result.status,
+        linkStatusCode: result.statusCode,
+        linkValidationMessage: result.message,
+        lastValidatedAt: result.checkedAt
+      }) : null);
+    } catch (err: any) {
+      setEditingProduct(prev => prev ? ({
+        ...prev,
+        linkStatus: 'dead',
+        linkStatusCode: 404,
+        linkValidationMessage: err.message || 'Validation failed'
+      }) : null);
+    } finally {
+      setIsTestingEditingLink(false);
     }
   };
 
@@ -486,6 +650,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       return;
     }
     setIsFetchingUrlDetails(true);
+    setAmazonLinkDetails(prev => ({
+      ...prev,
+      isValidatingLink: true,
+      linkStatus: 'checking',
+      linkValidationMessage: 'Checking live HTTP status on Amazon...'
+    }));
+
     try {
       const details = await fetchAmazonUrlDetailsApi(url);
       setAmazonLinkDetails(prev => ({
@@ -501,12 +672,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         domain: details.domain,
         merchant: details.merchant,
         canonicalUrl: details.canonicalUrl,
-        affiliateUrl: prev.attachAffiliateTag ? details.affiliateUrl : ''
+        affiliateUrl: prev.attachAffiliateTag ? details.affiliateUrl : '',
+        linkStatus: details.linkStatus || (details.isLinkActive ? 'active' : 'dead'),
+        linkStatusCode: details.linkStatusCode || (details.isLinkActive ? 200 : 404),
+        linkValidationMessage: details.linkValidationMessage || (details.isLinkActive ? 'HTTP 200 OK (Link Active & Reachable)' : 'Product not found / Inactive link (Non-200)'),
+        isValidatingLink: false
       }));
     } catch (err: any) {
+      setAmazonLinkDetails(prev => ({
+        ...prev,
+        isValidatingLink: false,
+        linkStatus: 'dead',
+        linkStatusCode: 404,
+        linkValidationMessage: err.message || 'Product link validation failed'
+      }));
       alert('Could not auto-fetch all product details: ' + (err.message || 'Please fill in name and price manually.'));
     } finally {
       setIsFetchingUrlDetails(false);
+    }
+  };
+
+  const handleValidateQuickLink = async () => {
+    const url = (amazonLinkDetails.canonicalUrl || amazonLinkUrl || '').trim();
+    if (!url) {
+      alert('Please enter an Amazon URL first.');
+      return;
+    }
+    setAmazonLinkDetails(prev => ({
+      ...prev,
+      isValidatingLink: true,
+      linkStatus: 'checking',
+      linkValidationMessage: 'Connecting to Amazon server...'
+    }));
+    try {
+      const { result } = await validateAmazonUrlApi(url);
+      setAmazonLinkDetails(prev => ({
+        ...prev,
+        linkStatus: result.status,
+        linkStatusCode: result.statusCode,
+        linkValidationMessage: result.message,
+        isValidatingLink: false
+      }));
+    } catch (err: any) {
+      setAmazonLinkDetails(prev => ({
+        ...prev,
+        linkStatus: 'dead',
+        linkStatusCode: 404,
+        linkValidationMessage: err.message || 'Validation failed',
+        isValidatingLink: false
+      }));
     }
   };
 
@@ -515,6 +729,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!amazonLinkDetails.name.trim() || !amazonLinkDetails.price) {
       alert('Please enter a product name and price.');
       return;
+    }
+
+    if (amazonLinkDetails.linkStatus === 'dead' || (amazonLinkDetails.linkStatusCode > 0 && amazonLinkDetails.linkStatusCode !== 200)) {
+      const proceed = confirm(
+        `⚠️ Warning: Dead Link Detected!\n\nThis Amazon URL returned status code ${amazonLinkDetails.linkStatusCode || 404} (${amazonLinkDetails.linkValidationMessage || 'Product not found'}).\n\nSaving dead links may cause visitors to see a "Product Not Found" page on Amazon.\n\nDo you still want to save this product anyway?`
+      );
+      if (!proceed) return;
     }
 
     try {
@@ -550,7 +771,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         genderPreference: 'unisex',
         status: amazonLinkDetails.status,
         source: 'amazon',
-        reviewStatus: amazonLinkDetails.status === 'active' ? 'approved' : 'needs_review'
+        reviewStatus: amazonLinkDetails.status === 'active' ? 'approved' : 'needs_review',
+        linkStatus: amazonLinkDetails.linkStatus === 'unknown' ? 'active' : amazonLinkDetails.linkStatus,
+        linkStatusCode: amazonLinkDetails.linkStatusCode || 200,
+        lastValidatedAt: new Date().toISOString(),
+        linkValidationMessage: amazonLinkDetails.linkValidationMessage || 'Validated HTTP 200 OK on add'
       };
 
       await adminSaveProduct(finalProduct, false);
@@ -570,7 +795,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         canonicalUrl: '',
         affiliateUrl: '',
         attachAffiliateTag: true,
-        status: 'active'
+        status: 'active',
+        linkStatus: 'unknown',
+        linkStatusCode: 0,
+        linkValidationMessage: '',
+        isValidatingLink: false
       });
       onRefreshProducts();
       alert('Product from Amazon link added successfully to catalog!');
@@ -693,6 +922,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (!hasTag) return false;
     }
 
+    if (linkHealthFilter === 'active_200') {
+      const is200 = p.linkStatus === 'active' || p.linkStatusCode === 200;
+      if (!is200) return false;
+    } else if (linkHealthFilter === 'dead_links') {
+      const isDead = p.linkStatus === 'dead' || (typeof p.linkStatusCode === 'number' && p.linkStatusCode !== 200 && p.linkStatusCode !== 0);
+      if (!isDead) return false;
+    }
+
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
       return (
@@ -708,6 +945,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const missingAffiliateCount = products.filter(
     p => (p.merchant === 'Amazon.com' || (p.productUrl && /amazon\.com/i.test(p.productUrl))) &&
       (!p.affiliateUrl || !p.affiliateUrl.includes('tag='))
+  ).length;
+
+  const deadLinksCount = products.filter(
+    p => p.linkStatus === 'dead' || (typeof p.linkStatusCode === 'number' && p.linkStatusCode !== 200 && p.linkStatusCode !== 0)
+  ).length;
+
+  const activeLinksCount = products.filter(
+    p => p.linkStatus === 'active' || p.linkStatusCode === 200
   ).length;
 
   const categories = Array.from(new Set(products.map(p => p.category)));
@@ -1386,13 +1631,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     onClick={() => {
                       setFetchCategoryResult(null);
+                      setCategoryPreviewProducts(null);
+                      setCategoryPreviewStats(null);
                       setIsFetchModalOpen(true);
                     }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all"
-                    title="Fetch newly added category products from Amazon.com and add affiliate links now or later"
+                    title="Fetch newly added category products from Amazon.com with live HTTP 200 link validation"
                   >
                     <Sparkles className="w-4 h-4 text-amber-300" />
                     <span>Fetch Amazon.com Products</span>
+                  </button>
+
+                  <button
+                    onClick={handleAuditCatalogLinks}
+                    disabled={isAuditingLinks}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                    title="Validate HTTP 200 status for all product links in the catalog"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isAuditingLinks ? 'animate-spin text-amber-300' : 'text-emerald-400'}`} />
+                    <span>{isAuditingLinks ? 'Validating Links (HTTP 200)...' : 'Audit All Links'}</span>
                   </button>
 
                   <button
@@ -1449,6 +1706,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </select>
 
                   <select
+                    value={linkHealthFilter}
+                    onChange={e => setLinkHealthFilter(e.target.value as any)}
+                    className="text-xs px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-stone-800 font-medium"
+                  >
+                    <option value="all">Link Health: All ({products.length})</option>
+                    <option value="active_200">200 OK Active ({activeLinksCount})</option>
+                    <option value="dead_links">Dead Links ({deadLinksCount})</option>
+                  </select>
+
+                  <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value as any)}
                     className="text-xs px-3 py-1.5 rounded-xl border border-stone-300 bg-stone-50 text-stone-800"
@@ -1494,6 +1761,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
+              {/* Link Health Audit Report Banner */}
+              {(auditSummary || deadLinksCount > 0) && (
+                <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  deadLinksCount > 0 ? 'bg-amber-50/90 border-amber-300 text-amber-950' : 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                      deadLinksCount > 0 ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
+                    }`}>
+                      {deadLinksCount > 0 ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs">
+                        {deadLinksCount > 0
+                          ? `⚠️ Catalog Link Health Warning: ${deadLinksCount} dead or inactive link(s) detected!`
+                          : '✓ All checked catalog links are active and return HTTP 200 OK!'}
+                      </h4>
+                      <p className="text-[11px] opacity-80 mt-0.5">
+                        {auditSummary
+                          ? `Audited at ${auditSummary.timestamp}: checked ${auditSummary.totalChecked} links · ${auditSummary.activeCount} active · ${auditSummary.deadCount} dead/inactive.`
+                          : `${activeLinksCount} verified active items (HTTP 200) · ${deadLinksCount} link(s) returning 404 or dead status.`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {deadLinksCount > 0 && (
+                      <button
+                        onClick={() => setLinkHealthFilter(linkHealthFilter === 'dead_links' ? 'all' : 'dead_links')}
+                        className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors shadow-2xs"
+                      >
+                        {linkHealthFilter === 'dead_links' ? 'Show All Products' : `View Only Dead Links (${deadLinksCount})`}
+                      </button>
+                    )}
+                    <button
+                      onClick={handleAuditCatalogLinks}
+                      disabled={isAuditingLinks}
+                      className="px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 transition-colors"
+                    >
+                      Re-audit Catalog
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Product Table */}
               <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
                 <div className="overflow-x-auto">
@@ -1505,6 +1816,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <th className="p-4">Price</th>
                         <th className="p-4">Marketplace</th>
                         <th className="p-4">Affiliate Status</th>
+                        <th className="p-4">Link Health (HTTP)</th>
                         <th className="p-4">Status</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
@@ -1603,6 +1915,65 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               )
                             ) : (
                               <span className="text-stone-400 text-[11px]">Direct Partner</span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            {checkingProductId === prod.id ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                Testing...
+                              </span>
+                            ) : prod.linkStatus === 'active' || prod.linkStatusCode === 200 ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                  <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                  200 OK Active
+                                </span>
+                                <button
+                                  onClick={() => handleVerifySingleProductLink(prod)}
+                                  className="text-[10px] text-stone-400 hover:text-stone-700 underline"
+                                  title="Re-verify HTTP 200 status on Amazon"
+                                >
+                                  Recheck
+                                </button>
+                              </div>
+                            ) : prod.linkStatus === 'dead' || (prod.linkStatusCode && prod.linkStatusCode !== 200) ? (
+                              <div className="space-y-1">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-300">
+                                  <AlertCircle className="w-3 h-3 text-rose-600" />
+                                  Dead Link ({prod.linkStatusCode || 404})
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleVerifySingleProductLink(prod)}
+                                    className="text-[10px] text-rose-700 font-bold hover:underline"
+                                    title="Re-validate link status"
+                                  >
+                                    Retry
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenEditModal(prod)}
+                                    className="text-[10px] text-blue-700 font-semibold hover:underline"
+                                    title="Edit and fix product URL"
+                                  >
+                                    Fix Link
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-600">
+                                  <Clock className="w-3 h-3 text-stone-400" />
+                                  Untested
+                                </span>
+                                <button
+                                  onClick={() => handleVerifySingleProductLink(prod)}
+                                  className="text-[10px] text-blue-600 font-bold hover:underline"
+                                  title="Check HTTP status code now"
+                                >
+                                  Verify
+                                </button>
+                              </div>
                             )}
                           </td>
                           <td className="p-4">
@@ -2571,6 +2942,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <Check className="w-3 h-3" />
                             <span>Attach tag={currentTag}</span>
                           </button>
+                          <button
+                            type="button"
+                            disabled={isTestingEditingLink}
+                            onClick={handleTestEditingProductLink}
+                            className="text-[10px] font-bold text-emerald-700 hover:underline flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-2.5 h-2.5 ${isTestingEditingLink ? 'animate-spin' : ''}`} />
+                            <span>{isTestingEditingLink ? 'Checking...' : 'Check 200 OK'}</span>
+                          </button>
                           {editingProduct.affiliateUrl && (
                             <a
                               href={editingProduct.affiliateUrl}
@@ -2591,6 +2971,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={e => setEditingProduct({ ...editingProduct, affiliateUrl: e.target.value })}
                         className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono bg-white text-stone-900 focus:outline-none focus:border-amber-500"
                       />
+                      {editingProduct.linkStatus && editingProduct.linkStatus !== 'unknown' && (
+                        <div className="mt-1 flex items-center gap-1.5 text-[11px]">
+                          {editingProduct.linkStatus === 'active' || editingProduct.linkStatusCode === 200 ? (
+                            <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              HTTP 200 OK — Link is Active & Reachable
+                            </span>
+                          ) : (
+                            <span className="text-rose-700 font-semibold flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3 text-rose-600" />
+                              ⚠️ Dead Link (HTTP {editingProduct.linkStatusCode || 404}) — {editingProduct.linkValidationMessage || 'Product not found'}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -2995,8 +3390,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-colors disabled:opacity-50"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-[#e47911]" />
-                    <span>{isFetchingUrlDetails ? 'Fetching Exact Details...' : '✨ Auto-Fetch Exact Product Details'}</span>
+                    <span>{isFetchingUrlDetails ? 'Fetching & Validating...' : '✨ Auto-Fetch Exact Details & Verify'}</span>
                   </button>
+
+                  <button
+                    type="button"
+                    disabled={amazonLinkDetails.isValidatingLink || !amazonLinkUrl.trim()}
+                    onClick={handleValidateQuickLink}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 text-xs font-semibold transition-colors disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{amazonLinkDetails.isValidatingLink ? 'Checking...' : 'Check Link (HTTP 200)'}</span>
+                  </button>
+
                   {amazonLinkDetails.canonicalUrl && (
                     <a
                       href={amazonLinkDetails.canonicalUrl}
@@ -3004,11 +3410,68 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       rel="noopener noreferrer"
                       className="text-xs text-stone-600 hover:text-stone-900 underline inline-flex items-center gap-1"
                     >
-                      <span>Verify Exact Amazon Link</span>
+                      <span>Open Exact Link</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
+
+                {/* Live Link Health Status & Dead Link Warning */}
+                {amazonLinkDetails.linkStatus === 'checking' && (
+                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center gap-2 mt-2">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                    <span>Verifying live Amazon link HTTP status (checking 200 OK)...</span>
+                  </div>
+                )}
+
+                {amazonLinkDetails.linkStatus === 'active' && (
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <div>
+                        <span className="font-bold">HTTP 200 OK — Link Active & Reachable</span>
+                        <p className="text-[11px] text-emerald-800">
+                          {amazonLinkDetails.linkValidationMessage || 'Amazon returned HTTP 200. Product page is live and active.'}
+                        </p>
+                      </div>
+                    </div>
+                    {amazonLinkDetails.canonicalUrl && (
+                      <a
+                        href={amazonLinkDetails.canonicalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center gap-1 hover:bg-emerald-800"
+                      >
+                        <span>Test Live</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {amazonLinkDetails.linkStatus === 'dead' && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-950 text-xs flex items-start justify-between gap-2 mt-2">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-rose-900">
+                          ⚠️ Warning: Dead Link Detected (HTTP {amazonLinkDetails.linkStatusCode || 404})
+                        </span>
+                        <p className="text-[11px] text-rose-800 mt-0.5 leading-relaxed">
+                          {amazonLinkDetails.linkValidationMessage || 'Amazon responded with non-200 or Product Not Found. Please check the ASIN or exact link before saving.'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleValidateQuickLink}
+                      disabled={amazonLinkDetails.isValidatingLink}
+                      className="px-2.5 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold hover:bg-rose-700 shrink-0"
+                    >
+                      Re-validate
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Product Name */}
@@ -3167,7 +3630,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* MODAL: FETCH NEW AMAZON.COM CATEGORY PRODUCTS */}
       {isFetchModalOpen && (
         <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+          <div className={`bg-white rounded-2xl w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto ${
+            categoryPreviewProducts ? 'max-w-3xl' : 'max-w-xl'
+          }`}>
             <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
@@ -3178,19 +3643,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     Fetch Amazon.com Category Products
                   </h3>
                   <p className="text-xs text-stone-500">
-                    Discover & automatically add new products across your store categories
+                    Discover products across store categories with live HTTP 200 health verification
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setIsFetchModalOpen(false)}
+                onClick={() => {
+                  setIsFetchModalOpen(false);
+                  setCategoryPreviewProducts(null);
+                  setCategoryPreviewStats(null);
+                }}
                 className="text-stone-400 hover:text-stone-600 p-1 rounded-lg"
               >
                 ✕
               </button>
             </div>
 
+            {/* View 1: Success summary after saving */}
             {fetchCategoryResult ? (
               <div className="space-y-4">
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
@@ -3199,7 +3669,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <span>{fetchCategoryResult.message}</span>
                   </div>
                   <p className="text-xs text-emerald-800">
-                    Successfully added <strong>{fetchCategoryResult.count}</strong> new items across categories:
+                    Successfully verified and added <strong>{fetchCategoryResult.count}</strong> active products (200 OK) across categories:
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {fetchCategoryResult.categoriesAdded.map((cat, i) => (
@@ -3208,6 +3678,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </span>
                     ))}
                   </div>
+                  {Boolean(fetchCategoryResult.deadLinksFiltered && fetchCategoryResult.deadLinksFiltered > 0) && (
+                    <div className="mt-2 text-xs text-amber-800 font-medium bg-amber-100/60 p-2 rounded-lg border border-amber-200 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                      <span>Filtered out {fetchCategoryResult.deadLinksFiltered} dead/inactive link(s) to protect your catalog from 404s.</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs space-y-1.5">
@@ -3218,7 +3694,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p className="leading-relaxed">
                     {fetchCategoryForm.attachAffiliateTag
                       ? `Partner tag "${DEFAULT_AMAZON_COM_PARTNER_TAG}" was automatically attached to all new products.`
-                      : 'These products were added with empty affiliate links as requested. You can attach your affiliate link anytime from the Products table using "+ Add Link", or click "Batch Attach Tag" to bind digital04b9-20 in 1 click!'}
+                      : 'These products were added with clean canonical URLs as requested. You can attach your affiliate link anytime from the Products table using "+ Add Link", or click "Batch Attach Tag" to bind digital04b9-20 in 1 click!'}
                   </p>
                 </div>
 
@@ -3234,14 +3710,150 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     View in Products Catalog
                   </button>
                   <button
-                    onClick={() => setFetchCategoryResult(null)}
+                    onClick={() => {
+                      setFetchCategoryResult(null);
+                      setCategoryPreviewProducts(null);
+                    }}
                     className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 text-xs font-semibold hover:bg-stone-50"
                   >
                     Fetch More
                   </button>
                 </div>
               </div>
+            ) : categoryPreviewProducts ? (
+              /* View 2: Preview Mode with Live Validation Status */
+              <div className="space-y-4">
+                {/* Preview Stats Banner */}
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-xs text-stone-900">
+                      Discovered {categoryPreviewProducts.length} Amazon.com Product Candidates
+                    </h4>
+                    <p className="text-[11px] text-stone-500 mt-0.5">
+                      Each link has been pinged to verify active HTTP 200 status code before committing to your database.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                      {categoryPreviewStats?.activeCount || 0} Active (200 OK)
+                    </span>
+                    {(categoryPreviewStats?.deadCount ?? 0) > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-700" />
+                        {categoryPreviewStats?.deadCount} Dead Links
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Filter Dead Links Toggle */}
+                <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-amber-950">
+                    <input
+                      type="checkbox"
+                      checked={fetchCategoryForm.saveOnlyActive}
+                      onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, saveOnlyActive: e.target.checked })}
+                      className="rounded text-amber-600 focus:ring-amber-500"
+                    />
+                    <span>Filter out dead links (only save verified 200 OK products)</span>
+                  </label>
+                  <span className="text-[11px] text-stone-500">
+                    Will save:{' '}
+                    <strong className="text-stone-900">
+                      {fetchCategoryForm.saveOnlyActive
+                        ? `${categoryPreviewStats?.activeCount || 0} verified items`
+                        : `${categoryPreviewProducts.length} items (including dead links)`}
+                    </strong>
+                  </span>
+                </div>
+
+                {/* Candidate Items List */}
+                <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1 divide-y divide-stone-100">
+                  {categoryPreviewProducts.map((p, idx) => {
+                    const is200 = p.linkStatus === 'active' && p.linkStatusCode === 200;
+                    return (
+                      <div key={p.id || idx} className="pt-2.5 first:pt-0 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            referrerPolicy="no-referrer"
+                            className="w-12 h-12 rounded-lg object-cover bg-stone-100 shrink-0 border border-stone-200"
+                          />
+                          <div className="overflow-hidden">
+                            <p className="font-bold text-stone-900 text-xs truncate" title={p.name}>
+                              {p.name}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2 text-[10px] text-stone-500 mt-0.5">
+                              <span className="font-semibold text-stone-800">${p.price.toFixed(2)}</span>
+                              <span>• {p.category}</span>
+                              {p.asin && <span className="font-mono">ASIN: {p.asin}</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {is200 ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              200 OK Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-300">
+                              <AlertCircle className="w-3 h-3 text-rose-600" />
+                              Dead Link ({p.linkStatusCode || 404})
+                            </span>
+                          )}
+
+                          <a
+                            href={p.affiliateUrl || p.productUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 text-xs"
+                            title="Verify exact product page in Amazon"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Preview Actions Footer */}
+                <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryPreviewProducts(null)}
+                    className="px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                  >
+                    ← Back to Settings
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSavingCategoryPreview || (fetchCategoryForm.saveOnlyActive && (categoryPreviewStats?.activeCount ?? 0) === 0)}
+                    onClick={handleSaveCategoryPreviewProducts}
+                    className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50"
+                  >
+                    {isSavingCategoryPreview ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving Products...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>
+                          Save Verified Active Products ({fetchCategoryForm.saveOnlyActive ? categoryPreviewStats?.activeCount : categoryPreviewProducts.length})
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             ) : (
+              /* View 3: Fetch Parameters Form */
               <form onSubmit={handleFetchCategoryAmazonProducts} className="space-y-4">
                 {/* Category Selection */}
                 <div>
@@ -3288,6 +3900,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </p>
                 </div>
 
+                {/* HTTP 200 Health Validation Controls */}
+                <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 space-y-2 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-950">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>Link Health Validation (HTTP 200 Check):</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium text-emerald-900">
+                    <input
+                      type="checkbox"
+                      checked={fetchCategoryForm.validateLinks}
+                      onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, validateLinks: e.target.checked })}
+                      className="rounded text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span>Verify live HTTP 200 status on Amazon before adding (checks for active product pages)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium text-emerald-900">
+                    <input
+                      type="checkbox"
+                      checked={fetchCategoryForm.saveOnlyActive}
+                      onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, saveOnlyActive: e.target.checked })}
+                      className="rounded text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span>Automatically filter out dead links (discard non-200 or 404 links)</span>
+                  </label>
+                </div>
+
                 {/* Affiliate Link Strategy */}
                 <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2.5">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
@@ -3304,9 +3942,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className="mt-0.5 text-amber-600 focus:ring-amber-500"
                     />
                     <div>
-                      <span className="font-bold text-stone-900">Add without affiliate link (Recommended)</span>
+                      <span className="font-bold text-stone-900">Add with clean exact product links (Recommended)</span>
                       <p className="text-stone-500 text-[11px] leading-relaxed">
-                        Products are imported with clean URLs. You can attach your affiliate link or customized SiteStripe URL later from the admin table at any time.
+                        Products are imported with clean, authentic Amazon product links. You can attach your affiliate link or customized SiteStripe URL later from the admin table at any time.
                       </p>
                     </div>
                   </label>
@@ -3345,31 +3983,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 )}
 
                 {/* Footer Controls */}
-                <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <div className="pt-3 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={() => setIsFetchModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50"
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isFetchingCategoryProducts}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-2"
-                  >
-                    {isFetchingCategoryProducts ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Fetching Amazon.com Products...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                        <span>Fetch & Add Products</span>
-                      </>
-                    )}
-                  </button>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      disabled={isFetchingCategoryProducts}
+                      onClick={handlePreviewCategoryAmazonProducts}
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-bold shadow-2xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+                      title="Preview candidate products and inspect HTTP 200 vs Dead Links before saving"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-blue-700" />
+                      <span>{isFetchingCategoryProducts ? 'Validating...' : 'Preview & Validate Links'}</span>
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isFetchingCategoryProducts}
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs flex items-center justify-center gap-2"
+                    >
+                      {isFetchingCategoryProducts ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Fetching & Verifying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Instant Fetch (200 OK Only)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             )}

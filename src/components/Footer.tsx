@@ -68,12 +68,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             <ul className="space-y-2 text-sm">
               {seoLinks.slice(0, 5).map(link => (
                 <li key={link.slug}>
-                  <button
-                    onClick={() => onNavigate('seo-page', { slug: link.slug, recipient: link.recipient })}
-                    className="text-stone-400 hover:text-white transition-colors"
+                  <a
+                    href={`/${link.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigate('seo-page', { slug: link.slug, recipient: link.recipient });
+                    }}
+                    className="text-stone-400 hover:text-white transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -87,12 +91,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             <ul className="space-y-2 text-sm">
               {seoLinks.slice(5, 9).map(link => (
                 <li key={link.slug}>
-                  <button
-                    onClick={() => onNavigate('seo-page', { slug: link.slug, occasion: link.occasion })}
-                    className="text-stone-400 hover:text-white transition-colors"
+                  <a
+                    href={`/${link.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigate('seo-page', { slug: link.slug, occasion: link.occasion });
+                    }}
+                    className="text-stone-400 hover:text-white transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -106,12 +114,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             <ul className="space-y-2 text-sm">
               {seoLinks.slice(9).map(link => (
                 <li key={link.slug}>
-                  <button
-                    onClick={() => onNavigate('seo-page', { slug: link.slug, budget: link.budget })}
-                    className="text-stone-400 hover:text-white transition-colors"
+                  <a
+                    href={`/${link.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigate('seo-page', { slug: link.slug, budget: link.budget });
+                    }}
+                    className="text-stone-400 hover:text-white transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </a>
                 </li>
               ))}
               <li className="pt-2 border-t border-stone-800">

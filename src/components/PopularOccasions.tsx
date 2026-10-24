@@ -90,9 +90,58 @@ export const PopularOccasions: React.FC<PopularOccasionsProps> = ({ onSelectOcca
           </button>
         </div>
 
+        {/* Featured Popular Category Hubs - Crawlable Navigation Links */}
+        <div className="mb-8 p-4 rounded-2xl bg-white border border-stone-200/80 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-rose-700" />
+            <span className="text-xs font-bold uppercase tracking-wider text-stone-700">Top Curated Guides:</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <a
+              href="/birthday-gifts"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToSeo('birthday-gifts');
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-200 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <Cake className="w-3.5 h-3.5 text-rose-700" />
+              <span>Birthday Gifts</span>
+            </a>
+            <a
+              href="/gifts-for-wife"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToSeo('gifts-for-wife');
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <Heart className="w-3.5 h-3.5 text-pink-700" />
+              <span>Gifts for Wife</span>
+            </a>
+            <a
+              href="/gifts-for-husband"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToSeo('gifts-for-husband');
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <Briefcase className="w-3.5 h-3.5 text-amber-700" />
+              <span>Gifts for Husband</span>
+            </a>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {occasions.map((occ, idx) => {
             const Icon = occ.icon;
+            const targetSlug = occ.name === 'Birthday' ? 'birthday-gifts'
+              : occ.name === 'Anniversary' ? 'anniversary-gifts'
+              : occ.name === "Mother's Day" ? 'gifts-for-mom'
+              : occ.name === "Father's Day" ? 'gifts-for-dad'
+              : occ.name.toLowerCase().replace(/\s+/g, '-');
+
             return (
               <div
                 key={idx}
@@ -124,12 +173,16 @@ export const PopularOccasions: React.FC<PopularOccasionsProps> = ({ onSelectOcca
                     <span>Find Gift</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => onNavigateToSeo(occ.name)}
-                    className="text-[11px] text-stone-500 hover:text-stone-800"
+                  <a
+                    href={`/${targetSlug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigateToSeo(targetSlug);
+                    }}
+                    className="text-[11px] text-stone-500 hover:text-rose-900 font-medium transition-colors"
                   >
-                    Browse Guide
-                  </button>
+                    Browse Guide →
+                  </a>
                 </div>
               </div>
             );

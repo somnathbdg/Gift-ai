@@ -1314,7 +1314,7 @@ app.post('/api/admin/amazon/validate-links', authenticateAdmin, async (req, res)
       });
 
       products = products.map(p => {
-        const match = (p.id && resultMap.get(p.id)) || (p.asin && resultMap.get(p.asin.toUpperCase()));
+        const match = (p.id ? resultMap.get(p.id) : undefined) || (p.asin ? resultMap.get(p.asin.toUpperCase()) : undefined);
         if (match) {
           return {
             ...p,
@@ -1431,7 +1431,7 @@ app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, async (
       });
 
       validatedItems = candidateItems.map(p => {
-        const val = (p.id && valMap.get(p.id)) || (p.asin && valMap.get(p.asin.toUpperCase()));
+        const val = (p.id ? valMap.get(p.id) : undefined) || (p.asin ? valMap.get(p.asin.toUpperCase()) : undefined);
         const is200 = val ? (val.status === 'active' && val.statusCode === 200) : true;
         return {
           ...p,
