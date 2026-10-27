@@ -1616,6 +1616,27 @@ app.get('/sitemap.xml', (_req, res) => {
     'https://shop.todkart.com/gifts-for-wife',
     'https://shop.todkart.com/gifts-for-husband',
     'https://shop.todkart.com/birthday-gifts',
+    <?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://shop.todkart.com/</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/birthday-gifts</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-husband</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-wife</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-dad</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-mom</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-boyfriend</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-girlfriend</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-for-friend</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/anniversary-gifts</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/housewarming</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/just-because</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/diwali-&amp;-festive</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/valentine%27s-day</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-under-500</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-under-1000</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-under-2000</loc><lastmod>2026-10-27</lastmod></url>
+  <url><loc>https://shop.todkart.com/gifts-under-5000</loc><lastmod>2026-10-27</lastmod></url>
+</urlset>
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
