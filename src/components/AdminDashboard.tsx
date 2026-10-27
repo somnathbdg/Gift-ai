@@ -1116,7 +1116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <Settings className="w-4 h-4 text-stone-500" />
-            <span>Hermes & Settings</span>
+            <span>System Settings</span>
           </button>
         </aside>
 
@@ -1598,7 +1598,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     Product Management
                   </h2>
                   <p className="text-xs text-stone-500">
-                    Manage catalog listings, verify affiliate URLs, and review items ingested by Hermes Agent.
+                    Manage catalog listings, verify affiliate URLs, and review imported products.
                   </p>
                 </div>
 
@@ -2128,29 +2128,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB: SETTINGS & HERMES SPEC */}
+          {/* TAB: SETTINGS */}
           {activeTab === 'settings' && (
             <div className="max-w-2xl mx-auto space-y-6">
               <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-4">
                 <h3 className="font-serif text-lg font-bold text-stone-900">
-                  External AI Agent (Hermes) Settings
+                  System Settings & Maintenance
                 </h3>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  External agents communicate via the secure REST endpoints defined in <span className="font-mono font-bold">HERMES_AGENT_SPEC.md</span>.
+                  Manage core store operations, seed database utilities, and catalog maintenance tools.
                 </p>
 
                 <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-stone-500">Hermes Endpoint Status:</span>
-                    <span className="font-bold text-emerald-700">Active & Ready</span>
+                    <span className="text-stone-500">Catalog Health:</span>
+                    <span className="font-bold text-emerald-700">Operational & Active</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-500">Auth Header:</span>
-                    <span className="font-mono font-bold">X-Hermes-API-Key</span>
+                    <span className="text-stone-500">Active Products:</span>
+                    <span className="font-bold text-stone-800">{products.filter(p => p.status === 'active').length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-500">Default Sandbox Token:</span>
-                    <span className="font-mono text-stone-700">hermes_agent_secret_key_demo</span>
+                    <span className="text-stone-500">Items Needing Review:</span>
+                    <span className="font-bold text-stone-800">{products.filter(p => p.status === 'needs_review').length}</span>
                   </div>
                 </div>
 
@@ -2295,7 +2295,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </span>
                     </div>
                     <p className="leading-relaxed opacity-90 text-stone-700">
-                      All Amazon Creators API and Hermes API credential requirements are optional. The site runs completely in Demo Mode. Your partner tag <strong className="font-mono text-stone-900">{DEFAULT_AMAZON_PARTNER_TAG}</strong> is automatically bound to manually added Amazon product links.
+                      Amazon Creators API credentials are optional. The site runs completely in Demo Mode. Your partner tag <strong className="font-mono text-stone-900">{DEFAULT_AMAZON_PARTNER_TAG}</strong> is automatically bound to manually added Amazon product links.
                     </p>
                   </div>
                 </div>

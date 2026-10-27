@@ -33,7 +33,7 @@ export interface Product {
   savedAt?: string;
   status: 'active' | 'inactive' | 'needs_review';
   isDemo?: boolean;
-  source?: 'amazon' | 'curated' | 'hermes' | string;
+  source?: 'amazon' | 'curated' | string;
   lastCheckedAt?: string;
   isPriceAvailable?: boolean;
   isRatingAvailable?: boolean;

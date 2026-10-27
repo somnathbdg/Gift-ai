@@ -203,45 +203,6 @@ function authenticateAdmin(req: Request, res: Response, next: () => void) {
   next();
 }
 
-// Hermes Agent Authentication Middleware (Zero bypass, constant-time verification)
-function authenticateHermes(req: Request, res: Response, next: () => void) {
-  const configuredSecret = process.env.HERMES_API_KEY;
-
-  if (!configuredSecret || configuredSecret.trim() === '') {
-    return res.status(503).json({
-      error: 'Service Unavailable',
-      message: 'Hermes Agent API is disabled because HERMES_API_KEY is not configured in server environment variables.',
-      code: 'HERMES_UNCONFIGURED'
-    });
-  }
-
-  const authHeader = req.headers['x-hermes-api-key'] || req.headers['authorization'];
-  if (!authHeader) {
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Missing authentication credentials. Provide X-Hermes-API-Key header or Bearer token.',
-      code: 'HERMES_AUTH_REQUIRED'
-    });
-  }
-
-  const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-    ? authHeader.slice(7).trim()
-    : (typeof authHeader === 'string' ? authHeader.trim() : '');
-
-  const tokenBuf = Buffer.from(token);
-  const secretBuf = Buffer.from(configuredSecret.trim());
-
-  if (tokenBuf.length !== secretBuf.length || !crypto.timingSafeEqual(tokenBuf, secretBuf)) {
-    return res.status(403).json({
-      error: 'Forbidden',
-      message: 'Invalid Hermes Agent API key.',
-      code: 'HERMES_INVALID_KEY'
-    });
-  }
-
-  next();
-}
-
 // ==========================================
 // 1. ADMIN AUTHENTICATION API
 // ==========================================
@@ -316,7 +277,6 @@ app.post('/api/admin/logout', (req, res) => {
 // Health & System Status
 app.get('/api/health', (req, res) => {
   const gemini = getGeminiClient();
-  const hermesConfigured = Boolean(process.env.HERMES_API_KEY && process.env.HERMES_API_KEY.trim() !== '');
   const adminConfigured = Boolean((process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.trim() !== '') || (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim() !== ''));
   const amazonConn = isAmazonConfigured();
   res.json({
@@ -325,9 +285,6 @@ app.get('/api/health', (req, res) => {
     amazonConnected: amazonConn,
     amazonMarketplace: 'www.amazon.in',
     geminiConfigured: !!gemini,
-    hermesAgentArchitecture: 'ready',
-    hermesAuthRequired: true,
-    hermesConfigured,
     adminAuthRequired: true,
     adminConfigured,
     productCount: products.length,
@@ -1061,7 +1018,7 @@ Provide a clear, professional, executive response with concise bullet points and
       } else {
         reply = `**Products Requiring Review (${needsReviewProducts.length}):**\n\n` +
           needsReviewProducts.map(p => `• **${p.name}** (ID: \`${p.id}\` | Merchant: ${p.merchant})`).join('\n') +
-          `\n\nUse the Product Management panel or the Hermes Agent API to inspect and approve these listings.`;
+          `\n\nUse the Product Management panel in the Admin Console to inspect and approve these listings.`;
       }
     } else if (qLower.includes('under 1000') || qLower.includes('under ₹1,000') || qLower.includes('under 1,000')) {
       reply = `**Verified Gift Items Under ₹1,000 (${under1000Products.length} available):**\n\n` +
@@ -1070,7 +1027,7 @@ Provide a clear, professional, executive response with concise bullet points and
     } else if (qLower.includes('occasion')) {
       reply = `**Occasion Demand Analysis:**\n\n• **Birthday**: #1 Search Volume (approx 34% of gift finder queries)\n• **Anniversary**: #2 Volume with highest conversion to luxury gifts (>₹2,000)\n• **Diwali & Festive**: High seasonal surge, top categories: Gourmet Hampers & Brass Decor\n• **Mother's & Father's Day**: High engagement with personalized keepsakes`;
     } else if (qLower.includes('seo') || qLower.includes('content')) {
-      reply = `**SEO Content Strategy Recommendations:**\n\n1. *"10 Meaningful Anniversary Gifts for Wife Under ₹3,000"* (Targeting high commercial intent keywords)\n2. *"Thoughtful Birthday Gifts for Dads Who Have Everything"* (Focus on functional items like Kindle and Pour-Over kits)\n3. *"Eco-Friendly Housewarming Gifts That Bring Good Energy"* (Featuring live Bonsai plants and Himalayan Salt Lamps)\n\nYou can use Hermes Workflow C to draft and schedule these articles directly into the review queue.`;
+      reply = `**SEO Content Strategy Recommendations:**\n\n1. *"10 Meaningful Anniversary Gifts for Wife Under ₹3,000"* (Targeting high commercial intent keywords)\n2. *"Thoughtful Birthday Gifts for Dads Who Have Everything"* (Focus on functional items like Kindle and Pour-Over kits)\n3. *"Eco-Friendly Housewarming Gifts That Bring Good Energy"* (Featuring live Bonsai plants and Himalayan Salt Lamps)\n\nYou can use the Content Management panel to draft and schedule articles into the review queue.`;
     } else {
       reply = `**Store Snapshot:**\n\n• Total Active Products: ${products.filter(p => p.status === 'active').length}\n• Verified Categories: ${Object.keys(categorySummary).length}\n• Top Occasion: Birthday & Anniversary\n• Average Gift Finder Budget: ₹2,000–₹5,000\n\nYou can ask about specific categories, budget filters, items needing review, or SEO recommendations.`;
     }
@@ -1636,246 +1593,9 @@ app.post('/api/admin/products/reset', authenticateAdmin, (req, res) => {
   res.json({ success: true, count: products.length });
 });
 
-// ==========================================
-// 2. HERMES AGENT REST API (Spec Compliant)
-// ==========================================
-
-// 1. Create Product
-app.post('/api/hermes/products', authenticateHermes, (req, res) => {
-  const data = req.body;
-  if (!data.name || !data.category || !data.price) {
-    return res.status(400).json({
-      error: 'Validation failed',
-      details: 'Product must include name, category, and price in INR.'
-    });
-  }
-
-  const newProd: Product = {
-    id: `hermes-${Date.now()}`,
-    name: data.name,
-    description: data.description || '',
-    category: data.category,
-    subcategory: data.subcategory || 'General',
-    price: Number(data.price),
-    currency: 'INR',
-    imageUrl: data.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
-    productUrl: data.productUrl || 'https://example.com/demo/product',
-    merchant: data.merchant || 'Verified Merchant',
-    affiliateUrl: data.affiliateUrl || '',
-    rating: Number(data.rating) || 4.8,
-    reviewCount: Number(data.reviewCount) || 50,
-    availability: data.availability || 'in_stock',
-    tags: Array.isArray(data.tags) ? data.tags : [],
-    occasions: Array.isArray(data.occasions) ? data.occasions : ['Just Because'],
-    relationships: Array.isArray(data.relationships) ? data.relationships : ['Friend'],
-    personalityTags: Array.isArray(data.personalityTags) ? data.personalityTags : ['Thoughtful'],
-    interestTags: Array.isArray(data.interestTags) ? data.interestTags : [data.category],
-    emotionalTags: Array.isArray(data.emotionalTags) ? data.emotionalTags : ['Thoughtful'],
-    genderPreference: data.genderPreference || 'unisex',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: data.status || 'needs_review', // Hermes additions land in review queue by default safety rule
-    isDemo: true
-  };
-
-  products.unshift(newProd);
-  res.status(201).json({
-    success: true,
-    message: 'Product ingested by Hermes Agent. Status set to needs_review.',
-    product: newProd
-  });
-});
-
-// 2. Update Product
-app.put('/api/hermes/products/:id', authenticateHermes, (req, res) => {
-  const index = products.findIndex(p => p.id === req.params.id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  products[index] = {
-    ...products[index],
-    ...req.body,
-    id: products[index].id, // Protected ID
-    updatedAt: new Date().toISOString()
-  };
-
-  res.json({ success: true, product: products[index] });
-});
-
-// 3. Deactivate Product
-app.delete('/api/hermes/products/:id', authenticateHermes, (req, res) => {
-  const product = products.find(p => p.id === req.params.id);
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  product.status = 'inactive';
-  product.updatedAt = new Date().toISOString();
-
-  res.json({ success: true, message: `Product ${product.id} set to inactive.`, product });
-});
-
-// 4. Search Products
-app.get('/api/hermes/products', authenticateHermes, (req, res) => {
-  const { q, category, occasion, status, limit } = req.query;
-  let results = [...products];
-
-  if (status) results = results.filter(p => p.status === status);
-  if (category) results = results.filter(p => p.category.toLowerCase() === String(category).toLowerCase());
-  if (occasion) results = results.filter(p => p.occasions.some(o => o.toLowerCase() === String(occasion).toLowerCase()));
-  if (q) {
-    const term = String(q).toLowerCase();
-    results = results.filter(p =>
-      p.name.toLowerCase().includes(term) ||
-      p.description.toLowerCase().includes(term) ||
-      p.tags.some(t => t.toLowerCase().includes(term))
-    );
-  }
-
-  const max = limit ? parseInt(String(limit), 10) : 50;
-  res.json({ total: results.length, products: results.slice(0, max) });
-});
-
-// 5. Products by Category
-app.get('/api/hermes/products/category/:category', authenticateHermes, (req, res) => {
-  const cat = req.params.category.toLowerCase();
-  const matched = products.filter(p => p.category.toLowerCase() === cat);
-  res.json({ category: req.params.category, count: matched.length, products: matched });
-});
-
-// 6. Products by Occasion
-app.get('/api/hermes/products/occasion/:occasion', authenticateHermes, (req, res) => {
-  const occ = req.params.occasion.toLowerCase();
-  const matched = products.filter(p => p.occasions.some(o => o.toLowerCase() === occ));
-  res.json({ occasion: req.params.occasion, count: matched.length, products: matched });
-});
-
-// 7. Products by Budget
-app.get('/api/hermes/products/budget', authenticateHermes, (req, res) => {
-  const min = Number(req.query.min) || 0;
-  const max = Number(req.query.max) || 1000000;
-  const matched = products.filter(p => p.price >= min && p.price <= max);
-  res.json({ min, max, count: matched.length, products: matched });
-});
-
-// 8. Analytics
-app.get('/api/hermes/analytics', authenticateHermes, (req, res) => {
-  res.json({
-    totalProducts: products.length,
-    activeProducts: products.filter(p => p.status === 'active').length,
-    needsReviewProducts: products.filter(p => p.status === 'needs_review').length,
-    recentClicks: clickLogs.slice(-25),
-    eventLogCount: analyticsEvents.length
-  });
-});
-
-// 9. Create Content Draft
-app.post('/api/hermes/content-draft', authenticateHermes, (req, res) => {
-  const { title, targetKeyword, summary } = req.body;
-  if (!title || !targetKeyword) {
-    return res.status(400).json({ error: 'title and targetKeyword are required' });
-  }
-
-  const newDraft = {
-    id: `draft-${Date.now()}`,
-    title,
-    targetKeyword,
-    summary: summary || '',
-    status: 'review_queue' as const,
-    createdAt: new Date().toISOString()
-  };
-
-  contentDrafts.unshift(newDraft);
-  res.status(201).json({ success: true, draft: newDraft });
-});
-
-// 10. Update Affiliate URL
-app.patch('/api/hermes/products/:id/affiliate', authenticateHermes, (req, res) => {
-  const { affiliateUrl, merchant } = req.body;
-  const product = products.find(p => p.id === req.params.id);
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  if (affiliateUrl) product.affiliateUrl = affiliateUrl;
-  if (merchant) product.merchant = merchant;
-  product.updatedAt = new Date().toISOString();
-
-  res.json({ success: true, product });
-});
-
-// 11. Flag Product for Review
-app.patch('/api/hermes/products/:id/flag', authenticateHermes, (req, res) => {
-  const { reason } = req.body;
-  const product = products.find(p => p.id === req.params.id);
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  product.status = 'needs_review';
-  product.updatedAt = new Date().toISOString();
-
-  res.json({
-    success: true,
-    message: `Product ${product.id} flagged for administrator review. Reason: ${reason || 'Automated health check alert'}`,
-    product
-  });
-});
-
-// 12. Hermes Amazon Search
-app.post('/api/hermes/amazon/search', authenticateHermes, async (req, res) => {
-  try {
-    const { keywords, minPrice, maxPrice, category, occasion, limit } = req.body;
-    const result = await searchAmazonProducts({
-      keywords,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      category,
-      occasion,
-      limit: limit ? Number(limit) : 10
-    });
-    res.json(result);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Hermes Amazon search failed', details: err.message });
-  }
-});
-
-// 13. Hermes Amazon Check Stock & Pricing
-app.post('/api/hermes/amazon/check-stock', authenticateHermes, async (req, res) => {
-  const { asin } = req.body;
-  if (!asin) {
-    return res.status(400).json({ error: 'ASIN is required' });
-  }
-  const product = products.find(p => p.asin === asin);
-  if (!product) {
-    return res.status(404).json({ error: 'Product with specified ASIN not found in catalog' });
-  }
-  product.lastCheckedAt = new Date().toISOString();
-  product.updatedAt = new Date().toISOString();
-  res.json({
-    success: true,
-    product,
-    checkedAt: product.lastCheckedAt,
-    isAvailable: product.availability === 'in_stock'
-  });
-});
-
-// 14. Hermes Amazon Daily Operational Report
-app.get('/api/hermes/amazon/report', authenticateHermes, (req, res) => {
-  const amazonProducts = products.filter(p => p.source === 'amazon' || p.merchant?.toLowerCase().includes('amazon'));
-  const needsReview = amazonProducts.filter(p => p.status === 'needs_review');
-  const active = amazonProducts.filter(p => p.status === 'active');
-  const status = getAmazonStatus(needsReview.length);
-
-  res.json({
-    status,
-    totalAmazonProducts: amazonProducts.length,
-    activeCount: active.length,
-    needsReviewCount: needsReview.length,
-    recentAmazonClicks: clickLogs.filter(c => c.merchant?.toLowerCase().includes('amazon')).slice(-10),
-    generatedAt: new Date().toISOString()
-  });
+// 404 Handler for undefined API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Endpoint not found', path: req.originalUrl });
 });
 
 // ==========================================

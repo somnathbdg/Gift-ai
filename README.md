@@ -30,7 +30,6 @@ Perfect Gift AI is an AI-powered personalized gift discovery platform. Instead o
   - Real-time metrics: Total Users, Searches, Product Clicks, Affiliate Clicks, Top Occasion, Top Category.
   - Full Product CRUD with instant search, tag filtering, and JSON import/export.
   - **Admin AI Assistant**: Natural language store assistant querying live inventory and search telemetry.
-- **Hermes Agent Ready**: Built-in REST endpoints (`/api/hermes/*`) allowing external autonomous agents (Hermes) to monitor pricing, validate stock, ingest reviewed products, and submit SEO content drafts.
 - **Demo Mode**: Full functionality out of the box even before API keys are connected, with clear indicator pills and zero mock fabrications.
 
 ---
@@ -58,7 +57,7 @@ cp .env.example .env
 | `GEMINI_API_KEY` | Optional | Google Gemini API Key for dynamic LLM descriptions. If omitted, app operates in Demo Mode. |
 | `APP_URL` | Auto-injected | Canonical public app URL. |
 
-> **Note on Demo Mode**: The application runs completely in Demo Mode without requiring any API keys or secrets. All features—including the Gift Finder wizard, Personalization Studio, Catalog Search, Admin Console, and Hermes headless endpoints—are instantly accessible for testing and previewing.
+> **Note on Demo Mode**: The application runs completely in Demo Mode without requiring any API keys or secrets. All features—including the Gift Finder wizard, Personalization Studio, Catalog Search, and Admin Console—are instantly accessible for testing and previewing.
 
 ---
 
@@ -96,7 +95,7 @@ cp .env.example .env
 When running without any API keys configured:
 - The backend utilizes deterministic multi-attribute scoring algorithms, curated templates, and verified database product matching.
 - The UI status badge in the header displays `Demo Mode`.
-- The Admin Console and Hermes headless endpoints are unlocked for instant testing.
+- The Admin Console is unlocked for instant testing.
 
 ---
 
@@ -105,12 +104,6 @@ When running without any API keys configured:
 - Click **Admin** in the header or footer navigation.
 - In Demo Mode, simply click **Unlock Dashboard** or **Enter Demo Mode Directly** for instant preview access.
 - Manage products, inspect click analytics, test search queries, or chat with the **AI Admin Assistant**.
-
----
-
-## 🛰 Hermes Agent Integration
-
-Refer to [`HERMES_AGENT_SPEC.md`](./HERMES_AGENT_SPEC.md) for endpoint documentation, JSON schemas, safety rules, and the 5 autonomous workflows (A through E).
 
 ---
 

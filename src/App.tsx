@@ -15,7 +15,6 @@ import { SeoCategoryPage } from './components/SeoCategoryPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { SavedGiftsDrawer } from './components/SavedGiftsDrawer';
-import { HermesSpecView } from './components/HermesSpecView';
 import { Product, GiftFinderInputs, RecommendationResponse } from './types';
 import { fetchProducts, checkServerHealth, adminVerifyAuthApi, adminLogoutApi } from './services/api';
 import { SEED_PRODUCTS } from './data/seedProducts';
@@ -47,9 +46,6 @@ export default function App() {
     }
     if (slug === 'admin') {
       return { view: 'admin', params: {} };
-    }
-    if (slug === 'hermes-spec') {
-      return { view: 'hermes-spec', params: {} };
     }
 
     return {
@@ -122,9 +118,6 @@ export default function App() {
         setViewParams({});
       } else if (slug === 'admin') {
         setCurrentView('admin');
-        setViewParams({});
-      } else if (slug === 'hermes-spec') {
-        setCurrentView('hermes-spec');
         setViewParams({});
       } else if (slug) {
         setCurrentView('seo-page');
@@ -254,8 +247,6 @@ export default function App() {
       nextPath = '/digital-gift-card';
     } else if (view === 'admin') {
       nextPath = '/admin';
-    } else if (view === 'hermes-spec') {
-      nextPath = '/hermes-spec';
     }
 
     if (window.location.pathname !== nextPath) {
@@ -494,11 +485,6 @@ export default function App() {
             onExitAdmin={handleExitAdmin}
             onLogout={handleAdminLogout}
           />
-        )}
-
-        {/* VIEW 10: HERMES AGENT SPEC */}
-        {currentView === 'hermes-spec' && (
-          <HermesSpecView onBack={() => handleNavigate('home')} />
         )}
       </main>
 

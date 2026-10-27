@@ -31,9 +31,9 @@ export const FaqSection: React.FC = () => {
         'Yes! After you discover a gift, open the Gift Message Studio to generate custom messages in various tones: Romantic, Emotional, Funny, Sweet, Formal, or Short. You can also design a digital gift card ready to print, share, or download.'
     },
     {
-      question: 'What is Hermes Agent compatibility?',
+      question: 'How do you verify product availability and pricing?',
       answer:
-        'Perfect Gift AI includes a headless REST API layer designed for autonomous AI agents like Hermes Agent. Hermes can monitor merchant stock, suggest new verified products into our human review queue, flag dead links, and draft seasonal SEO buying guides.'
+        'Our catalog undergoes automated link and price verification checks to ensure items are active and in stock on verified merchant platforms such as Amazon, ensuring zero dead links or fabricated prices.'
     }
   ];
 

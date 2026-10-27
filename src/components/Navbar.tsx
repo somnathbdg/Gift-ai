@@ -204,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-stone-900 text-stone-100 border-stone-800'
                   : 'bg-white text-stone-700 border-stone-300 hover:border-stone-400 hover:bg-stone-50'
               }`}
-              title="Administrator Dashboard & Hermes Specs"
+              title="Administrator Dashboard"
             >
               <Shield className="w-3.5 h-3.5 text-rose-600" />
               <span className="hidden sm:inline">Admin</span>

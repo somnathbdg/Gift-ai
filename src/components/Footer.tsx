@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, Heart, Shield, Cpu, ExternalLink, Sparkles } from 'lucide-react';
+import { Gift, Heart, Shield, ExternalLink, Sparkles } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (view: string, params?: any) => void;
@@ -126,15 +126,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                   </a>
                 </li>
               ))}
-              <li className="pt-2 border-t border-stone-800">
-                <button
-                  onClick={() => onNavigate('hermes-spec')}
-                  className="inline-flex items-center gap-1.5 text-xs text-rose-300 hover:text-rose-200"
-                >
-                  <Cpu className="w-3 h-3" />
-                  Hermes Agent Protocol
-                </button>
-              </li>
             </ul>
           </div>
         </div>
