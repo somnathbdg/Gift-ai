@@ -208,18 +208,27 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           </button>
         </div>
 
-        {/* Amazon Integration / Demo Mode Notice */}
-        {results.amazonNotice && (
-          <div className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium shadow-2xs">
-            <Info className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-            <span>{results.amazonNotice}</span>
+        {/* Amazon Live Search Status Notice */}
+        {!results.amazonConnected ? (
+          <div className="inline-flex items-center gap-2 mt-5 px-4 py-2.5 rounded-2xl bg-stone-100 border border-stone-200 text-stone-700 text-xs font-medium shadow-2xs max-w-xl text-left">
+            <Info className="w-4 h-4 text-stone-500 shrink-0" />
+            <span>
+              <strong>Note:</strong> Live Amazon API search is currently unavailable. Recommendations are matched from our verified 180-item curated catalog with direct Amazon affiliate links. Real-time prices and availability are verified on Amazon at checkout.
+            </span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium shadow-2xs">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>Live Amazon search connected: Results retrieved in real time.</span>
           </div>
         )}
 
-        {/* Generated Amazon Search Queries */}
+        {/* Generated Search Queries */}
         {results.generatedQueries && results.generatedQueries.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-stone-500">
-            <span className="font-semibold text-stone-700">Search Queries Generated:</span>
+            <span className="font-semibold text-stone-700">
+              {results.amazonConnected ? 'Amazon Live Search Queries:' : 'Intent Search Queries (Matched against curated catalog):'}
+            </span>
             {results.generatedQueries.map((q, qIdx) => (
               <span key={qIdx} className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-mono text-[10px]">
                 "{q}"

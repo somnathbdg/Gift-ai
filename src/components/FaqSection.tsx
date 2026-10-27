@@ -21,9 +21,9 @@ export const FaqSection: React.FC = () => {
         'When you click to view or purchase a recommended item through our merchant links, we may earn a small affiliate commission at absolutely no extra cost to you. This helps keep our discovery engine free and independent.'
     },
     {
-      question: 'What is Demo Mode?',
+      question: 'How are gift recommendations curated and verified?',
       answer:
-        'Demo Mode allows you to experience the complete functionality of Perfect Gift AI immediately without requiring external API keys. The application uses our curated database and deterministic scoring engine. Once a Gemini API key is configured, the system unlocks live neural explanations and customized message synthesis.'
+        'Perfect Gift AI evaluates gift ideas against multi-dimensional criteria including relationships, celebrations, personal interests, and budget parameters. All recommendations link directly to authentic merchant listings on Amazon, where real-time price, availability, and delivery options are confirmed at checkout.'
     },
     {
       question: 'Can I generate a personalized greeting card message?',

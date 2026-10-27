@@ -62,6 +62,8 @@ export default function App() {
   // Products & Health State
   const [products, setProducts] = useState<Product[]>(SEED_PRODUCTS);
   const [demoMode, setDemoMode] = useState(true);
+  const [amazonConnected, setAmazonConnected] = useState(false);
+  const [geminiConfigured, setGeminiConfigured] = useState(false);
 
   // Saved / Favorites Shortlist (Stored locally)
   const [savedProducts, setSavedProducts] = useState<Product[]>(() => {
@@ -217,8 +219,12 @@ export default function App() {
     try {
       const res = await checkServerHealth();
       setDemoMode(res.demoMode);
+      setAmazonConnected(Boolean(res.amazonConnected));
+      setGeminiConfigured(Boolean(res.geminiConfigured));
     } catch {
       setDemoMode(true);
+      setAmazonConnected(false);
+      setGeminiConfigured(false);
     }
   };
 
@@ -336,6 +342,8 @@ export default function App() {
         currentView={currentView}
         onNavigate={handleNavigate}
         demoMode={demoMode}
+        amazonConnected={amazonConnected}
+        geminiConfigured={geminiConfigured}
         savedCount={savedProducts.length}
         onOpenSaved={() => setIsSavedDrawerOpen(true)}
         onOpenAdmin={handleOpenAdmin}

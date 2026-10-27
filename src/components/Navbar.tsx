@@ -5,6 +5,8 @@ interface NavbarProps {
   currentView: string;
   onNavigate: (view: string, params?: any) => void;
   demoMode: boolean;
+  amazonConnected?: boolean;
+  geminiConfigured?: boolean;
   savedCount: number;
   onOpenSaved: () => void;
   onOpenAdmin: () => void;
@@ -15,6 +17,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   onNavigate,
   demoMode,
+  amazonConnected = false,
+  geminiConfigured = false,
   savedCount,
   onOpenSaved,
   onOpenAdmin,
@@ -44,21 +48,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-serif text-2xl font-bold tracking-tight text-stone-900">
                   Perfect Gift <span className="text-rose-700">AI</span>
                 </span>
-                {demoMode ? (
+                {amazonConnected ? (
                   <span
-                    title="Operating in Demo Mode with verified local catalog. Gemini API key can be connected via Settings > Secrets."
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200"
+                    title="Connected to Amazon Creators API for real-time live product queries."
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200"
                   >
-                    <AlertCircle className="w-3 h-3 text-amber-600" />
-                    Demo Mode
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    Amazon Live API
                   </span>
                 ) : (
                   <span
-                    title="Connected to Gemini API server-side"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    title="Curated catalog of 180 verified gifts with direct Amazon affiliate links. Real-time price and availability are confirmed on Amazon."
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-700 border border-stone-200"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    AI Connected
+                    <CheckCircle2 className="w-3 h-3 text-stone-500" />
+                    Curated Catalog
                   </span>
                 )}
               </div>

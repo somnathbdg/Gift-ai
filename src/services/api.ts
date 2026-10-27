@@ -98,6 +98,7 @@ export async function adminLogoutApi(): Promise<{ success: boolean }> {
 export async function checkServerHealth(): Promise<{
   demoMode: boolean;
   geminiConfigured: boolean;
+  amazonConnected?: boolean;
   productCount: number;
   adminAuthRequired?: boolean;
   adminConfigured?: boolean;
@@ -107,8 +108,8 @@ export async function checkServerHealth(): Promise<{
     if (!res.ok) throw new Error('Health check failed');
     return await res.json();
   } catch (err) {
-    console.warn('API health check error, defaulting to local demo mode:', err);
-    return { demoMode: true, geminiConfigured: false, productCount: 32 };
+    console.warn('API health check error, defaulting to local catalog:', err);
+    return { demoMode: true, geminiConfigured: false, amazonConnected: false, productCount: 180 };
   }
 }
 
