@@ -1610,35 +1610,32 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-app.get('/sitemap.xml', (_req, res) => {
-  const urls = [
-    'https://shop.todkart.com/',
-    'https://shop.todkart.com/birthday-gifts',
-    'https://shop.todkart.com/gifts-for-wife',
-    'https://shop.todkart.com/gifts-for-husband',
-    'https://shop.todkart.com/gifts-for-dad',
-    'https://shop.todkart.com/gifts-for-mom',
-    'https://shop.todkart.com/anniversary-gifts',
-    'https://shop.todkart.com/gifts-for-boyfriend',
-    'https://shop.todkart.com/gifts-for-girlfriend',
-    'https://shop.todkart.com/gifts-for-friend',
-    'https://shop.todkart.com/gifts-under-500',
-    'https://shop.todkart.com/gifts-under-1000',
-    'https://shop.todkart.com/gifts-under-2000',
-    'https://shop.todkart.com/gifts-under-5000',
-    'https://shop.todkart.com/diwali-festive',
-    'https://shop.todkart.com/housewarming',
-    'https://shop.todkart.com/just-because',
-    'https://shop.todkart.com/valentines-day',
-  ];
+    app.get('/sitemap.xml', (_req, res) => {
+      const urls = [
+        'https://shop.todkart.com/',
+        'https://shop.todkart.com/birthday-gifts',
+        'https://shop.todkart.com/gifts-for-wife',
+        'https://shop.todkart.com/gifts-for-husband',
+        'https://shop.todkart.com/gifts-for-dad',
+        'https://shop.todkart.com/gifts-for-mom',
+        'https://shop.todkart.com/anniversary-gifts',
+        'https://shop.todkart.com/gifts-for-boyfriend',
+        'https://shop.todkart.com/gifts-for-girlfriend',
+        'https://shop.todkart.com/gifts-for-friend',
+        'https://shop.todkart.com/gifts-under-500',
+        'https://shop.todkart.com/gifts-under-1000',
+        'https://shop.todkart.com/gifts-under-2000',
+        'https://shop.todkart.com/gifts-under-5000',
+        'https://shop.todkart.com/diwali-&-festive',
+        'https://shop.todkart.com/housewarming',
+        'https://shop.todkart.com/just-because',
+        "https://shop.todkart.com/valentine\'s-day",
+      ];
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${'${urls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}'}
-</urlset>`;
-
-  res.status(200).type('application/xml').send(xml);
-});
+      const xmlUrls = urls.map((url) => `  <url><loc>${url.replace(/&/g, '&amp;')}</loc></url>`).join('\n');
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${xmlUrls}\n</urlset>`;
+      res.status(200).type('application/xml').send(xml);
+    });
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/api/')) {
