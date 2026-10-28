@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, Search, Sparkles, Shield, Bookmark, Heart, Menu, X, CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
+import { Gift, Search, Sparkles, Shield, Bookmark, Heart, Menu, X, ChevronDown } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
@@ -48,23 +48,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-serif text-2xl font-bold tracking-tight text-stone-900">
                   Perfect Gift <span className="text-rose-700">AI</span>
                 </span>
-                {amazonConnected ? (
-                  <span
-                    title="Connected to Amazon Creators API for real-time live product queries."
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200"
-                  >
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    Amazon Live API
-                  </span>
-                ) : (
-                  <span
-                    title="Curated catalog of 180 verified gifts with direct Amazon affiliate links. Real-time price and availability are confirmed on Amazon."
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-700 border border-stone-200"
-                  >
-                    <CheckCircle2 className="w-3 h-3 text-stone-500" />
-                    Curated Catalog
-                  </span>
-                )}
               </div>
               <p className="text-[12px] text-stone-600 hidden sm:block">
                 Tell us about them. We'll find the gift.
