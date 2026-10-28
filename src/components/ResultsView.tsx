@@ -367,11 +367,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     {isAmazon && <span className="text-amber-400">★</span>}
                     <span>{rec.product.merchant}</span>
                   </span>
-                  {rec.product.isDemo && (
-                    <span className="px-2 py-0.5 rounded-md bg-amber-500/90 text-stone-950 text-[10px] font-bold">
-                      Demo Catalog
-                    </span>
-                  )}
                 </div>
 
                 <button

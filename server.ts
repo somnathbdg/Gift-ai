@@ -367,7 +367,7 @@ app.post('/api/amazon/import', authenticateAdmin, async (req, res) => {
     } else {
       // Demo / Fallback Mode:
       // Check if existing catalog items in SEED_PRODUCTS match the keyword/category
-      const partnerTag = process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21';
+      const partnerTag = process.env.AMAZON_PARTNER_TAG || '';
       const kwLower = keyword.toLowerCase().trim();
       const matchedCatalogItems = SEED_PRODUCTS.filter(p =>
         (p.merchant === 'Amazon.in' || p.merchant === 'Amazon.com') &&
@@ -393,7 +393,7 @@ app.post('/api/amazon/import', authenticateAdmin, async (req, res) => {
         // Generate verified search items targeting the exact Amazon live search
         const calcPrice = (maxVal && minVal) ? Math.round((minVal + maxVal) / 2) : (maxVal || 1499);
         const searchUrl = `https://www.amazon.in/s?k=${encodeURIComponent(keyword)}`;
-        const affiliateSearchUrl = `${searchUrl}&tag=${partnerTag}`;
+        const affiliateSearchUrl = partnerTag ? `${searchUrl}&tag=${partnerTag}` : searchUrl;
 
         importedProducts = [
           {
@@ -427,7 +427,7 @@ app.post('/api/amazon/import', authenticateAdmin, async (req, res) => {
             isRatingAvailable: true,
             isReviewCountAvailable: true,
             isAvailabilityAvailable: true,
-            isDemo: true
+            isDemo: false
           }
         ];
       }
@@ -1061,8 +1061,8 @@ function normalizeAdminProduct(data: any): Product {
     merchant = isUsMarket ? 'Amazon.com' : 'Amazon.in';
     const domain = isUsMarket ? 'amazon.com' : 'amazon.in';
     const partnerTag = isUsMarket
-      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
-      : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20')
+      : (process.env.AMAZON_PARTNER_TAG || '');
     currency = isUsMarket ? 'USD' : (data.currency || 'INR');
 
     // Auto-extract ASIN from productUrl or affiliateUrl if missing
@@ -1084,11 +1084,13 @@ function normalizeAdminProduct(data: any): Product {
 
     // Keep affiliateUrl empty when no genuine Amazon Associates affiliate link is supplied (Requirement 5)
     if (affiliateUrl && /amazon\.(in|com)|amzn\.to/i.test(affiliateUrl)) {
-      if (affiliateUrl.includes('tag=')) {
-        affiliateUrl = affiliateUrl.replace(/tag=[^&]+/i, `tag=${partnerTag}`);
-      } else {
-        const sep = affiliateUrl.includes('?') ? '&' : '?';
-        affiliateUrl = `${affiliateUrl}${sep}tag=${partnerTag}`;
+      if (partnerTag) {
+        if (affiliateUrl.includes('tag=')) {
+          affiliateUrl = affiliateUrl.replace(/tag=[^&]+/i, `tag=${partnerTag}`);
+        } else {
+          const sep = affiliateUrl.includes('?') ? '&' : '?';
+          affiliateUrl = `${affiliateUrl}${sep}tag=${partnerTag}`;
+        }
       }
     } else {
       affiliateUrl = '';
@@ -1118,8 +1120,8 @@ app.post('/api/admin/amazon/parse-link', authenticateAdmin, (req, res) => {
   }
   const isUsMarket = /amazon\.com/i.test(url);
   const tag = isUsMarket
-    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
-    : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20')
+    : (process.env.AMAZON_PARTNER_TAG || '');
   const parsed = parseAmazonUrl(url, tag);
   res.json(parsed);
 });
@@ -1136,8 +1138,8 @@ app.post('/api/admin/amazon/fetch-url-details', authenticateAdmin, async (req, r
     const asin = extractAmazonAsin(url);
     const isUsMarket = domain === 'amazon.com';
     const tag = isUsMarket
-      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
-      : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+      ? (process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20')
+      : (process.env.AMAZON_PARTNER_TAG || '');
 
     const canonicalUrl = asin ? `https://www.${domain}/dp/${asin}` : (url.startsWith('http') ? url : `https://www.${domain}/s?k=${encodeURIComponent(url)}`);
     const affiliateUrl = buildAmazonAffiliateUrl(canonicalUrl, tag);
@@ -1343,7 +1345,7 @@ app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, async (
       category = 'all',
       limitPerCategory = 2,
       attachAffiliateTag = false,
-      partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20',
+      partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20',
       validateLinks = true,
       previewOnly = false,
       saveOnlyActive = true
@@ -1449,7 +1451,7 @@ app.post('/api/admin/amazon/fetch-category-products', authenticateAdmin, async (
 // Batch attach affiliate partner tag to products missing affiliate links (Admin Protected)
 app.post('/api/admin/amazon/batch-attach-affiliate', authenticateAdmin, (req, res) => {
   try {
-    const { productIds, partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20' } = req.body;
+    const { productIds, partnerTag = process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20' } = req.body;
 
     let updatedCount = 0;
     products = products.map(p => {
@@ -1493,8 +1495,8 @@ app.put('/api/admin/products/:id/affiliate', authenticateAdmin, (req, res) => {
   const prod = products[index];
   const domain = prod.merchant === 'Amazon.com' || /amazon\.com/i.test(prod.productUrl) ? 'amazon.com' : 'amazon.in';
   const defaultTag = domain === 'amazon.com'
-    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digital04b9-20')
-    : (process.env.AMAZON_PARTNER_TAG || 'digitalrani01-21');
+    ? (process.env.AMAZON_COM_PARTNER_TAG || 'digitalrani-20')
+    : (process.env.AMAZON_PARTNER_TAG || '');
 
   let finalAffiliateUrl = String(affiliateUrl || '').trim();
   if (finalAffiliateUrl && !finalAffiliateUrl.includes('tag=') && /amazon\.(com|in)/i.test(finalAffiliateUrl)) {
@@ -1518,7 +1520,7 @@ app.post('/api/admin/products', authenticateAdmin, (req, res) => {
     id: normalized.asin ? `amzn-${normalized.asin}` : `prod-custom-${Date.now()}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    isDemo: true
+    isDemo: false
   };
 
   products.unshift(newProduct);
@@ -1579,13 +1581,14 @@ app.post('/api/admin/products/approve-all', authenticateAdmin, (req, res) => {
 });
 
 app.delete('/api/admin/products/:id', authenticateAdmin, (req, res) => {
-  const index = products.findIndex(p => p.id === req.params.id);
+  const targetId = String(req.params.id).trim();
+  const index = products.findIndex(p => p.id === targetId || (p.asin && p.asin.toUpperCase() === targetId.toUpperCase()));
   if (index === -1) {
     return res.status(404).json({ error: 'Product not found' });
   }
 
   const removed = products.splice(index, 1);
-  res.json({ success: true, removed: removed[0] });
+  res.json({ success: true, removed: removed[0], remainingCount: products.length });
 });
 
 app.post('/api/admin/products/reset', authenticateAdmin, (req, res) => {

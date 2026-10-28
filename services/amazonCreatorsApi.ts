@@ -56,9 +56,9 @@ export interface AmazonSearchResponse {
   notice?: string;
 }
 
-export const DEFAULT_PARTNER_TAG = 'digitalrani01-21';
-export const DEFAULT_PARTNER_TAG_IN = 'digitalrani01-21';
-export const DEFAULT_PARTNER_TAG_US = 'digital04b9-20';
+export const DEFAULT_PARTNER_TAG = 'digitalrani-20';
+export const DEFAULT_PARTNER_TAG_IN = '';
+export const DEFAULT_PARTNER_TAG_US = 'digitalrani-20';
 
 /**
  * Check if the server has live Amazon Creators API credentials configured
@@ -78,7 +78,7 @@ export function isAmazonConfigured(): boolean {
 }
 
 /**
- * Get active partner tag for affiliate links (defaults to digitalrani01-21 for IN, digital04b9-20 for US)
+ * Get active partner tag for affiliate links (defaults to digitalrani-20 for US, configurable via AMAZON_PARTNER_TAG for IN)
  */
 export function getPartnerTag(domain: 'amazon.com' | 'amazon.in' = 'amazon.in'): string {
   if (domain === 'amazon.com') {

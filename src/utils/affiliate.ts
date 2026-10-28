@@ -1,13 +1,13 @@
 /**
- * Affiliate URL Utilities for Amazon India (amazon.in) & Amazon US (amazon.com)
+ * Affiliate URL Utilities for Amazon US (amazon.com) & Amazon India (amazon.in)
  * Active Partner Tags:
- * - Amazon.in: digitalrani01-21
- * - Amazon.com: digital04b9-20
+ * - Amazon.com: digitalrani-20
+ * - Amazon.in: Configurable via AMAZON_PARTNER_TAG env var
  */
 
-export const DEFAULT_AMAZON_IN_PARTNER_TAG = 'digitalrani01-21';
-export const DEFAULT_AMAZON_COM_PARTNER_TAG = 'digital04b9-20';
-export const DEFAULT_AMAZON_PARTNER_TAG = DEFAULT_AMAZON_IN_PARTNER_TAG;
+export const DEFAULT_AMAZON_COM_PARTNER_TAG = 'digitalrani-20';
+export const DEFAULT_AMAZON_IN_PARTNER_TAG = '';
+export const DEFAULT_AMAZON_PARTNER_TAG = DEFAULT_AMAZON_COM_PARTNER_TAG;
 
 /**
  * Resolves the appropriate Amazon partner tag based on the domain (amazon.com vs amazon.in)
@@ -15,9 +15,9 @@ export const DEFAULT_AMAZON_PARTNER_TAG = DEFAULT_AMAZON_IN_PARTNER_TAG;
 export function getAmazonPartnerTag(domainOrUrl?: string, customTag?: string): string {
   if (customTag && customTag.trim()) return customTag.trim();
   if (domainOrUrl && /amazon\.com/i.test(domainOrUrl)) {
-    return DEFAULT_AMAZON_COM_PARTNER_TAG; // digital04b9-20
+    return DEFAULT_AMAZON_COM_PARTNER_TAG; // digitalrani-20
   }
-  return DEFAULT_AMAZON_IN_PARTNER_TAG; // digitalrani01-21
+  return DEFAULT_AMAZON_IN_PARTNER_TAG;
 }
 
 /**
@@ -95,7 +95,7 @@ export function parseAmazonUrl(input: string, partnerTag?: string): ParsedAmazon
   }
 
   const affiliateUrl = asin
-    ? `https://www.${domain}/dp/${asin}?tag=${activeTag}`
+    ? (activeTag ? `https://www.${domain}/dp/${asin}?tag=${activeTag}` : `https://www.${domain}/dp/${asin}`)
     : buildAmazonAffiliateUrl(canonicalUrl, activeTag);
 
   return {
@@ -125,7 +125,9 @@ export function buildAmazonAffiliateUrl(
   // If input is simply an ASIN
   const asin = extractAmazonAsin(trimmed);
   if (trimmed.length === 10 && !trimmed.includes('/') && !trimmed.includes('.')) {
-    return `https://www.${domain}/dp/${trimmed.toUpperCase()}?tag=${activeTag}`;
+    return activeTag
+      ? `https://www.${domain}/dp/${trimmed.toUpperCase()}?tag=${activeTag}`
+      : `https://www.${domain}/dp/${trimmed.toUpperCase()}`;
   }
 
   // Check if it's an Amazon URL
@@ -133,14 +135,22 @@ export function buildAmazonAffiliateUrl(
 
   if (!isAmazonUrl) {
     if (asin) {
-      return `https://www.${domain}/dp/${asin}?tag=${activeTag}`;
+      return activeTag
+        ? `https://www.${domain}/dp/${asin}?tag=${activeTag}`
+        : `https://www.${domain}/dp/${asin}`;
     }
     return trimmed;
   }
 
   // If it's an Amazon URL, normalize with clean ASIN path if possible
   if (asin) {
-    return `https://www.${domain}/dp/${asin}?tag=${activeTag}`;
+    return activeTag
+      ? `https://www.${domain}/dp/${asin}?tag=${activeTag}`
+      : `https://www.${domain}/dp/${asin}`;
+  }
+
+  if (!activeTag) {
+    return trimmed;
   }
 
   // Otherwise replace or append the tag query param
@@ -194,7 +204,9 @@ export function resolveProductOutboundUrl(
       return buildAmazonAffiliateUrl(product.productUrl, activeTag);
     }
     if (product.asin && product.asin.trim()) {
-      return `https://www.${domain}/dp/${product.asin.trim().toUpperCase()}?tag=${activeTag}`;
+      return activeTag
+        ? `https://www.${domain}/dp/${product.asin.trim().toUpperCase()}?tag=${activeTag}`
+        : `https://www.${domain}/dp/${product.asin.trim().toUpperCase()}`;
     }
   }
 

@@ -479,7 +479,7 @@ export function generateCategoryAmazonProducts(options: {
     category = 'all',
     limitPerCategory = 3,
     attachAffiliateTag = false,
-    partnerTag = 'digital04b9-20',
+    partnerTag = 'digitalrani-20',
     existingAsins = new Set<string>(),
     existingNames = new Set<string>()
   } = options;

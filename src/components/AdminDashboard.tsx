@@ -31,7 +31,9 @@ import {
   XCircle,
   Globe,
   Radio,
-  Clock
+  Clock,
+  X,
+  Loader2
 } from 'lucide-react';
 import { Product, AmazonIntegrationStatus, LinkValidationResult } from '../types';
 import {
@@ -138,6 +140,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Quick Add Amazon Link State
   const [isAmazonLinkModalOpen, setIsAmazonLinkModalOpen] = useState(false);
   const [amazonLinkUrl, setAmazonLinkUrl] = useState('');
+
+  // In-App Product Delete State & Notifications
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [actionToast, setActionToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [marketplaceFilter, setMarketplaceFilter] = useState<'all' | 'amazon.in' | 'amazon.com' | 'other'>('all');
   const [amazonLinkDetails, setAmazonLinkDetails] = useState({
     name: '',
@@ -810,13 +818,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+  const handleConfirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeletingProduct(true);
+    setDeleteError(null);
     try {
-      await adminDeleteProduct(id);
+      await adminDeleteProduct(productToDelete.id);
+      setActionToast({
+        message: `Product successfully removed from catalog!`,
+        type: 'success'
+      });
+      setProductToDelete(null);
       onRefreshProducts();
-    } catch (err) {
-      alert('Delete failed');
+      setTimeout(() => setActionToast(null), 4000);
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete product. Please verify admin session.');
+    } finally {
+      setIsDeletingProduct(false);
     }
   };
 
@@ -2026,9 +2044,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteProduct(prod.id)}
-                                className="p-1.5 rounded-lg text-red-600 hover:bg-red-50"
-                                title="Delete"
+                                onClick={() => {
+                                  setProductToDelete(prod);
+                                  setDeleteError(null);
+                                }}
+                                className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer"
+                                title="Delete Product"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -3694,7 +3715,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p className="leading-relaxed">
                     {fetchCategoryForm.attachAffiliateTag
                       ? `Partner tag "${DEFAULT_AMAZON_COM_PARTNER_TAG}" was automatically attached to all new products.`
-                      : 'These products were added with clean canonical URLs as requested. You can attach your affiliate link anytime from the Products table using "+ Add Link", or click "Batch Attach Tag" to bind digital04b9-20 in 1 click!'}
+                      : `These products were added with clean canonical URLs as requested. You can attach your affiliate link anytime from the Products table using "+ Add Link", or click "Batch Attach Tag" to bind ${DEFAULT_AMAZON_COM_PARTNER_TAG} in 1 click!`}
                   </p>
                 </div>
 
@@ -3976,7 +3997,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="text"
                       value={fetchCategoryForm.partnerTag}
                       onChange={e => setFetchCategoryForm({ ...fetchCategoryForm, partnerTag: e.target.value })}
-                      placeholder="e.g. digital04b9-20"
+                      placeholder="e.g. digitalrani-20"
                       className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono text-stone-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -4087,7 +4108,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   type="url"
                   value={affiliateInputUrl}
                   onChange={e => setAffiliateInputUrl(e.target.value)}
-                  placeholder="https://www.amazon.com/dp/B00...?tag=digital04b9-20 or https://amzn.to/..."
+                  placeholder="https://www.amazon.com/dp/B00...?tag=digitalrani-20 or https://amzn.to/..."
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono text-stone-900 focus:outline-none focus:border-amber-600"
                 />
                 <p className="text-[11px] text-stone-500 mt-1">
@@ -4145,6 +4166,112 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* IN-APP PRODUCT DELETE CONFIRMATION MODAL */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 border border-stone-200 shadow-2xl relative">
+            <button
+              onClick={() => {
+                if (!isDeletingProduct) {
+                  setProductToDelete(null);
+                  setDeleteError(null);
+                }
+              }}
+              disabled={isDeletingProduct}
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-900">
+                  Delete Product
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Permanently remove this item from your catalog.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 mb-5 flex items-center gap-3">
+              {productToDelete.imageUrl && (
+                <img
+                  src={productToDelete.imageUrl}
+                  alt={productToDelete.name}
+                  className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-stone-800 line-clamp-2">
+                  {productToDelete.name}
+                </p>
+                <p className="text-[11px] text-stone-500 mt-0.5">
+                  {productToDelete.merchant} • {productToDelete.currency === 'USD' ? '$' : '₹'}{productToDelete.price.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{deleteError}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                onClick={() => {
+                  setProductToDelete(null);
+                  setDeleteError(null);
+                }}
+                disabled={isDeletingProduct}
+                className="px-4 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeleteProduct}
+                disabled={isDeletingProduct}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white text-xs font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {isDeletingProduct ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Yes, Delete Product</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOAST NOTIFICATION */}
+      {actionToast && (
+        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold flex items-center gap-2 animate-in slide-in-from-bottom-2 ${
+          actionToast.type === 'success'
+            ? 'bg-stone-900 text-emerald-300 border-stone-800'
+            : 'bg-red-900 text-red-100 border-red-800'
+        }`}>
+          <span>{actionToast.message}</span>
+          <button
+            onClick={() => setActionToast(null)}
+            className="ml-2 text-stone-400 hover:text-white cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
     </div>

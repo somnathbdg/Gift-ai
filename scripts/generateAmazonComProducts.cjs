@@ -1779,7 +1779,7 @@ categories.forEach(catGroup => {
       merchant: 'Amazon.com',
       asin: item.asin,
       productUrl: `https://www.amazon.com/dp/${item.asin}`,
-      affiliateUrl: `https://www.amazon.com/dp/${item.asin}?tag=digital04b9-20`,
+      affiliateUrl: `https://www.amazon.com/dp/${item.asin}?tag=digitalrani-20`,
       imageUrl: item.img,
       recipients: primaryRecipients,
       relationships: primaryRecipients,

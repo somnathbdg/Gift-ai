@@ -408,11 +408,15 @@ export async function adminSaveProduct(product: Partial<Product>, isEditing: boo
 }
 
 export async function adminDeleteProduct(id: string): Promise<boolean> {
-  const res = await fetch(`/api/admin/products/${id}`, {
+  const res = await fetch(`/api/admin/products/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: getAdminHeaders()
   });
-  return res.ok;
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || data.error || `Server responded with status ${res.status}`);
+  }
+  return true;
 }
 
 export async function adminApproveProduct(id: string): Promise<Product> {
