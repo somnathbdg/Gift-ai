@@ -287,7 +287,7 @@ export function mapAmazonItemToProduct(
     item.Images?.Primary?.Large?.URL ||
     item.Images?.Primary?.Medium?.URL ||
     item.imageUrl ||
-    'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80';
+    'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg';
 
   // URL & Affiliate attribution
   const rawProductUrl = item.DetailPageURL || `https://www.amazon.in/dp/${asin}`;

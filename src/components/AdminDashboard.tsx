@@ -519,7 +519,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       subcategory: 'Keepsakes',
       price: 1499,
       currency: 'INR',
-      imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+      imageUrl: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
       productUrl: 'https://example.com/item',
       merchant: 'Artisan Works',
       affiliateUrl: '',
@@ -547,7 +547,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       subcategory: 'Amazon India Choice',
       price: 1299,
       currency: 'INR',
-      imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+      imageUrl: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
       productUrl: 'https://www.amazon.in/dp/',
       merchant: 'Amazon.in',
       affiliateUrl: `https://www.amazon.in/dp/?tag=${DEFAULT_AMAZON_PARTNER_TAG}`,
@@ -766,7 +766,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         asin: asin || undefined,
         productUrl: amazonLinkDetails.canonicalUrl || amazonLinkUrl.trim() || (asin ? `https://www.${domain}/dp/${asin}` : ''),
         affiliateUrl: amazonLinkDetails.attachAffiliateTag ? (amazonLinkDetails.affiliateUrl || buildAmazonAffiliateUrl(amazonLinkUrl, DEFAULT_AMAZON_PARTNER_TAG)) : '',
-        imageUrl: amazonLinkDetails.imageUrl.trim() || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
+        imageUrl: amazonLinkDetails.imageUrl.trim() || 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         rating: 4.8,
         reviewCount: 42,
         availability: 'in_stock',
@@ -3127,7 +3127,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="flex gap-3 items-center">
                   <input
                     type="url"
-                    placeholder="https://images.unsplash.com/... or Amazon media link"
+                    placeholder="https://m.media-amazon.com/images/I/... or Amazon media link"
                     value={editingProduct.imageUrl || ''}
                     onChange={e => setEditingProduct({ ...editingProduct, imageUrl: e.target.value })}
                     className="flex-1 px-3 py-2 rounded-xl border border-stone-300 text-xs text-stone-900 focus:outline-none focus:border-stone-600"

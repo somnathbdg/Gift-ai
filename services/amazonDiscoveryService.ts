@@ -30,7 +30,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Handcrafted birch plywood genealogical tree with up to 20 custom engraved leaf medallions. Warm walnut varnish finish, ready to hang.',
         price: 36.99,
         brand: 'ArtisanRoots',
-        img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['custom wood', 'family tree', 'personalized art', 'laser engraved'],
         occasions: ['Anniversary', 'Housewarming', 'Mother\'s Day'],
         recipients: ['Parents', 'Family', 'Grandparents']
@@ -41,7 +41,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Minimalist unisex bar bracelet custom laser engraved with precise longitude & latitude coordinates of your special meeting place or wedding venue.',
         price: 24.50,
         brand: 'MignonandMignon',
-        img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['coordinates jewelry', 'personalized bracelet', 'gold plated'],
         occasions: ['Anniversary', 'Valentine\'s Day', 'Birthday'],
         recipients: ['Partner', 'Girlfriend', 'Wife']
@@ -52,7 +52,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Artisan embroidered keepsake capturing your dog or cat with lifelike texture and hand-stitched personalized pet name.',
         price: 29.99,
         brand: 'StitchFurry',
-        img: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['pet portrait', 'personalized pillow', 'dog lover', 'cat lover'],
         occasions: ['Birthday', 'Christmas', 'Memorial'],
         recipients: ['Friend', 'Pet Parent', 'Partner']
@@ -69,7 +69,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Top-rated digital photo frame for parents. Family members worldwide can instantly upload unlimited photos & videos from free iPhone/Android app.',
         price: 149.00,
         brand: 'Aura',
-        img: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['digital frame', 'aura carver', 'photo sharing', 'wifi frame'],
         occasions: ['Mother\'s Day', 'Father\'s Day', 'Anniversary'],
         recipients: ['Parents', 'Mother', 'Father', 'Grandparents']
@@ -80,7 +80,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Soothing foot reflexology massager with dual multi-massage heads, customizable pressure air bags, and infrared heating therapy.',
         price: 69.99,
         brand: 'Nekteck',
-        img: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['foot massager', 'shiatsu heat', 'pain relief', 'relaxation'],
         occasions: ['Birthday', 'Father\'s Day', 'Mother\'s Day'],
         recipients: ['Parents', 'Mother', 'Father']
@@ -91,7 +91,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'App-controlled heated ceramic mug maintains your parent\'s coffee or tea at their exact preferred drinking temperature for up to 80 minutes.',
         price: 139.95,
         brand: 'Ember',
-        img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['ember mug', 'temperature control', 'coffee warmer', 'smart home'],
         occasions: ['Birthday', 'Father\'s Day', 'Holiday'],
         recipients: ['Father', 'Mother', 'Parents']
@@ -108,7 +108,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Delightful pastel instant camera with automatic exposure, built-in selfie mirror, close-up lens mode, and genuine Instax film pack.',
         price: 79.95,
         brand: 'Fujifilm',
-        img: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['instax mini 12', 'instant camera', 'photography', 'party gift'],
         occasions: ['Birthday', 'Celebration', 'Graduation'],
         recipients: ['Friend', 'Sister', 'Teen', 'Daughter']
@@ -119,7 +119,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'The Keurig of cocktails. Enjoy master-mixologist cocktails at the push of a button with customizable pour strength from mocktail to strong.',
         price: 279.99,
         brand: 'Bartesian',
-        img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['cocktail maker', 'home bar', 'bartesian', 'party entertaining'],
         occasions: ['Birthday', 'Milestone 30th/40th', 'Housewarming'],
         recipients: ['Husband', 'Brother', 'Friend', 'Couple']
@@ -130,7 +130,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Custom poured all-natural soy & coconut wax candle uniquely tailored to the recipient\'s exact birthdate with detailed astrological reading.',
         price: 49.99,
         brand: 'Birthdate Co.',
-        img: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['astrology candle', 'zodiac gift', 'birthdate co', 'aromatherapy'],
         occasions: ['Birthday', 'Milestone Birthday'],
         recipients: ['Friend', 'Girlfriend', 'Sister']
@@ -147,7 +147,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Set of two smart waterproof connection bracelets. When one person touches their bracelet, the partner\'s bracelet vibrates and illuminates.',
         price: 138.00,
         brand: 'Bond Touch',
-        img: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['long distance', 'bond touch', 'couples bracelet', 'love token'],
         occasions: ['Anniversary', 'Valentine\'s Day'],
         recipients: ['Partner', 'Wife', 'Husband', 'Couple']
@@ -158,7 +158,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Romantic dining experience at home. Perfect for melted Gruyère cheese fondue or decadent melted dark chocolate dipped strawberries.',
         price: 59.95,
         brand: 'Cuisinart',
-        img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['fondue maker', 'romantic dinner', 'chocolate fondue', 'date night'],
         occasions: ['Anniversary', 'Valentine\'s Day', 'Wedding'],
         recipients: ['Couple', 'Wife', 'Partner']
@@ -169,7 +169,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Visual representation of your first dance wedding song or special voice note converted into precision soundwaves on stretched canvas.',
         price: 44.95,
         brand: 'SoundwaveArt',
-        img: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['soundwave art', 'wedding song', 'canvas print', 'keepsake'],
         occasions: ['Anniversary', 'Wedding', 'Valentine\'s Day'],
         recipients: ['Wife', 'Husband', 'Partner']
@@ -186,7 +186,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Stunning floating LED moon globe using magnetic levitation technology that spins continuously in mid-air above wood base.',
         price: 89.99,
         brand: 'VGAzer',
-        img: 'https://images.unsplash.com/photo-1507499739999-097706ad8914?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['levitating lamp', 'moon light', 'rgb desk lamp', 'ambient lighting'],
         occasions: ['Housewarming', 'Birthday', 'Holiday'],
         recipients: ['Friend', 'Brother', 'Coworker', 'Tech Lover']
@@ -197,7 +197,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Artisan-crafted matte ceramic diffuser that scents up to 500 sq ft while doubling as a sculptural decorative vase piece.',
         price: 123.00,
         brand: 'Vitruvi',
-        img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['vitruvi diffuser', 'stone ceramic', 'aromatherapy', 'interior design'],
         occasions: ['Housewarming', 'Birthday', 'Mother\'s Day'],
         recipients: ['Mother', 'Wife', 'Friend', 'Host']
@@ -208,7 +208,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Contemporary ceiling or wall hanging planter holding three melamine pots. Perfect for indoor herbs, succulents, and cascading greenery.',
         price: 45.00,
         brand: 'Umbra',
-        img: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['hanging planter', 'umbra triflora', 'indoor plants', 'modern decor'],
         occasions: ['Housewarming', 'Spring', 'Birthday'],
         recipients: ['Plant Parent', 'Colleague', 'Friend']
@@ -225,7 +225,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'The quintessential reading companion. Waterproof body, weeks of battery life, and paper-like display readable in bright direct sunlight.',
         price: 149.99,
         brand: 'Amazon',
-        img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['kindle paperwhite', 'ereader', 'book lover', 'warm light'],
         occasions: ['Birthday', 'Graduation', 'Holiday'],
         recipients: ['Reader', 'Student', 'Father', 'Mother']
@@ -236,7 +236,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Breathtaking full-color hardcover coffee table book celebrating diverse beauty and human dignity through documentary photography across 50 countries.',
         price: 29.49,
         brand: 'Ten Speed Press',
-        img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['coffee table book', 'photography book', 'atlas of beauty'],
         occasions: ['Birthday', 'Housewarming', 'Holiday'],
         recipients: ['Friend', 'Sister', 'Book Lover']
@@ -247,7 +247,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Intricate illuminated miniature diorama kit that slots directly between book spines on a bookshelf with sensor-activated warm LED streetlamps.',
         price: 43.99,
         brand: 'ROBOTIME',
-        img: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['book nook', 'bookshelf insert', 'miniature kit', 'diy puzzle'],
         occasions: ['Birthday', 'Christmas', 'Father\'s Day'],
         recipients: ['Book Lover', 'Teen', 'Friend']
@@ -264,7 +264,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Ultra-compact MagSafe travel charging stand that rapidly charges iPhone, Apple Watch, and AirPods simultaneously with zero desk clutter.',
         price: 89.99,
         brand: 'Anker',
-        img: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['anker maggo', '3in1 charger', 'qi2 wireless', 'magsafe'],
         occasions: ['Birthday', 'Father\'s Day', 'Tech Gift'],
         recipients: ['Brother', 'Husband', 'Tech Lover', 'Colleague']
@@ -275,7 +275,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Rugged dustproof & IP67 waterproof speaker with integrated carabiner for hiking, beach trips, and outdoor picnics. 10 hours playtime.',
         price: 59.95,
         brand: 'JBL',
-        img: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['jbl clip 4', 'bluetooth speaker', 'waterproof', 'outdoor tech'],
         occasions: ['Birthday', 'Summer', 'Graduation'],
         recipients: ['Teen', 'Student', 'Friend', 'Adventurer']
@@ -286,7 +286,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Loudest Bluetooth finder with up to 500 ft range, replaceable battery, and seamless integration with iOS & Android to never lose keys or luggage.',
         price: 54.99,
         brand: 'Tile',
-        img: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['tile pro', 'key finder', 'bluetooth tracker', 'luggage locator'],
         occasions: ['Father\'s Day', 'Holiday', 'Birthday'],
         recipients: ['Father', 'Traveler', 'Colleague']
@@ -303,7 +303,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Double-zipper compression technology compresses bulk garments by 60%. Lightweight water-resistant ripstop nylon with breathable mesh panels.',
         price: 39.99,
         brand: 'Bagsmart',
-        img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['packing cubes', 'compression cubes', 'luggage organizer', 'travel gear'],
         occasions: ['Bon Voyage', 'Graduation', 'Birthday'],
         recipients: ['Traveler', 'Friend', 'Daughter', 'Son']
@@ -314,7 +314,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Seat strap system secures to airline headrests to prevent head drop and neck pain. Removable washable moisture-wicking cover.',
         price: 39.99,
         brand: 'Cabeau',
-        img: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['cabeau pillow', 'travel pillow', 'neck support', 'flight gear'],
         occasions: ['Bon Voyage', 'Holiday', 'Birthday'],
         recipients: ['Traveler', 'Colleague', 'Parents']
@@ -331,7 +331,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Pocket-sized deep tissue muscle treatment with Bluetooth app connectivity, 3 speed settings, and 3 ergonomic foam attachments.',
         price: 159.00,
         brand: 'Therabody',
-        img: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['theragun mini', 'massage gun', 'muscle recovery', 'percussion therapy'],
         occasions: ['Birthday', 'Father\'s Day', 'Holiday'],
         recipients: ['Athlete', 'Husband', 'Friend', 'Fitness Lover']
@@ -342,7 +342,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'TempShield double-wall vacuum insulation keeps cold beverages ice-cold for 24 hours. Durable powder coat finish with flex straw cap.',
         price: 44.95,
         brand: 'Hydro Flask',
-        img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['hydro flask', 'water bottle', 'insulated bottle', 'gym gear'],
         occasions: ['Birthday', 'Fitness Goal', 'Back to School'],
         recipients: ['Friend', 'Sister', 'Student', 'Brother']
@@ -359,7 +359,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'SkinSafe ceramic blade technology, dual-temperature wireless charging, and 7,000 RPM motor for effortless men\'s grooming.',
         price: 89.99,
         brand: 'Manscaped',
-        img: 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['manscaped', 'body trimmer', 'mens grooming', 'waterproof shaver'],
         occasions: ['Father\'s Day', 'Birthday', 'Holiday'],
         recipients: ['Husband', 'Boyfriend', 'Brother', 'Father']
@@ -370,7 +370,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Luxurious French formulation infused with 20% organic shea butter, honey, and almond extracts to deeply nourish sensitive hands and skin.',
         price: 39.50,
         brand: 'L\'Occitane',
-        img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['loccitane', 'shea butter', 'hand cream', 'luxury skincare'],
         occasions: ['Mother\'s Day', 'Birthday', 'Valentine\'s Day'],
         recipients: ['Mother', 'Wife', 'Girlfriend', 'Teacher']
@@ -387,7 +387,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: '100% genuine supple brown leather with 8 credit card slots, 2 slip pockets, and built-in RFID security lining to protect cards against identity skimming.',
         price: 48.00,
         brand: 'Fossil',
-        img: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['fossil wallet', 'leather bifold', 'rfid wallet', 'mens accessory'],
         occasions: ['Birthday', 'Father\'s Day', 'Anniversary'],
         recipients: ['Husband', 'Father', 'Brother']
@@ -398,7 +398,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Timeless round silhouette featuring lightweight nylon front, metal temple accents, and 100% UV400 polarized optical clarity lenses.',
         price: 151.00,
         brand: 'Ray-Ban',
-        img: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['rayban erika', 'polarized sunglasses', 'designer shades', 'eyewear'],
         occasions: ['Birthday', 'Summer', 'Anniversary'],
         recipients: ['Girlfriend', 'Wife', 'Sister']
@@ -415,7 +415,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Creative 758-piece building set creating 9 arid, tropical, and carnivorous potted miniature plants. Fun for older kids, teens, and families.',
         price: 49.99,
         brand: 'LEGO',
-        img: 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['lego botanical', 'building kit', 'creative toy', 'stem'],
         occasions: ['Birthday', 'Holiday', 'Graduation'],
         recipients: ['Child', 'Teen', 'Friend']
@@ -426,7 +426,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Hands-on STEM experiment kit that lets kids grow realistic colorful crystals in 3-4 days with illuminated nightlight display stand.',
         price: 24.99,
         brand: 'National Geographic',
-        img: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['crystal growing', 'national geographic', 'stem kit', 'science experiment'],
         occasions: ['Birthday', 'Christmas', 'Back to School'],
         recipients: ['Child', 'Son', 'Daughter', 'Nephew']
@@ -443,7 +443,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Calming mindful desktop sand garden for executive desks and home offices. Designed to relieve stress and spark creative focus during busy workdays.',
         price: 26.99,
         brand: 'ZenCraft',
-        img: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['zen garden', 'desk accessory', 'stress relief', 'office gift'],
         occasions: ['Farewell', 'Promotion', 'Birthday'],
         recipients: ['Colleague', 'Boss', 'Friend', 'Coworker']
@@ -454,7 +454,7 @@ export const CATEGORY_AMAZON_DISCOVERY_POOL: CategoryDiscoveryTemplate[] = [
         desc: 'Beloved rapid total-immersion brewing method produces smooth, rich coffee without bitterness or grit in under 60 seconds.',
         price: 49.95,
         brand: 'AeroPress',
-        img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+        img: 'https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg',
         tags: ['aeropress', 'coffee maker', 'espresso', 'workplace coffee'],
         occasions: ['Birthday', 'Secret Santa', 'Promotion'],
         recipients: ['Colleague', 'Friend', 'Coffee Lover']

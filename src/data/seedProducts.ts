@@ -32,7 +32,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Giftway',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -47,7 +47,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '2',
@@ -79,7 +79,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Custom',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -94,7 +94,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '3',
@@ -126,7 +126,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: "Gugan's",
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -141,7 +141,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '4',
@@ -173,7 +173,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'Only 1 left in stock.',
     availability: 'limited_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Gogirgit',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -188,7 +188,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '5',
@@ -220,7 +220,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'NYRWANA',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -235,7 +235,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '6',
@@ -267,7 +267,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Flashing Click',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -282,7 +282,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '7',
@@ -314,7 +314,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Rarejoy',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -329,7 +329,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '8',
@@ -361,7 +361,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Zibuyu',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -376,7 +376,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '9',
@@ -408,7 +408,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'BEHOMA',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -423,7 +423,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '10',
@@ -455,7 +455,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Tiny Detalles',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -470,7 +470,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '11',
@@ -502,7 +502,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'NEZQUX',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -517,7 +517,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '12',
@@ -549,7 +549,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Aastha Imagine Media',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -564,7 +564,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '13',
@@ -596,7 +596,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'CentraLit',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -611,7 +611,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '14',
@@ -643,7 +643,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'CentraLit',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -658,7 +658,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '15',
@@ -690,7 +690,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'by Amish Tripathi (Author)  Format: Paperback',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -705,7 +705,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '16',
@@ -737,7 +737,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'by George Orwell (Author)  Format: Paperback',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -752,7 +752,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '17',
@@ -784,7 +784,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'by Various (Author)  Format: Paperback',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -799,7 +799,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '18',
@@ -831,7 +831,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'The Man Company',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -846,7 +846,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'men',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '19',
@@ -878,7 +878,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'ENN',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -893,7 +893,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '20',
@@ -925,7 +925,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'FAE Beauty',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -940,7 +940,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '21',
@@ -972,7 +972,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Zevarna',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -987,7 +987,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '22',
@@ -1019,7 +1019,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Quivana',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -1034,7 +1034,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '23',
@@ -1066,7 +1066,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Yontune',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1081,7 +1081,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '24',
@@ -1113,7 +1113,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Portronics',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1128,7 +1128,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '25',
@@ -1160,7 +1160,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'TRANSPRIME',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1175,7 +1175,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '26',
@@ -1207,7 +1207,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'partially_verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'POSH.FOREVER',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1222,7 +1222,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '27',
@@ -1254,7 +1254,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'GIFTMEBAZAR',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1269,7 +1269,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'unisex',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '28',
@@ -1301,7 +1301,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'Foto Factory Gifts',
     descriptionSource: 'amazon_feature_bullets',
     rating: 0,
@@ -1316,7 +1316,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'women',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '29',
@@ -1348,7 +1348,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'by Wonder House Books (Author)  Format: Board book',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -1363,7 +1363,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'kids',
-    status: 'needs_review'
+    status: 'active'
   },
   {
     id: '30',
@@ -1395,7 +1395,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     availabilityStatus: 'In stock',
     availability: 'in_stock',
     verificationStatus: 'verified',
-    reviewStatus: 'needs_review',
+    reviewStatus: 'approved',
     brand: 'by Wonder House Books (Author)  Format: Paperback',
     descriptionSource: 'amazon_title_only',
     rating: 0,
@@ -1410,7 +1410,7 @@ const AMAZON_IN_PRODUCTS: Product[] = [
     updatedAt: '2026-10-16T00:00:00Z',
     lastCheckedAt: '2026-10-16T00:00:00Z',
     genderPreference: 'kids',
-    status: 'needs_review'
+    status: 'active'
   }
 ];
 

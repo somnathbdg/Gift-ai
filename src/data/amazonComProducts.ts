@@ -11,10 +11,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$18.99",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B084DWCZY6",
-    "productUrl": "https://www.amazon.com/dp/B084DWCZY6",
-    "affiliateUrl": "https://www.amazon.com/dp/B084DWCZY6?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
+    "asin": "B0CRHM4Z56",
+    "productUrl": "https://www.amazon.com/dp/B0CRHM4Z56",
+    "affiliateUrl": "https://www.amazon.com/dp/B0CRHM4Z56?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg",
     "recipients": [
       "partner",
       "couple",
@@ -77,7 +77,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B084DWCZY6",
+    "sourceUrl": "https://www.amazon.com/dp/B0CRHM4Z56",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -110,10 +110,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$24.99",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B07D2B7L3X",
-    "productUrl": "https://www.amazon.com/dp/B07D2B7L3X",
-    "affiliateUrl": "https://www.amazon.com/dp/B07D2B7L3X?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80",
+    "asin": "B0B4S1FDVS",
+    "productUrl": "https://www.amazon.com/dp/B0B4S1FDVS",
+    "affiliateUrl": "https://www.amazon.com/dp/B0B4S1FDVS?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/617re0WvjOL._SL1423_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -180,7 +180,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B07D2B7L3X",
+    "sourceUrl": "https://www.amazon.com/dp/B0B4S1FDVS",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -213,10 +213,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$22.95",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B08F9V4769",
-    "productUrl": "https://www.amazon.com/dp/B08F9V4769",
-    "affiliateUrl": "https://www.amazon.com/dp/B08F9V4769?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1507499739999-097706ad8914?auto=format&fit=crop&w=800&q=80",
+    "asin": "B0C8HQWM41",
+    "productUrl": "https://www.amazon.com/dp/B0C8HQWM41",
+    "affiliateUrl": "https://www.amazon.com/dp/B0C8HQWM41?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/714kel+hObL._SL1500_.jpg",
     "recipients": [
       "partner",
       "couple",
@@ -279,7 +279,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B08F9V4769",
+    "sourceUrl": "https://www.amazon.com/dp/B0C8HQWM41",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -312,10 +312,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$34.99",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B07K9H8FBL",
-    "productUrl": "https://www.amazon.com/dp/B07K9H8FBL",
-    "affiliateUrl": "https://www.amazon.com/dp/B07K9H8FBL?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?auto=format&fit=crop&w=800&q=80",
+    "asin": "B07VYJJT4Y",
+    "productUrl": "https://www.amazon.com/dp/B07VYJJT4Y",
+    "affiliateUrl": "https://www.amazon.com/dp/B07VYJJT4Y?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/71hb7Ahs1mL._SL1500_.jpg",
     "recipients": [
       "couple",
       "parents",
@@ -382,7 +382,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B07K9H8FBL",
+    "sourceUrl": "https://www.amazon.com/dp/B07VYJJT4Y",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -415,10 +415,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$14.99",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B09G9CHBN8",
-    "productUrl": "https://www.amazon.com/dp/B09G9CHBN8",
-    "affiliateUrl": "https://www.amazon.com/dp/B09G9CHBN8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+    "asin": "B0BYZCY5D6",
+    "productUrl": "https://www.amazon.com/dp/B0BYZCY5D6",
+    "affiliateUrl": "https://www.amazon.com/dp/B0BYZCY5D6?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/81VTAgB-HiL._SL1500_.jpg",
     "recipients": [
       "husband",
       "wife",
@@ -485,7 +485,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B09G9CHBN8",
+    "sourceUrl": "https://www.amazon.com/dp/B0BYZCY5D6",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -518,10 +518,10 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "rawPrice": "$38.00",
     "currency": "USD",
     "merchant": "Amazon.com",
-    "asin": "B07VL53VNL",
-    "productUrl": "https://www.amazon.com/dp/B07VL53VNL",
-    "affiliateUrl": "https://www.amazon.com/dp/B07VL53VNL?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
+    "asin": "B0D9W2SZXG",
+    "productUrl": "https://www.amazon.com/dp/B0D9W2SZXG",
+    "affiliateUrl": "https://www.amazon.com/dp/B0D9W2SZXG?tag=digitalrani-20",
+    "imageUrl": "https://m.media-amazon.com/images/I/71jSXApscLL._SL1500_.jpg",
     "recipients": [
       "partner",
       "couple",
@@ -584,7 +584,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
       "amazon.com",
       "us_choice"
     ],
-    "sourceUrl": "https://www.amazon.com/dp/B07VL53VNL",
+    "sourceUrl": "https://www.amazon.com/dp/B0D9W2SZXG",
     "researchedAt": "2026-10-21",
     "priceVerifiedAt": "2026-10-21",
     "availabilityStatus": "In stock",
@@ -620,7 +620,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08B3QG6Z2",
     "productUrl": "https://www.amazon.com/dp/B08B3QG6Z2",
     "affiliateUrl": "https://www.amazon.com/dp/B08B3QG6Z2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71LqDU-4x1L._AC_SL1500_.jpg",
     "recipients": [
       "partner",
       "couple",
@@ -719,7 +719,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09K762N7Q",
     "productUrl": "https://www.amazon.com/dp/B09K762N7Q",
     "affiliateUrl": "https://www.amazon.com/dp/B09K762N7Q?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61hdJzAznIL._AC_SL1000_.jpg",
     "recipients": [
       "husband",
       "father",
@@ -822,7 +822,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07Z8L3B9Q",
     "productUrl": "https://www.amazon.com/dp/B07Z8L3B9Q",
     "affiliateUrl": "https://www.amazon.com/dp/B07Z8L3B9Q?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91kt8cP1H7L._AC_SL1500_.jpg",
     "recipients": [
       "pet lover",
       "friend",
@@ -921,7 +921,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08YDF34P9",
     "productUrl": "https://www.amazon.com/dp/B08YDF34P9",
     "affiliateUrl": "https://www.amazon.com/dp/B08YDF34P9?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712KxOF+syL._AC_SL1500_.jpg",
     "recipients": [
       "baby",
       "toddler",
@@ -1019,7 +1019,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09X5P2K76",
     "productUrl": "https://www.amazon.com/dp/B09X5P2K76",
     "affiliateUrl": "https://www.amazon.com/dp/B09X5P2K76?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/31WXDZRXuiL._SX522_.jpg",
     "recipients": [
       "wife",
       "girlfriend",
@@ -1122,7 +1122,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07HMZ3L7R",
     "productUrl": "https://www.amazon.com/dp/B07HMZ3L7R",
     "affiliateUrl": "https://www.amazon.com/dp/B07HMZ3L7R?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61dxKbUhtRL._SL1500_.jpg",
     "recipients": [
       "husband",
       "father",
@@ -1225,7 +1225,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07X38L2T6",
     "productUrl": "https://www.amazon.com/dp/B07X38L2T6",
     "affiliateUrl": "https://www.amazon.com/dp/B07X38L2T6?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/A1VtkKtzx2L._SL1500_.jpg",
     "recipients": [
       "parents",
       "mom",
@@ -1331,7 +1331,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B01H7L2C16",
     "productUrl": "https://www.amazon.com/dp/B01H7L2C16",
     "affiliateUrl": "https://www.amazon.com/dp/B01H7L2C16?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61wZEjpjSUL._SL1500_.jpg",
     "recipients": [
       "parents",
       "mom",
@@ -1430,7 +1430,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07G37W1J7",
     "productUrl": "https://www.amazon.com/dp/B07G37W1J7",
     "affiliateUrl": "https://www.amazon.com/dp/B07G37W1J7?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ySfKT0-rL._SL1254_.jpg",
     "recipients": [
       "dad",
       "mom",
@@ -1533,7 +1533,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086W8N3V7",
     "productUrl": "https://www.amazon.com/dp/B086W8N3V7",
     "affiliateUrl": "https://www.amazon.com/dp/B086W8N3V7?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61bL0qML30L._AC_SL1500_.jpg",
     "recipients": [
       "mom",
       "parents",
@@ -1632,7 +1632,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09B8V1LZ3",
     "productUrl": "https://www.amazon.com/dp/B09B8V1LZ3",
     "affiliateUrl": "https://www.amazon.com/dp/B09B8V1LZ3?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1627989580309-bfaf3e58af6f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/51tXJGC0gQL._AC_SL1500_.jpg",
     "recipients": [
       "parents",
       "dad",
@@ -1735,7 +1735,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07V9P5WJQ",
     "productUrl": "https://www.amazon.com/dp/B07V9P5WJQ",
     "affiliateUrl": "https://www.amazon.com/dp/B07V9P5WJQ?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/51kbMyfqtmL._AC_SL1500_.jpg",
     "recipients": [
       "parents",
       "dad",
@@ -1834,7 +1834,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B00R8A3FJQ",
     "productUrl": "https://www.amazon.com/dp/B00R8A3FJQ",
     "affiliateUrl": "https://www.amazon.com/dp/B00R8A3FJQ?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712HIfJo81L._AC_SL1500_.jpg",
     "recipients": [
       "parents",
       "mom",
@@ -1933,7 +1933,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08N5WRWNW",
     "productUrl": "https://www.amazon.com/dp/B08N5WRWNW",
     "affiliateUrl": "https://www.amazon.com/dp/B08N5WRWNW?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713qDvur-kL._AC_SL1500_.jpg",
     "recipients": [
       "parents",
       "dad",
@@ -2036,7 +2036,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07S17R9C6",
     "productUrl": "https://www.amazon.com/dp/B07S17R9C6",
     "affiliateUrl": "https://www.amazon.com/dp/B07S17R9C6?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81uK1ogWVRL._SL1500_.jpg",
     "recipients": [
       "mom",
       "mother",
@@ -2135,7 +2135,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07N4J7V5M",
     "productUrl": "https://www.amazon.com/dp/B07N4J7V5M",
     "affiliateUrl": "https://www.amazon.com/dp/B07N4J7V5M?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71m8hR9ZUfL._SL1500_.jpg",
     "recipients": [
       "dad",
       "mom",
@@ -2234,7 +2234,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08HQ9C2K8",
     "productUrl": "https://www.amazon.com/dp/B08HQ9C2K8",
     "affiliateUrl": "https://www.amazon.com/dp/B08HQ9C2K8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71eblCkzTNL._SL1500_.jpg",
     "recipients": [
       "mom",
       "parents",
@@ -2333,7 +2333,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B094G9XNL2",
     "productUrl": "https://www.amazon.com/dp/B094G9XNL2",
     "affiliateUrl": "https://www.amazon.com/dp/B094G9XNL2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/610REi5CBCL._SL1500_.jpg",
     "recipients": [
       "parents",
       "mom",
@@ -2432,7 +2432,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09H228D3F",
     "productUrl": "https://www.amazon.com/dp/B09H228D3F",
     "affiliateUrl": "https://www.amazon.com/dp/B09H228D3F?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81uK1ogWVRL._SL1500_.jpg",
     "recipients": [
       "teen",
       "friend",
@@ -2535,7 +2535,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09J5Z8H64",
     "productUrl": "https://www.amazon.com/dp/B09J5Z8H64",
     "affiliateUrl": "https://www.amazon.com/dp/B09J5Z8H64?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81VTAgB-HiL._SL1500_.jpg",
     "recipients": [
       "friend",
       "brother",
@@ -2638,7 +2638,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B0BG4Z8S84",
     "productUrl": "https://www.amazon.com/dp/B0BG4Z8S84",
     "affiliateUrl": "https://www.amazon.com/dp/B0BG4Z8S84?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ECO4j33KL._SL1024_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -2741,7 +2741,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08P92C3L8",
     "productUrl": "https://www.amazon.com/dp/B08P92C3L8",
     "affiliateUrl": "https://www.amazon.com/dp/B08P92C3L8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71D5Elz7dLL._SL1500_.jpg",
     "recipients": [
       "friend",
       "colleague",
@@ -2837,7 +2837,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K7Q3VNV",
     "productUrl": "https://www.amazon.com/dp/B07K7Q3VNV",
     "affiliateUrl": "https://www.amazon.com/dp/B07K7Q3VNV?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61HZJb5196L._SL1500_.jpg",
     "recipients": [
       "kids",
       "teen",
@@ -2940,7 +2940,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08FB6NZNP",
     "productUrl": "https://www.amazon.com/dp/B08FB6NZNP",
     "affiliateUrl": "https://www.amazon.com/dp/B08FB6NZNP?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "friend",
       "father",
@@ -3039,7 +3039,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09XGQ8W5Z",
     "productUrl": "https://www.amazon.com/dp/B09XGQ8W5Z",
     "affiliateUrl": "https://www.amazon.com/dp/B09XGQ8W5Z?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71JI4-uU+PL._SL1500_.jpg",
     "recipients": [
       "friend",
       "brother",
@@ -3142,7 +3142,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08KJN3LPD",
     "productUrl": "https://www.amazon.com/dp/B08KJN3LPD",
     "affiliateUrl": "https://www.amazon.com/dp/B08KJN3LPD?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61NuJuQjbML._SL1500_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -3245,7 +3245,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07ZPC9QD4",
     "productUrl": "https://www.amazon.com/dp/B07ZPC9QD4",
     "affiliateUrl": "https://www.amazon.com/dp/B07ZPC9QD4?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71SH6wnu2cL._AC_SL1500_.jpg",
     "recipients": [
       "gamer",
       "friend",
@@ -3348,7 +3348,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08C5P1ZDF",
     "productUrl": "https://www.amazon.com/dp/B08C5P1ZDF",
     "affiliateUrl": "https://www.amazon.com/dp/B08C5P1ZDF?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81-A78bzOVL._SL1500_.jpg",
     "recipients": [
       "colleague",
       "boss",
@@ -3451,7 +3451,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09JFF265Q",
     "productUrl": "https://www.amazon.com/dp/B09JFF265Q",
     "affiliateUrl": "https://www.amazon.com/dp/B09JFF265Q?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91-KqppOeHL._AC_SL1500_.jpg",
     "recipients": [
       "friend",
       "partner",
@@ -3554,7 +3554,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B0B56K21NW",
     "productUrl": "https://www.amazon.com/dp/B0B56K21NW",
     "affiliateUrl": "https://www.amazon.com/dp/B0B56K21NW?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1000_.jpg",
     "recipients": [
       "reader",
       "partner",
@@ -3657,7 +3657,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B096T2W93N",
     "productUrl": "https://www.amazon.com/dp/B096T2W93N",
     "affiliateUrl": "https://www.amazon.com/dp/B096T2W93N?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg",
     "recipients": [
       "wife",
       "partner",
@@ -3760,7 +3760,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07GDSZGL4",
     "productUrl": "https://www.amazon.com/dp/B07GDSZGL4",
     "affiliateUrl": "https://www.amazon.com/dp/B07GDSZGL4?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/617re0WvjOL._SL1423_.jpg",
     "recipients": [
       "couple",
       "wife",
@@ -3859,7 +3859,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08C9H3K2L",
     "productUrl": "https://www.amazon.com/dp/B08C9H3K2L",
     "affiliateUrl": "https://www.amazon.com/dp/B08C9H3K2L?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714kel+hObL._SL1500_.jpg",
     "recipients": [
       "partner",
       "wife",
@@ -3962,7 +3962,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07W9421H2",
     "productUrl": "https://www.amazon.com/dp/B07W9421H2",
     "affiliateUrl": "https://www.amazon.com/dp/B07W9421H2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ECO4j33KL._SL1024_.jpg",
     "recipients": [
       "couple",
       "wife",
@@ -4061,7 +4061,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07Q87W483",
     "productUrl": "https://www.amazon.com/dp/B07Q87W483",
     "affiliateUrl": "https://www.amazon.com/dp/B07Q87W483?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71zlLZjLfWL._SL1500_.jpg",
     "recipients": [
       "couple",
       "partner",
@@ -4164,7 +4164,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09S4J85Z2",
     "productUrl": "https://www.amazon.com/dp/B09S4J85Z2",
     "affiliateUrl": "https://www.amazon.com/dp/B09S4J85Z2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71AjbvxC5mL._SL1254_.jpg",
     "recipients": [
       "wife",
       "girlfriend",
@@ -4263,7 +4263,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07F93P6Q2",
     "productUrl": "https://www.amazon.com/dp/B07F93P6Q2",
     "affiliateUrl": "https://www.amazon.com/dp/B07F93P6Q2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1582533561751-ef6f6ab93a2e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81-A78bzOVL._SL1500_.jpg",
     "recipients": [
       "couple",
       "wife",
@@ -4366,7 +4366,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08H9R776L",
     "productUrl": "https://www.amazon.com/dp/B08H9R776L",
     "affiliateUrl": "https://www.amazon.com/dp/B08H9R776L?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71LqDU-4x1L._AC_SL1500_.jpg",
     "recipients": [
       "wife",
       "girlfriend",
@@ -4465,7 +4465,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K9F4DML",
     "productUrl": "https://www.amazon.com/dp/B07K9F4DML",
     "affiliateUrl": "https://www.amazon.com/dp/B07K9F4DML?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61hdJzAznIL._AC_SL1000_.jpg",
     "recipients": [
       "wife",
       "partner",
@@ -4564,7 +4564,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08K5P98W3",
     "productUrl": "https://www.amazon.com/dp/B08K5P98W3",
     "affiliateUrl": "https://www.amazon.com/dp/B08K5P98W3?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91kt8cP1H7L._AC_SL1500_.jpg",
     "recipients": [
       "couple",
       "partner",
@@ -4667,7 +4667,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09V1L8Z99",
     "productUrl": "https://www.amazon.com/dp/B09V1L8Z99",
     "affiliateUrl": "https://www.amazon.com/dp/B09V1L8Z99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/610REi5CBCL._SL1500_.jpg",
     "recipients": [
       "couple",
       "partner",
@@ -4770,7 +4770,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086W1VNLM",
     "productUrl": "https://www.amazon.com/dp/B086W1VNLM",
     "affiliateUrl": "https://www.amazon.com/dp/B086W1VNLM?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "couple",
       "wife",
@@ -4869,7 +4869,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08CVQ5NLM",
     "productUrl": "https://www.amazon.com/dp/B08CVQ5NLM",
     "affiliateUrl": "https://www.amazon.com/dp/B08CVQ5NLM?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ySfKT0-rL._SL1254_.jpg",
     "recipients": [
       "friend",
       "colleague",
@@ -4968,7 +4968,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07B4M2F2D",
     "productUrl": "https://www.amazon.com/dp/B07B4M2F2D",
     "affiliateUrl": "https://www.amazon.com/dp/B07B4M2F2D?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71D5Elz7dLL._SL1500_.jpg",
     "recipients": [
       "colleague",
       "friend",
@@ -5071,7 +5071,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086R6NL6F",
     "productUrl": "https://www.amazon.com/dp/B086R6NL6F",
     "affiliateUrl": "https://www.amazon.com/dp/B086R6NL6F?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61wZEjpjSUL._SL1500_.jpg",
     "recipients": [
       "friend",
       "coworker",
@@ -5170,7 +5170,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09C7Y8Z5T",
     "productUrl": "https://www.amazon.com/dp/B09C7Y8Z5T",
     "affiliateUrl": "https://www.amazon.com/dp/B09C7Y8Z5T?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71hb7Ahs1mL._SL1500_.jpg",
     "recipients": [
       "colleague",
       "boss",
@@ -5273,7 +5273,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07L4Q8W2J",
     "productUrl": "https://www.amazon.com/dp/B07L4Q8W2J",
     "affiliateUrl": "https://www.amazon.com/dp/B07L4Q8W2J?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61bL0qML30L._AC_SL1500_.jpg",
     "recipients": [
       "colleague",
       "friend",
@@ -5372,7 +5372,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08933R24K",
     "productUrl": "https://www.amazon.com/dp/B08933R24K",
     "affiliateUrl": "https://www.amazon.com/dp/B08933R24K?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71SH6wnu2cL._AC_SL1500_.jpg",
     "recipients": [
       "colleague",
       "boss",
@@ -5475,7 +5475,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07C1Z4V7L",
     "productUrl": "https://www.amazon.com/dp/B07C1Z4V7L",
     "affiliateUrl": "https://www.amazon.com/dp/B07C1Z4V7L?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713qDvur-kL._AC_SL1500_.jpg",
     "recipients": [
       "friend",
       "roommate",
@@ -5574,7 +5574,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09B8W4F79",
     "productUrl": "https://www.amazon.com/dp/B09B8W4F79",
     "affiliateUrl": "https://www.amazon.com/dp/B09B8W4F79?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ZRU9gnbxL._AC_SL1500_.jpg",
     "recipients": [
       "colleague",
       "boss",
@@ -5677,7 +5677,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08L5P76KL",
     "productUrl": "https://www.amazon.com/dp/B08L5P76KL",
     "affiliateUrl": "https://www.amazon.com/dp/B08L5P76KL?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ni3t1ryQL._AC_SL1500_.jpg",
     "recipients": [
       "colleague",
       "writer",
@@ -5780,7 +5780,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08G8B6Q76",
     "productUrl": "https://www.amazon.com/dp/B08G8B6Q76",
     "affiliateUrl": "https://www.amazon.com/dp/B08G8B6Q76?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1000_.jpg",
     "recipients": [
       "friend",
       "roommate",
@@ -5879,7 +5879,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K6Q1R1S",
     "productUrl": "https://www.amazon.com/dp/B07K6Q1R1S",
     "affiliateUrl": "https://www.amazon.com/dp/B07K6Q1R1S?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81uK1ogWVRL._SL1500_.jpg",
     "recipients": [
       "friend",
       "brother",
@@ -5982,7 +5982,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09K76VN78",
     "productUrl": "https://www.amazon.com/dp/B09K76VN78",
     "affiliateUrl": "https://www.amazon.com/dp/B09K76VN78?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712KxOF+syL._AC_SL1500_.jpg",
     "recipients": [
       "colleague",
       "boss",
@@ -6081,7 +6081,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07Y5NL39Q",
     "productUrl": "https://www.amazon.com/dp/B07Y5NL39Q",
     "affiliateUrl": "https://www.amazon.com/dp/B07Y5NL39Q?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ECO4j33KL._SL1024_.jpg",
     "recipients": [
       "couple",
       "friend",
@@ -6179,7 +6179,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07593D64B",
     "productUrl": "https://www.amazon.com/dp/B07593D64B",
     "affiliateUrl": "https://www.amazon.com/dp/B07593D64B?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71zlLZjLfWL._SL1500_.jpg",
     "recipients": [
       "friend",
       "mom",
@@ -6278,7 +6278,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08H2Q9Z2B",
     "productUrl": "https://www.amazon.com/dp/B08H2Q9Z2B",
     "affiliateUrl": "https://www.amazon.com/dp/B08H2Q9Z2B?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71AjbvxC5mL._SL1254_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -6377,7 +6377,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B0987Y6L1Z",
     "productUrl": "https://www.amazon.com/dp/B0987Y6L1Z",
     "affiliateUrl": "https://www.amazon.com/dp/B0987Y6L1Z?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81VTAgB-HiL._SL1500_.jpg",
     "recipients": [
       "sister",
       "friend",
@@ -6476,7 +6476,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B077R3TKL2",
     "productUrl": "https://www.amazon.com/dp/B077R3TKL2",
     "affiliateUrl": "https://www.amazon.com/dp/B077R3TKL2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714kel+hObL._SL1500_.jpg",
     "recipients": [
       "wife",
       "mom",
@@ -6575,7 +6575,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B082V3NL7Y",
     "productUrl": "https://www.amazon.com/dp/B082V3NL7Y",
     "affiliateUrl": "https://www.amazon.com/dp/B082V3NL7Y?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61dxKbUhtRL._SL1500_.jpg",
     "recipients": [
       "couple",
       "brother",
@@ -6674,7 +6674,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09F5K67G3",
     "productUrl": "https://www.amazon.com/dp/B09F5K67G3",
     "affiliateUrl": "https://www.amazon.com/dp/B09F5K67G3?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71XQZPWGqGL._SL1500_.jpg",
     "recipients": [
       "music lover",
       "partner",
@@ -6773,7 +6773,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08L69NLQ8",
     "productUrl": "https://www.amazon.com/dp/B08L69NLQ8",
     "affiliateUrl": "https://www.amazon.com/dp/B08L69NLQ8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/617re0WvjOL._SL1423_.jpg",
     "recipients": [
       "couple",
       "family",
@@ -6872,7 +6872,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07D38R9W4",
     "productUrl": "https://www.amazon.com/dp/B07D38R9W4",
     "affiliateUrl": "https://www.amazon.com/dp/B07D38R9W4?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712KxOF+syL._AC_SL1500_.jpg",
     "recipients": [
       "mom",
       "wife",
@@ -6971,7 +6971,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B095K7W6L2",
     "productUrl": "https://www.amazon.com/dp/B095K7W6L2",
     "affiliateUrl": "https://www.amazon.com/dp/B095K7W6L2?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91kt8cP1H7L._AC_SL1500_.jpg",
     "recipients": [
       "plant lover",
       "friend",
@@ -7070,7 +7070,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08T67F39K",
     "productUrl": "https://www.amazon.com/dp/B08T67F39K",
     "affiliateUrl": "https://www.amazon.com/dp/B08T67F39K?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1507499739999-097706ad8914?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61wZEjpjSUL._SL1500_.jpg",
     "recipients": [
       "teen",
       "friend",
@@ -7169,7 +7169,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07F9D2L3M",
     "productUrl": "https://www.amazon.com/dp/B07F9D2L3M",
     "affiliateUrl": "https://www.amazon.com/dp/B07F9D2L3M?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81uK1ogWVRL._SL1500_.jpg",
     "recipients": [
       "husband",
       "father",
@@ -7268,7 +7268,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07D23CFGR",
     "productUrl": "https://www.amazon.com/dp/B07D23CFGR",
     "affiliateUrl": "https://www.amazon.com/dp/B07D23CFGR?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71-lkPfntyL._SL1046_.jpg",
     "recipients": [
       "friend",
       "colleague",
@@ -7371,7 +7371,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B083XR3W5P",
     "productUrl": "https://www.amazon.com/dp/B083XR3W5P",
     "affiliateUrl": "https://www.amazon.com/dp/B083XR3W5P?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81Oi27lSgDL._SL1500_.jpg",
     "recipients": [
       "colleague",
       "friend",
@@ -7474,7 +7474,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07212PC92",
     "productUrl": "https://www.amazon.com/dp/B07212PC92",
     "affiliateUrl": "https://www.amazon.com/dp/B07212PC92?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71m8hR9ZUfL._SL1500_.jpg",
     "recipients": [
       "friend",
       "mom",
@@ -7580,7 +7580,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B097F7Z86G",
     "productUrl": "https://www.amazon.com/dp/B097F7Z86G",
     "affiliateUrl": "https://www.amazon.com/dp/B097F7Z86G?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71RPFp7+gfL._SL1500_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -7679,7 +7679,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B01MS9P9K3",
     "productUrl": "https://www.amazon.com/dp/B01MS9P9K3",
     "affiliateUrl": "https://www.amazon.com/dp/B01MS9P9K3?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81C5oa2O8rL._SL1500_.jpg",
     "recipients": [
       "friend",
       "parents",
@@ -7778,7 +7778,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09S4J85Z8",
     "productUrl": "https://www.amazon.com/dp/B09S4J85Z8",
     "affiliateUrl": "https://www.amazon.com/dp/B09S4J85Z8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81wgcld4wxL._SL1500_.jpg",
     "recipients": [
       "artist",
       "musician",
@@ -7881,7 +7881,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08F9V4788",
     "productUrl": "https://www.amazon.com/dp/B08F9V4788",
     "affiliateUrl": "https://www.amazon.com/dp/B08F9V4788?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71g2ednj0JL._SL1500_.jpg",
     "recipients": [
       "partner",
       "mom",
@@ -7984,7 +7984,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09V1L8Z88",
     "productUrl": "https://www.amazon.com/dp/B09V1L8Z88",
     "affiliateUrl": "https://www.amazon.com/dp/B09V1L8Z88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713jIoMO3UL._SL1500_.jpg",
     "recipients": [
       "thinker",
       "father",
@@ -8087,7 +8087,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B0052Z3148",
     "productUrl": "https://www.amazon.com/dp/B0052Z3148",
     "affiliateUrl": "https://www.amazon.com/dp/B0052Z3148?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/51A3FVtoEZL._SL1200_.jpg",
     "recipients": [
       "home chef",
       "couple",
@@ -8186,7 +8186,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08W9421H8",
     "productUrl": "https://www.amazon.com/dp/B08W9421H8",
     "affiliateUrl": "https://www.amazon.com/dp/B08W9421H8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81Oi27lSgDL._SL1500_.jpg",
     "recipients": [
       "geek",
       "teen",
@@ -8289,7 +8289,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B096T2W988",
     "productUrl": "https://www.amazon.com/dp/B096T2W988",
     "affiliateUrl": "https://www.amazon.com/dp/B096T2W988?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71-lkPfntyL._SL1046_.jpg",
     "recipients": [
       "child",
       "partner",
@@ -8392,7 +8392,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07XXT55YF",
     "productUrl": "https://www.amazon.com/dp/B07XXT55YF",
     "affiliateUrl": "https://www.amazon.com/dp/B07XXT55YF?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/616-dKfZ9VL._SL1500_.jpg",
     "recipients": [
       "girlfriend",
       "sister",
@@ -8495,7 +8495,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B01M9FPKG8",
     "productUrl": "https://www.amazon.com/dp/B01M9FPKG8",
     "affiliateUrl": "https://www.amazon.com/dp/B01M9FPKG8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61LQ6qoiAUL._SL1100_.jpg",
     "recipients": [
       "wife",
       "mother",
@@ -8594,7 +8594,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07JFY4K26",
     "productUrl": "https://www.amazon.com/dp/B07JFY4K26",
     "affiliateUrl": "https://www.amazon.com/dp/B07JFY4K26?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71eblCkzTNL._SL1500_.jpg",
     "recipients": [
       "girlfriend",
       "friend",
@@ -8693,7 +8693,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B0815S39KL",
     "productUrl": "https://www.amazon.com/dp/B0815S39KL",
     "affiliateUrl": "https://www.amazon.com/dp/B0815S39KL?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61HZJb5196L._SL1500_.jpg",
     "recipients": [
       "wife",
       "mother",
@@ -8792,7 +8792,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07GDSZGL8",
     "productUrl": "https://www.amazon.com/dp/B07GDSZGL8",
     "affiliateUrl": "https://www.amazon.com/dp/B07GDSZGL8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/610REi5CBCL._SL1500_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -8895,7 +8895,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08H9R7768",
     "productUrl": "https://www.amazon.com/dp/B08H9R7768",
     "affiliateUrl": "https://www.amazon.com/dp/B08H9R7768?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -8994,7 +8994,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07L4Q8W28",
     "productUrl": "https://www.amazon.com/dp/B07L4Q8W28",
     "affiliateUrl": "https://www.amazon.com/dp/B07L4Q8W28?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81uK1ogWVRL._SL1500_.jpg",
     "recipients": [
       "sister",
       "friend",
@@ -9093,7 +9093,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07C1Z4V78",
     "productUrl": "https://www.amazon.com/dp/B07C1Z4V78",
     "affiliateUrl": "https://www.amazon.com/dp/B07C1Z4V78?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71eblCkzTNL._SL1500_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -9192,7 +9192,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08FB6NZN8",
     "productUrl": "https://www.amazon.com/dp/B08FB6NZN8",
     "affiliateUrl": "https://www.amazon.com/dp/B08FB6NZN8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/616-dKfZ9VL._SL1500_.jpg",
     "recipients": [
       "mom",
       "grandmother",
@@ -9295,7 +9295,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09J5Z8H68",
     "productUrl": "https://www.amazon.com/dp/B09J5Z8H68",
     "affiliateUrl": "https://www.amazon.com/dp/B09J5Z8H68?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61LQ6qoiAUL._SL1100_.jpg",
     "recipients": [
       "girlfriend",
       "sister",
@@ -9394,7 +9394,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08KJN3LP8",
     "productUrl": "https://www.amazon.com/dp/B08KJN3LP8",
     "affiliateUrl": "https://www.amazon.com/dp/B08KJN3LP8?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61HZJb5196L._SL1500_.jpg",
     "recipients": [
       "dad",
       "husband",
@@ -9497,7 +9497,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09H228D38",
     "productUrl": "https://www.amazon.com/dp/B09H228D38",
     "affiliateUrl": "https://www.amazon.com/dp/B09H228D38?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "wife",
       "partner",
@@ -9596,7 +9596,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K9H8F88",
     "productUrl": "https://www.amazon.com/dp/B07K9H8F88",
     "affiliateUrl": "https://www.amazon.com/dp/B07K9H8F88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/610REi5CBCL._SL1500_.jpg",
     "recipients": [
       "husband",
       "father",
@@ -9695,7 +9695,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B083XR3W88",
     "productUrl": "https://www.amazon.com/dp/B083XR3W88",
     "affiliateUrl": "https://www.amazon.com/dp/B083XR3W88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -9798,7 +9798,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B097F7Z888",
     "productUrl": "https://www.amazon.com/dp/B097F7Z888",
     "affiliateUrl": "https://www.amazon.com/dp/B097F7Z888?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/31WXDZRXuiL._SX522_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -9901,7 +9901,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07212PC88",
     "productUrl": "https://www.amazon.com/dp/B07212PC88",
     "affiliateUrl": "https://www.amazon.com/dp/B07212PC88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71D5Elz7dLL._SL1500_.jpg",
     "recipients": [
       "brother",
       "boyfriend",
@@ -10004,7 +10004,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09G9CHB88",
     "productUrl": "https://www.amazon.com/dp/B09G9CHB88",
     "affiliateUrl": "https://www.amazon.com/dp/B09G9CHB88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61hdJzAznIL._AC_SL1000_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -10103,7 +10103,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07D2B7L88",
     "productUrl": "https://www.amazon.com/dp/B07D2B7L88",
     "affiliateUrl": "https://www.amazon.com/dp/B07D2B7L88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71hb7Ahs1mL._SL1500_.jpg",
     "recipients": [
       "girlfriend",
       "wife",
@@ -10206,7 +10206,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08F9V4799",
     "productUrl": "https://www.amazon.com/dp/B08F9V4799",
     "affiliateUrl": "https://www.amazon.com/dp/B08F9V4799?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61NuJuQjbML._SL1500_.jpg",
     "recipients": [
       "father",
       "husband",
@@ -10305,7 +10305,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B084DWCZ88",
     "productUrl": "https://www.amazon.com/dp/B084DWCZ88",
     "affiliateUrl": "https://www.amazon.com/dp/B084DWCZ88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/610REi5CBCL._SL1500_.jpg",
     "recipients": [
       "mother",
       "sister",
@@ -10408,7 +10408,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07HMZ3L88",
     "productUrl": "https://www.amazon.com/dp/B07HMZ3L88",
     "affiliateUrl": "https://www.amazon.com/dp/B07HMZ3L88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/31WXDZRXuiL._SX522_.jpg",
     "recipients": [
       "friend",
       "brother",
@@ -10507,7 +10507,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08B3QG688",
     "productUrl": "https://www.amazon.com/dp/B08B3QG688",
     "affiliateUrl": "https://www.amazon.com/dp/B08B3QG688?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "wife",
       "girlfriend",
@@ -10606,7 +10606,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09X5P2K88",
     "productUrl": "https://www.amazon.com/dp/B09X5P2K88",
     "affiliateUrl": "https://www.amazon.com/dp/B09X5P2K88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61hdJzAznIL._AC_SL1000_.jpg",
     "recipients": [
       "husband",
       "boyfriend",
@@ -10705,7 +10705,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07VL53V88",
     "productUrl": "https://www.amazon.com/dp/B07VL53V88",
     "affiliateUrl": "https://www.amazon.com/dp/B07VL53V88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71D5Elz7dLL._SL1500_.jpg",
     "recipients": [
       "teen",
       "student",
@@ -10808,7 +10808,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09B8V1L88",
     "productUrl": "https://www.amazon.com/dp/B09B8V1L88",
     "affiliateUrl": "https://www.amazon.com/dp/B09B8V1L88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61NuJuQjbML._SL1500_.jpg",
     "recipients": [
       "partner",
       "brother",
@@ -10911,7 +10911,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08N5WRW88",
     "productUrl": "https://www.amazon.com/dp/B08N5WRW88",
     "affiliateUrl": "https://www.amazon.com/dp/B08N5WRW88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71JI4-uU+PL._SL1500_.jpg",
     "recipients": [
       "traveler",
       "commuter",
@@ -11014,7 +11014,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07X38L288",
     "productUrl": "https://www.amazon.com/dp/B07X38L288",
     "affiliateUrl": "https://www.amazon.com/dp/B07X38L288?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1000_.jpg",
     "recipients": [
       "programmer",
       "designer",
@@ -11117,7 +11117,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B01H7L2C88",
     "productUrl": "https://www.amazon.com/dp/B01H7L2C88",
     "affiliateUrl": "https://www.amazon.com/dp/B01H7L2C88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ZRU9gnbxL._AC_SL1500_.jpg",
     "recipients": [
       "photographer",
       "videographer",
@@ -11220,7 +11220,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07G37W188",
     "productUrl": "https://www.amazon.com/dp/B07G37W188",
     "affiliateUrl": "https://www.amazon.com/dp/B07G37W188?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ni3t1ryQL._AC_SL1500_.jpg",
     "recipients": [
       "apple user",
       "husband",
@@ -11323,7 +11323,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086W8N388",
     "productUrl": "https://www.amazon.com/dp/B086W8N388",
     "affiliateUrl": "https://www.amazon.com/dp/B086W8N388?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71s9b3625xL._AC_SL1500_.jpg",
     "recipients": [
       "developer",
       "writer",
@@ -11426,7 +11426,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07V9P5W88",
     "productUrl": "https://www.amazon.com/dp/B07V9P5W88",
     "affiliateUrl": "https://www.amazon.com/dp/B07V9P5W88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712KxOF+syL._AC_SL1500_.jpg",
     "recipients": [
       "student",
       "commuter",
@@ -11529,7 +11529,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B00R8A3F88",
     "productUrl": "https://www.amazon.com/dp/B00R8A3F88",
     "affiliateUrl": "https://www.amazon.com/dp/B00R8A3F88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61wZEjpjSUL._SL1500_.jpg",
     "recipients": [
       "digital nomad",
       "colleague",
@@ -11628,7 +11628,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07S17R988",
     "productUrl": "https://www.amazon.com/dp/B07S17R988",
     "affiliateUrl": "https://www.amazon.com/dp/B07S17R988?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1000_.jpg",
     "recipients": [
       "cyclist",
       "hiker",
@@ -11731,7 +11731,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07N4J7V88",
     "productUrl": "https://www.amazon.com/dp/B07N4J7V88",
     "affiliateUrl": "https://www.amazon.com/dp/B07N4J7V88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71JI4-uU+PL._SL1500_.jpg",
     "recipients": [
       "traveler",
       "colleague",
@@ -11830,7 +11830,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08HQ9C288",
     "productUrl": "https://www.amazon.com/dp/B08HQ9C288",
     "affiliateUrl": "https://www.amazon.com/dp/B08HQ9C288?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ZRU9gnbxL._AC_SL1500_.jpg",
     "recipients": [
       "streamer",
       "content creator",
@@ -11933,7 +11933,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B094G9XN88",
     "productUrl": "https://www.amazon.com/dp/B094G9XN88",
     "affiliateUrl": "https://www.amazon.com/dp/B094G9XN88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ni3t1ryQL._AC_SL1500_.jpg",
     "recipients": [
       "music lover",
       "friend",
@@ -12032,7 +12032,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07B4M2F88",
     "productUrl": "https://www.amazon.com/dp/B07B4M2F88",
     "affiliateUrl": "https://www.amazon.com/dp/B07B4M2F88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/31WXDZRXuiL._SX522_.jpg",
     "recipients": [
       "frequent flyer",
       "partner",
@@ -12131,7 +12131,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08CVQ5N88",
     "productUrl": "https://www.amazon.com/dp/B08CVQ5N88",
     "affiliateUrl": "https://www.amazon.com/dp/B08CVQ5N88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61A6zz9r49L._SL1200_.jpg",
     "recipients": [
       "traveler",
       "wife",
@@ -12234,7 +12234,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086R6NL88",
     "productUrl": "https://www.amazon.com/dp/B086R6NL88",
     "affiliateUrl": "https://www.amazon.com/dp/B086R6NL88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71D5Elz7dLL._SL1500_.jpg",
     "recipients": [
       "backpacker",
       "traveler",
@@ -12333,7 +12333,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09C7Y8Z88",
     "productUrl": "https://www.amazon.com/dp/B09C7Y8Z88",
     "affiliateUrl": "https://www.amazon.com/dp/B09C7Y8Z88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71JI4-uU+PL._SL1500_.jpg",
     "recipients": [
       "international traveler",
       "digital nomad",
@@ -12432,7 +12432,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07L4Q8W88",
     "productUrl": "https://www.amazon.com/dp/B07L4Q8W88",
     "affiliateUrl": "https://www.amazon.com/dp/B07L4Q8W88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61NuJuQjbML._SL1500_.jpg",
     "recipients": [
       "hiker",
       "traveler",
@@ -12535,7 +12535,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08933R288",
     "productUrl": "https://www.amazon.com/dp/B08933R288",
     "affiliateUrl": "https://www.amazon.com/dp/B08933R288?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713qDvur-kL._AC_SL1500_.jpg",
     "recipients": [
       "traveler",
       "family",
@@ -12634,7 +12634,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07C1Z4V88",
     "productUrl": "https://www.amazon.com/dp/B07C1Z4V88",
     "affiliateUrl": "https://www.amazon.com/dp/B07C1Z4V88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71SH6wnu2cL._AC_SL1500_.jpg",
     "recipients": [
       "hiker",
       "camper",
@@ -12733,7 +12733,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09B8W4F88",
     "productUrl": "https://www.amazon.com/dp/B09B8W4F88",
     "affiliateUrl": "https://www.amazon.com/dp/B09B8W4F88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61bL0qML30L._AC_SL1500_.jpg",
     "recipients": [
       "frequent flyer",
       "business traveler",
@@ -12832,7 +12832,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08L5P7688",
     "productUrl": "https://www.amazon.com/dp/B08L5P7688",
     "affiliateUrl": "https://www.amazon.com/dp/B08L5P7688?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61hdJzAznIL._AC_SL1000_.jpg",
     "recipients": [
       "backpacker",
       "camper",
@@ -12931,7 +12931,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08G8B6Q88",
     "productUrl": "https://www.amazon.com/dp/B08G8B6Q88",
     "affiliateUrl": "https://www.amazon.com/dp/B08G8B6Q88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/31WXDZRXuiL._SX522_.jpg",
     "recipients": [
       "business traveler",
       "commuter",
@@ -13030,7 +13030,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K6Q1R88",
     "productUrl": "https://www.amazon.com/dp/B07K6Q1R88",
     "affiliateUrl": "https://www.amazon.com/dp/B07K6Q1R88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713qDvur-kL._AC_SL1500_.jpg",
     "recipients": [
       "commuter",
       "traveler",
@@ -13129,7 +13129,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B084DWCZ99",
     "productUrl": "https://www.amazon.com/dp/B084DWCZ99",
     "affiliateUrl": "https://www.amazon.com/dp/B084DWCZ99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61dxKbUhtRL._SL1500_.jpg",
     "recipients": [
       "athlete",
       "runner",
@@ -13232,7 +13232,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07D2B7L99",
     "productUrl": "https://www.amazon.com/dp/B07D2B7L99",
     "affiliateUrl": "https://www.amazon.com/dp/B07D2B7L99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71s9b3625xL._AC_SL1500_.jpg",
     "recipients": [
       "wife",
       "girlfriend",
@@ -13335,7 +13335,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08F9V4777",
     "productUrl": "https://www.amazon.com/dp/B08F9V4777",
     "affiliateUrl": "https://www.amazon.com/dp/B08F9V4777?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712HIfJo81L._AC_SL1500_.jpg",
     "recipients": [
       "husband",
       "partner",
@@ -13433,7 +13433,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07K9H8F99",
     "productUrl": "https://www.amazon.com/dp/B07K9H8F99",
     "affiliateUrl": "https://www.amazon.com/dp/B07K9H8F99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71SH6wnu2cL._AC_SL1500_.jpg",
     "recipients": [
       "yogi",
       "wife",
@@ -13532,7 +13532,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09G9CHB99",
     "productUrl": "https://www.amazon.com/dp/B09G9CHB99",
     "affiliateUrl": "https://www.amazon.com/dp/B09G9CHB99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/713qDvur-kL._AC_SL1500_.jpg",
     "recipients": [
       "gym goer",
       "brother",
@@ -13631,7 +13631,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07VL53V99",
     "productUrl": "https://www.amazon.com/dp/B07VL53V99",
     "affiliateUrl": "https://www.amazon.com/dp/B07VL53V99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61NuJuQjbML._SL1500_.jpg",
     "recipients": [
       "yoga teacher",
       "partner",
@@ -13730,7 +13730,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08B3QG699",
     "productUrl": "https://www.amazon.com/dp/B08B3QG699",
     "affiliateUrl": "https://www.amazon.com/dp/B08B3QG699?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61bL0qML30L._AC_SL1500_.jpg",
     "recipients": [
       "runner",
       "athlete",
@@ -13829,7 +13829,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09K762N88",
     "productUrl": "https://www.amazon.com/dp/B09K762N88",
     "affiliateUrl": "https://www.amazon.com/dp/B09K762N88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71s9b3625xL._AC_SL1500_.jpg",
     "recipients": [
       "fitness tracker fan",
       "dad",
@@ -13932,7 +13932,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07Z8L3B88",
     "productUrl": "https://www.amazon.com/dp/B07Z8L3B88",
     "affiliateUrl": "https://www.amazon.com/dp/B07Z8L3B88?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/712HIfJo81L._AC_SL1500_.jpg",
     "recipients": [
       "boxer",
       "fitness tech lover",
@@ -14031,7 +14031,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08YDF3488",
     "productUrl": "https://www.amazon.com/dp/B08YDF3488",
     "affiliateUrl": "https://www.amazon.com/dp/B08YDF3488?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1598289431512-b97b0917affc?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61dxKbUhtRL._SL1500_.jpg",
     "recipients": [
       "friend",
       "sister",
@@ -14130,7 +14130,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B09X5P2K99",
     "productUrl": "https://www.amazon.com/dp/B09X5P2K99",
     "affiliateUrl": "https://www.amazon.com/dp/B09X5P2K99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71SH6wnu2cL._AC_SL1500_.jpg",
     "recipients": [
       "runner",
       "athlete",
@@ -14233,7 +14233,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07HMZ3L99",
     "productUrl": "https://www.amazon.com/dp/B07HMZ3L99",
     "affiliateUrl": "https://www.amazon.com/dp/B07HMZ3L99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/51A3FVtoEZL._SL1200_.jpg",
     "recipients": [
       "toddler",
       "kids",
@@ -14336,7 +14336,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07X38L299",
     "productUrl": "https://www.amazon.com/dp/B07X38L299",
     "affiliateUrl": "https://www.amazon.com/dp/B07X38L299?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81-A78bzOVL._SL1500_.jpg",
     "recipients": [
       "son",
       "daughter",
@@ -14439,7 +14439,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B01H7L2C99",
     "productUrl": "https://www.amazon.com/dp/B01H7L2C99",
     "affiliateUrl": "https://www.amazon.com/dp/B01H7L2C99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91-KqppOeHL._AC_SL1500_.jpg",
     "recipients": [
       "kids (ages 6-10)",
       "elementary student",
@@ -14538,7 +14538,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07G37W199",
     "productUrl": "https://www.amazon.com/dp/B07G37W199",
     "affiliateUrl": "https://www.amazon.com/dp/B07G37W199?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71RPFp7+gfL._SL1500_.jpg",
     "recipients": [
       "preschooler",
       "toddler",
@@ -14637,7 +14637,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B086W8N399",
     "productUrl": "https://www.amazon.com/dp/B086W8N399",
     "affiliateUrl": "https://www.amazon.com/dp/B086W8N399?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81VTAgB-HiL._SL1500_.jpg",
     "recipients": [
       "toddler",
       "young child",
@@ -14736,7 +14736,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07V9P5W99",
     "productUrl": "https://www.amazon.com/dp/B07V9P5W99",
     "affiliateUrl": "https://www.amazon.com/dp/B07V9P5W99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/61ECO4j33KL._SL1024_.jpg",
     "recipients": [
       "kids",
       "daughter",
@@ -14839,7 +14839,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B00R8A3F99",
     "productUrl": "https://www.amazon.com/dp/B00R8A3F99",
     "affiliateUrl": "https://www.amazon.com/dp/B00R8A3F99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/71zlLZjLfWL._SL1500_.jpg",
     "recipients": [
       "toddler",
       "kids",
@@ -14938,7 +14938,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B08N5WRW99",
     "productUrl": "https://www.amazon.com/dp/B08N5WRW99",
     "affiliateUrl": "https://www.amazon.com/dp/B08N5WRW99?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/81C5oa2O8rL._SL1500_.jpg",
     "recipients": [
       "kids",
       "son",
@@ -15037,7 +15037,7 @@ export const AMAZON_COM_PRODUCTS: Product[] = [
     "asin": "B07S17R999",
     "productUrl": "https://www.amazon.com/dp/B07S17R999",
     "affiliateUrl": "https://www.amazon.com/dp/B07S17R999?tag=digitalrani-20",
-    "imageUrl": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80",
+    "imageUrl": "https://m.media-amazon.com/images/I/91-KqppOeHL._AC_SL1500_.jpg",
     "recipients": [
       "kids (ages 4-9)",
       "daughter",
