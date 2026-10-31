@@ -1613,6 +1613,18 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+
+    // Always serve an explicit, crawl-friendly robots.txt before static files and SPA fallback.
+    app.get('/robots.txt', (_req, res) => {
+      res.set({
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
+      });
+      res.status(200).send(
+        'User-agent: *\\nAllow: /\\n\\nSitemap: https://shop.todkart.com/sitemap.xml\\n'
+      );
+    });
+
     app.get('/sitemap.xml', (_req, res) => {
       const urls = [
         'https://shop.todkart.com/',
