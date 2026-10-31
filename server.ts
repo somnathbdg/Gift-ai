@@ -1621,7 +1621,7 @@ async function startServer() {
         'Cache-Control': 'no-store, no-cache, must-revalidate'
       });
       res.status(200).send(
-        'User-agent: *\\nAllow: /\\n\\nSitemap: https://shop.todkart.com/sitemap.xml\\n'
+        'User-agent: *\nAllow: /\n\nSitemap: https://shop.todkart.com/sitemap.xml\n'
       );
     });
 
