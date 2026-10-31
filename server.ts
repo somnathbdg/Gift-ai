@@ -1621,7 +1621,7 @@ async function startServer() {
         'Cache-Control': 'no-store, no-cache, must-revalidate'
       });
       res.status(200).send(
-        'User-agent: *\nAllow: /\n\nSitemap: https://shop.todkart.com/sitemap.xml\n'
+        'User-agent: *\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nSitemap: https://shop.todkart.com/sitemap.xml\n'
       );
     });
 
@@ -1641,10 +1641,10 @@ async function startServer() {
         'https://shop.todkart.com/gifts-under-1000',
         'https://shop.todkart.com/gifts-under-2000',
         'https://shop.todkart.com/gifts-under-5000',
-        'https://shop.todkart.com/diwali-&-festive',
+        'https://shop.todkart.com/diwali-festive',
         'https://shop.todkart.com/housewarming',
         'https://shop.todkart.com/just-because',
-        "https://shop.todkart.com/valentine\'s-day",
+        "https://shop.todkart.com/valentines-day",
       ];
 
       const xmlUrls = urls.map((url) => `  <url><loc>${url.replace(/&/g, '&amp;')}</loc></url>`).join('\n');
